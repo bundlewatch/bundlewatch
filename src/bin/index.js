@@ -10,16 +10,18 @@ import bundlesizeApi from '../app'
 const prettyPrintResults = fullResults => {
     logger.log('')
     fullResults.forEach(result => {
+        const filePath = chalk.italic(result.filePath) + ':'
+
         if (result.error) {
             logger.log(
-                `${chalk.red('ERROR')} ${result.filePath}: ${result.error}`,
+                `${chalk.red('ERROR')} ${filePath} ${result.error}`,
             )
             return
         }
 
         if (result.isFail) {
             logger.log(
-                `${chalk.redBright('FAIL')} ${result.filePath}: ${
+                `${chalk.redBright('FAIL')} ${filePath} ${
                     result.message
                 }`,
             )
@@ -27,7 +29,7 @@ const prettyPrintResults = fullResults => {
         }
 
         logger.log(
-            `${chalk.greenBright('PASS')} ${result.filePath}: ${
+            `${chalk.greenBright('PASS')} ${filePath} ${
                 result.message
             }`,
         )
