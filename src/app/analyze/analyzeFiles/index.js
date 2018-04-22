@@ -51,7 +51,7 @@ const analyzeFiles = ({
         const { size, maxSize, compression } = currentBranchFile
 
         let isFail = false
-        let message = `${filePath}: ${bytes(size)} `
+        let message = `${bytes(size)} `
 
         const prettySize = maxSize === Infinity ? 'Infinity' : bytes(maxSize)
 

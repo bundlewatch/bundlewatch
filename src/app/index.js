@@ -78,7 +78,7 @@ const bundleSizeApi = async customConfig => {
                                 : result.message
                         return githubService.fail({
                             message,
-                            isOverallStatus: false,
+                            filePath: result.filePath,
                         })
                     }
                     return Promise.resolve()

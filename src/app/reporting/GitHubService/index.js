@@ -8,7 +8,6 @@ class GitHubService {
         this.repoName = repoName
         this.commitSha = commitSha
         this.githubAuthToken = githubAuthToken
-        this.statusCount = 0
     }
 
     get repo() {
@@ -28,16 +27,12 @@ class GitHubService {
         return false
     }
 
-    update(message, url, status, isOverallStatus = true) {
+    update(message, url, status, filePath) {
         if (!this.enabled) {
             return Promise.resolve({})
         }
 
-        let context = 'bundlesize'
-        if (!isOverallStatus) {
-            this.statusCount += 1
-            context += this.statusCount
-        }
+        const context = filePath || 'bundlesize'
 
         return axios({
             method: 'POST',
@@ -73,8 +68,8 @@ class GitHubService {
     pass({ message, url }) {
         return this.update(message, url, 'success')
     }
-    fail({ message, url, isOverallStatus }) {
-        return this.update(message, url, 'failure', isOverallStatus)
+    fail({ message, url, filePath }) {
+        return this.update(message, url, 'failure', filePath)
     }
     error({ message }) {
         return this.update(message, undefined, 'error')

@@ -11,16 +11,26 @@ const prettyPrintResults = fullResults => {
     logger.log('')
     fullResults.forEach(result => {
         if (result.error) {
-            logger.log(`${chalk.red('ERROR')} ${result.error}`)
+            logger.log(
+                `${chalk.red('ERROR')} ${result.filePath}: ${result.error}`,
+            )
             return
         }
 
         if (result.isFail) {
-            logger.log(`${chalk.redBright('FAIL')} ${result.message}`)
+            logger.log(
+                `${chalk.redBright('FAIL')} ${result.filePath}: ${
+                    result.message
+                }`,
+            )
             return
         }
 
-        logger.log(`${chalk.greenBright('PASS')} ${result.message}`)
+        logger.log(
+            `${chalk.greenBright('PASS')} ${result.filePath}: ${
+                result.message
+            }`,
+        )
     })
     logger.log('')
 }
