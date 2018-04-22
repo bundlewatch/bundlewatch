@@ -1,0 +1,80 @@
+{
+    "name": "@bundlesize/bundlesize",
+    "version": "0.0.1",
+    "description": "Keep your library size in check",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/bundlesize/bundlesize.git"
+    },
+    "main": "lib/index.js",
+    "bin": {
+        "bundlesize": "lib/bin/index.js"
+    },
+    "files": [
+        "lib"
+    ],
+    "scripts": {
+        "precommit": "./scripts/check-versions.sh && lint-staged"
+    },
+    "lint-staged": {
+        "*.js": [
+            "node_modules/.bin/eslint"
+        ]
+    },
+    "keywords": [
+        "library",
+        "size",
+        "check",
+        "build",
+        "maxSize"
+    ],
+    "author": "bundlesize",
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^0.18.0",
+        "bytes": "^3.0.0",
+        "chalk": "^2.4.0",
+        "commander": "^2.15.1",
+        "github-build": "^1.2.0",
+        "glob": "^7.1.2",
+        "gzip-size": "^4.0.0",
+        "read-pkg-up": "^3.0.0"
+    },
+    "optionalDepdencies": {
+        "brotli-size": "0.0.1"
+    },
+    "devDependencies": {
+        "axios-mock-adapter": "^1.15.0",
+        "babel-cli": "^6.26.0",
+        "babel-core": "^6.26.0",
+        "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+        "babel-plugin-transform-object-rest-spread": "^6.26.0",
+        "babel-preset-env": "^1.6.1",
+        "eslint": "^4.9.0",
+        "eslint-config-airbnb-base": "^12.1.0",
+        "eslint-config-prettier": "^2.9.0",
+        "eslint-plugin-import": "^2.7.0",
+        "eslint-plugin-jest": "^21.12.2",
+        "eslint-plugin-prettier": "^2.6.0",
+        "husky": "^0.14.3",
+        "jest": "^22.4.3",
+        "jest-junit": "^3.6.0",
+        "lint-staged": "^5.0.0",
+        "prettier": "^1.6.0"
+    },
+    "jest": {
+        "testEnvironment": "node"
+    },
+    "bundlesize": {
+        "files": [
+            {
+                "path": "./__testdata__/*.jpg"
+            },
+            {
+                "path": "./__testdata__/doesnt-exist.js",
+                "maxSize": "420B",
+                "compression": "none"
+            }
+        ]
+    }
+}
