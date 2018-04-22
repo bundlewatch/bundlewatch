@@ -13,26 +13,18 @@ const prettyPrintResults = fullResults => {
         const filePath = chalk.italic(result.filePath) + ':'
 
         if (result.error) {
-            logger.log(
-                `${chalk.red('ERROR')} ${filePath} ${result.error}`,
-            )
+            logger.log(`${chalk.red('ERROR')} ${filePath} ${result.error}`)
             return
         }
 
         if (result.isFail) {
             logger.log(
-                `${chalk.redBright('FAIL')} ${filePath} ${
-                    result.message
-                }`,
+                `${chalk.redBright('FAIL')} ${filePath} ${result.message}`,
             )
             return
         }
 
-        logger.log(
-            `${chalk.greenBright('PASS')} ${filePath} ${
-                result.message
-            }`,
-        )
+        logger.log(`${chalk.greenBright('PASS')} ${filePath} ${result.message}`)
     })
     logger.log('')
 }

@@ -70,14 +70,10 @@ const bundleSizeApi = async customConfig => {
             let failReportedCount = 0
             await Promise.all(
                 results.fullResults.map(result => {
-                    if (result.isFail && failReportedCount < 5) {
+                    if (result.isFail && failReportedCount < 4) {
                         failReportedCount += 1
-                        const message =
-                            failReportedCount === 5
-                                ? `More than 4 failed files, see details for full report`
-                                : result.message
                         return githubService.fail({
-                            message,
+                            message: result.message,
                             filePath: result.filePath,
                         })
                     }
