@@ -32,7 +32,11 @@ class GitHubService {
             return Promise.resolve({})
         }
 
-        const context = filePath || 'bundlesize'
+        let context = filePath || 'bundlesize'
+        if (context.length > 20) {
+            context = context.substring(context.length - 17, context.length)
+            context = '...' + context
+        }
 
         return axios({
             method: 'POST',
