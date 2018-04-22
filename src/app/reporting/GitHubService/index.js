@@ -51,7 +51,7 @@ class GitHubService {
             if (error.response) {
                 logger.error(
                     `GitHubService HTTP_${error.response.status} :: ${
-                        error.response.data.message
+                        error.response.data ? error.response.data.message : ''
                     }`,
                 )
                 return

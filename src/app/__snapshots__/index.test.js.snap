@@ -6,11 +6,12 @@ Object {
     Object {
       "error": "There is no matching file for ./__testdata__/test-file-doesnt-exist.jpg",
       "filePath": "./__testdata__/test-file-doesnt-exist.jpg",
-      "isFail": false,
+      "isFail": true,
     },
   ],
-  "isFail": false,
-  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Afalse%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%22%2C%22error%22%3A%22There%20is%20no%20matching%20file%20for%20.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%22%2C%22isFail%22%3Afalse%7D%5D%7D",
+  "isFail": true,
+  "summary": "TODO: create sumary",
+  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Atrue%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%22%2C%22error%22%3A%22There%20is%20no%20matching%20file%20for%20.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%22%2C%22isFail%22%3Atrue%7D%5D%2C%22summary%22%3A%22TODO%3A%20create%20sumary%22%7D",
 }
 `;
 
@@ -49,7 +50,8 @@ Object {
     },
   ],
   "isFail": false,
-  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Afalse%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%3A%2030.71KB%20%3C%20maxSize%201MB%20(6.3KB%20larger%20than%20mockBranchBase)%20(gzip)%22%2C%22isNew%22%3Afalse%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A31448%2C%22baseBranchSize%22%3A25000%2C%22maxSize%22%3A1048576%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%3A%20198.6KB%20%3C%20maxSize%201MB%20(gzip)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A203368%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A1048576%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-deleted.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-deleted.jpg%3A%20File%20removed%20(9.77KB%20smaller%20than%20mockBranchBase)%20(gzip)%22%2C%22isNew%22%3Afalse%2C%22isRemoved%22%3Atrue%2C%22isFail%22%3Afalse%2C%22size%22%3A0%2C%22baseBranchSize%22%3A10000%2C%22maxSize%22%3A0%7D%5D%7D",
+  "summary": "TODO: create sumary",
+  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Afalse%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%3A%2030.71KB%20%3C%20maxSize%201MB%20(6.3KB%20larger%20than%20mockBranchBase)%20(gzip)%22%2C%22isNew%22%3Afalse%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A31448%2C%22baseBranchSize%22%3A25000%2C%22maxSize%22%3A1048576%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%3A%20198.6KB%20%3C%20maxSize%201MB%20(gzip)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A203368%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A1048576%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-deleted.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-deleted.jpg%3A%20File%20removed%20(9.77KB%20smaller%20than%20mockBranchBase)%20(gzip)%22%2C%22isNew%22%3Afalse%2C%22isRemoved%22%3Atrue%2C%22isFail%22%3Afalse%2C%22size%22%3A0%2C%22baseBranchSize%22%3A10000%2C%22maxSize%22%3A0%7D%5D%2C%22summary%22%3A%22TODO%3A%20create%20sumary%22%7D",
 }
 `;
 
@@ -78,6 +80,7 @@ Object {
     },
   ],
   "isFail": true,
-  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Atrue%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%3A%2068.5KB%20%3C%20maxSize%20100KB%20(no%20compression)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A70145%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A102400%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%3A%20448.14KB%20%3E%20maxSize%20100KB%20(no%20compression)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Atrue%2C%22size%22%3A458900%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A102400%7D%5D%7D",
+  "summary": "TODO: create sumary",
+  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Atrue%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%3A%2068.5KB%20%3C%20maxSize%20100KB%20(no%20compression)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A70145%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A102400%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%3A%20448.14KB%20%3E%20maxSize%20100KB%20(no%20compression)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Atrue%2C%22size%22%3A458900%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A102400%7D%5D%2C%22summary%22%3A%22TODO%3A%20create%20sumary%22%7D",
 }
 `;
