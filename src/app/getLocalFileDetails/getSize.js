@@ -19,10 +19,7 @@ const getSize = ({ filePath, compression }) => {
     try {
         data = fs.readFileSync(filePath, 'utf8')
     } catch (error) {
-        logger.error(
-            `Could not read file: ${filePath}}`,
-            error,
-        )
+        logger.error(`Could not read file: ${filePath}}`, error)
         return null
     }
 

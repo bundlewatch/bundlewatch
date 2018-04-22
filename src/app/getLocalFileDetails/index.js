@@ -9,9 +9,7 @@ const getLocalFileDetails = ({ files, defaultCompression }) => {
     files.forEach(file => {
         const paths = glob.sync(file.path)
         if (!paths.length) {
-            const errorMessage = `There is no matching file for ${
-                file.path
-            }`
+            const errorMessage = `There is no matching file for ${file.path}`
             logger.warn(errorMessage)
             fileDetails[file.path] = {
                 error: errorMessage,

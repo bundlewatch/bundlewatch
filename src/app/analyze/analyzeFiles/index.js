@@ -9,14 +9,14 @@ const analyzeFiles = ({
     baseBranchFileDetails,
     baseBranchName,
 }) => {
-    const filePathSet = new Set([
+    const uniqueFilePaths = new Set([
         ...Object.keys(currentBranchFileDetails),
         ...Object.keys(baseBranchFileDetails),
     ])
 
     const results = []
 
-    filePathSet.forEach(filePath => {
+    uniqueFilePaths.forEach(filePath => {
         const currentBranchFile = currentBranchFileDetails[filePath]
         const baseBranchFile = baseBranchFileDetails[filePath]
 
