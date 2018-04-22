@@ -27,6 +27,7 @@ const ensureValid = config => {
         'githubAuthToken',
         'repoOwner',
         'repoName',
+        'commitSha',
     ]
     const missingOptions = requiredOptionsToConnectToBuild.reduce(
         (optionAccumulator, option) => {
@@ -44,13 +45,13 @@ const ensureValid = config => {
     Learn more at: https://github.com/bundlesize/bundlesize#historgram
             `)
         } else {
-            if (!config.ci.repoBranchCase) {
-                logger.warn(`The repoBranchCase was not supplied, bundlesize comparisons unavailable:
+            if (!config.ci.repoBranchBase) {
+                logger.warn(`The ci.repoBranchCase was not supplied, bundlesize comparisons unavailable:
     Learn more at: https://github.com/bundlesize/bundlesize#build-status
                 `)
             }
             if (!config.ci.repoCurrentBranch) {
-                logger.warn(`The repoCurrentBranch was not supplied, bundlesize comparisions unavailable:
+                logger.warn(`The ci.repoCurrentBranch was not supplied, bundlesize results with not be saved:
     Learn more at: https://github.com/bundlesize/bundlesize#build-status
             `)
             }

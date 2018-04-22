@@ -8,6 +8,7 @@ import logger from '../logger'
 import bundlesizeApi from '../app'
 
 const prettyPrintResults = fullResults => {
+    logger.log('')
     fullResults.forEach(result => {
         if (result.error) {
             logger.log(`${chalk.red('ERROR')} ${result.error}`)
@@ -21,6 +22,7 @@ const prettyPrintResults = fullResults => {
 
         logger.log(`${chalk.greenBright('PASS')} ${result.message}`)
     })
+    logger.log('')
 }
 
 const main = async () => {
@@ -30,7 +32,6 @@ const main = async () => {
         const results = await bundlesizeApi(config)
 
         prettyPrintResults(results.fullResults)
-        logger.log('')
 
         if (results.isFail) {
             logger.log(chalk.redBright(`bundlesize FAIL`))
@@ -56,11 +57,11 @@ const mainSafe = async () => {
         return errorCode
     } catch (error) {
         if (error.type === 'ValidationError') {
-            logger.error(error.message)
+            logger.fatal(error.message)
             return 1
         }
 
-        logger.error(`Uncaught exception`, error)
+        logger.fatal(`Uncaught exception`, error)
         return 1
     }
 }
@@ -95,7 +96,6 @@ program.on('--help', () => {
 
 program.parse(process.argv)
 
-logger.log('')
 mainSafe().then(errorCode => {
     process.exitCode = errorCode
 })

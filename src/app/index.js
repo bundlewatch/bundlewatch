@@ -1,5 +1,6 @@
 import getLocalFileDetails from './getLocalFileDetails'
 import BundlesizeService from './reporting/BundlesizeService'
+import GitHubService from './reporting/GitHubService'
 import analyze from './analyze'
 import getConfig from './config/getConfig'
 import createURLToResultPage from './resultsPage/createURL'
@@ -15,7 +16,7 @@ const main = async ({
         defaultCompression: defaultCompression,
     })
 
-    const service = new BundlesizeService({
+    const bundlesizeService = new BundlesizeService({
         repoOwner: ci.repoOwner,
         repoName: ci.repoName,
         repoCurrentBranch: ci.repoCurrentBranch,
@@ -25,8 +26,8 @@ const main = async ({
         githubAuthToken: ci.githubAuthToken,
     })
 
-    const baseBranchFileDetails = await service.getFileDetailsForBaseBranch()
-    await service.saveFileDetailsForCurrentBranch({
+    const baseBranchFileDetails = await bundlesizeService.getFileDetailsForBaseBranch()
+    await bundlesizeService.saveFileDetailsForCurrentBranch({
         fileDetailsByPath: currentBranchFileDetails,
         trackBranches: ci.trackBranches,
     })
@@ -42,8 +43,6 @@ const main = async ({
         bundlesizeServiceHost,
     })
 
-    // setBuildStatus({ url, files, globalMessage, fail, event, branch })
-
     return {
         ...results,
         url,
@@ -52,11 +51,32 @@ const main = async ({
 
 const bundleSizeApi = async customConfig => {
     const config = getConfig(customConfig)
+    const githubService = new GitHubService({
+        repoOwner: config.ci.repoOwner,
+        repoName: config.ci.repoName,
+        commitSha: config.ci.commitSha,
+        githubAuthToken: config.ci.githubAuthToken,
+    })
+    await githubService.start({ message: 'Checking bundlesize...' })
 
     try {
-        return main(config)
+        const results = main(config)
+        if (results.isFail) {
+            await githubService.fail({
+                message: results.summary,
+                url: results.url,
+            })
+        } else {
+            await githubService.pass({
+                message: results.summary,
+                url: results.url,
+            })
+        }
+        return results
     } catch (e) {
-        // CIReporting.error()
+        await githubService.error({
+            message: `Unable to analyze, check logs. ${e ? e.messsage : ''}`,
+        })
         throw e
     }
 }
