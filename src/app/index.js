@@ -60,7 +60,7 @@ const bundleSizeApi = async customConfig => {
     await githubService.start({ message: 'Checking bundlesize...' })
 
     try {
-        const results = main(config)
+        const results = await main(config)
         if (results.isFail) {
             await githubService.fail({
                 message: results.summary,
