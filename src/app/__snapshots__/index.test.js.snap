@@ -4,13 +4,13 @@ exports[`bundlesize Node API Works when files dont exist, shows warning 1`] = `
 Object {
   "fullResults": Array [
     Object {
-      "error": "There is no matching file for ./__testdata__/test-file-doesnt-exist.jpg in /code/bundlesize/bundlesize",
+      "error": "There is no matching file for ./__testdata__/test-file-doesnt-exist.jpg",
       "filePath": "./__testdata__/test-file-doesnt-exist.jpg",
       "isFail": false,
     },
   ],
   "isFail": false,
-  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Afalse%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%22%2C%22error%22%3A%22There%20is%20no%20matching%20file%20for%20.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%20in%20%2Fcode%2Fbundlesize%2Fbundlesize%22%2C%22isFail%22%3Afalse%7D%5D%7D",
+  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Afalse%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%22%2C%22error%22%3A%22There%20is%20no%20matching%20file%20for%20.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%22%2C%22isFail%22%3Afalse%7D%5D%7D",
 }
 `;
 

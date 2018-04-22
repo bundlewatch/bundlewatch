@@ -38,6 +38,7 @@
         "github-build": "^1.2.0",
         "glob": "^7.1.2",
         "gzip-size": "^4.0.0",
+        "lodash.merge": "^4.6.1",
         "read-pkg-up": "^3.0.0"
     },
     "optionalDepdencies": {

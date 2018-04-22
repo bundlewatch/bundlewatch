@@ -1,3 +1,5 @@
+import lodashMerge from 'lodash.merge'
+
 import ciEnv from './ciEnv'
 import ensureValid from './ensureValid'
 
@@ -17,7 +19,7 @@ const defaultConfig = {
 }
 
 const getConfig = customConfig => {
-    const config = Object.assign({}, defaultConfig, customConfig)
+    const config = lodashMerge({}, defaultConfig, customConfig)
     ensureValid(config)
     return config
 }

@@ -11,7 +11,7 @@ const getLocalFileDetails = ({ files, defaultCompression }) => {
         if (!paths.length) {
             const errorMessage = `There is no matching file for ${
                 file.path
-            } in ${process.cwd()}`
+            }`
             logger.warn(errorMessage)
             fileDetails[file.path] = {
                 error: errorMessage,
@@ -33,7 +33,7 @@ const getLocalFileDetails = ({ files, defaultCompression }) => {
                         compression,
                     }
                 } else {
-                    const errorMessage = `Could not read file ${filePath} in ${process.cwd()}`
+                    const errorMessage = `Could not read file ${filePath}}`
                     logger.warn(errorMessage)
                     fileDetails[filePath] = {
                         error: errorMessage,

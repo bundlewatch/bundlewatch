@@ -18,7 +18,7 @@ const getConfigFileJson = configFilePath => {
     const configFileContents = readConfigFile(configFilePath)
     if (!configFileContents) {
         throw new ValidationError(
-            `Could not find config file: ${configFilePath} from ${process.cwd()}`,
+            `Could not find config file: ${configFilePath}}`,
         )
     }
     try {
