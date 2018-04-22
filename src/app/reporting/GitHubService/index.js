@@ -39,7 +39,7 @@ class GitHubService {
             if (filePath.length > TRUNCATE_TO_LENGTH) {
                 context +=
                     '/...' +
-                    context.substring(
+                    filePath.substring(
                         filePath.length - TRUNCATE_TO_LENGTH - 4,
                         filePath.length,
                     )
