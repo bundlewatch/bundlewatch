@@ -96,4 +96,6 @@ program.on('--help', () => {
 program.parse(process.argv)
 
 logger.log('')
-process.exitCode = mainSafe()
+mainSafe().then(errorCode => {
+    process.exitCode = errorCode
+})
