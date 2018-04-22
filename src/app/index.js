@@ -66,6 +66,17 @@ const bundleSizeApi = async customConfig => {
                 message: results.summary,
                 url: results.url,
             })
+            await Promise.all(
+                results.fullResults.map(result => {
+                    if (result.isFail) {
+                        return githubService.fail({
+                            message: result.message,
+                            isOverallStatus: false,
+                        })
+                    }
+                    return Promise.resolve()
+                }),
+            )
         } else {
             await githubService.pass({
                 message: results.summary,

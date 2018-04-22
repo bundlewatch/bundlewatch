@@ -75,7 +75,7 @@
             },
             {
                 "path": "./lib/**/*.js",
-                "maxSize": "2kB"
+                "maxSize": "0.2kB"
             }
         ]
     }
