@@ -33,9 +33,11 @@ class GitHubService {
             return Promise.resolve({})
         }
 
-        const context = `ci/bundlesize${
-            isOverallStatus ? '' : `/${this.statusCount++}` // eslint-disable-line no-plusplus
-        }`
+        let context = 'bundlesize'
+        if (isOverallStatus) {
+            this.statusCount += 1
+            context += this.statusCount
+        }
 
         return axios({
             method: 'POST',

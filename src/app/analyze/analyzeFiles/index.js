@@ -57,9 +57,9 @@ const analyzeFiles = ({
 
         if (size > maxSize) {
             isFail = true
-            message += `> maxSize ${prettySize} `
+            message += `> ${prettySize} `
         } else {
-            message += `< maxSize ${prettySize} `
+            message += `< ${prettySize} `
 
             if (baseBranchFile) {
                 const diff = size - baseBranchFile.size
