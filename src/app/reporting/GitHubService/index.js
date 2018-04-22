@@ -42,7 +42,7 @@ class GitHubService {
                 state: status,
                 target_url: url,
                 description: message,
-                context: 'bundlesize/bundlesize',
+                context: 'ci/bundlesize',
             },
             headers: {
                 Authorization: `token ${this.githubAuthToken}`,
