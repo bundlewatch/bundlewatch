@@ -18,8 +18,16 @@ const error = (messsage, errorStack) => {
     stderr(chalk.red(`[ERROR] ${messsage}`))
 }
 
+const fatal = (messsage, errorStack) => {
+    if (errorStack) {
+        stdout(errorStack)
+    }
+    stderr(chalk.black.bgRed(`[FATAL] ${messsage}`))
+}
+
 export default {
     log,
     warn,
     error,
+    fatal,
 }

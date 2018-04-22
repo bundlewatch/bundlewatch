@@ -43,7 +43,7 @@ const analyzeFiles = ({
             results.push({
                 filePath,
                 error: currentBranchFile.error,
-                isFail: false,
+                isFail: true,
             })
             return
         }
@@ -51,15 +51,15 @@ const analyzeFiles = ({
         const { size, maxSize, compression } = currentBranchFile
 
         let isFail = false
-        let message = `${filePath}: ${bytes(size)} `
+        let message = `${bytes(size)} `
 
         const prettySize = maxSize === Infinity ? 'Infinity' : bytes(maxSize)
 
         if (size > maxSize) {
             isFail = true
-            message += `> maxSize ${prettySize} `
+            message += `> ${prettySize} `
         } else {
-            message += `< maxSize ${prettySize} `
+            message += `< ${prettySize} `
 
             if (baseBranchFile) {
                 const diff = size - baseBranchFile.size

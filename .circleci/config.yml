@@ -36,6 +36,10 @@ jobs:
           command: make package
           when: always
 
+      - run:
+          name: Run bundlesize in our CI for testing
+          command: make bundlesize
+
       - store_artifacts:
           path: artifacts
 

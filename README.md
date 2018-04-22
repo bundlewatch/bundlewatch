@@ -32,14 +32,6 @@ This is a work in progress, watch this space
 
 
 
-<p align="center">
-  <img src="https://cdn.rawgit.com/bundlesize/bundlesize/master/art/logo.png" height="200px">
-  <br><br>
-  <b>Keep your bundle size in check</b>
-  <br>
-</p>
+### Enabling for CI:
+https://github.com/login/oauth/authorize?scope=repo%3Astatus&client_id=04fcf325dd26ca2a159f
 
-
-#### License
-
-MIT © [siddharthkp](https://github.com/siddharthkp)

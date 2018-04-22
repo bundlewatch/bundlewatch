@@ -8,19 +8,25 @@ import logger from '../logger'
 import bundlesizeApi from '../app'
 
 const prettyPrintResults = fullResults => {
+    logger.log('')
     fullResults.forEach(result => {
+        const filePath = chalk.italic(result.filePath) + ':'
+
         if (result.error) {
-            logger.log(`${chalk.red('ERROR')} ${result.error}`)
+            logger.log(`${chalk.red('ERROR')} ${filePath} ${result.error}`)
             return
         }
 
         if (result.isFail) {
-            logger.log(`${chalk.redBright('FAIL')} ${result.message}`)
+            logger.log(
+                `${chalk.redBright('FAIL')} ${filePath} ${result.message}`,
+            )
             return
         }
 
-        logger.log(`${chalk.greenBright('PASS')} ${result.message}`)
+        logger.log(`${chalk.greenBright('PASS')} ${filePath} ${result.message}`)
     })
+    logger.log('')
 }
 
 const main = async () => {
@@ -30,7 +36,6 @@ const main = async () => {
         const results = await bundlesizeApi(config)
 
         prettyPrintResults(results.fullResults)
-        logger.log('')
 
         if (results.isFail) {
             logger.log(chalk.redBright(`bundlesize FAIL`))
@@ -56,11 +61,11 @@ const mainSafe = async () => {
         return errorCode
     } catch (error) {
         if (error.type === 'ValidationError') {
-            logger.error(error.message)
+            logger.fatal(error.message)
             return 1
         }
 
-        logger.error(`Uncaught exception`, error)
+        logger.fatal(`Uncaught exception`, error)
         return 1
     }
 }
@@ -95,5 +100,6 @@ program.on('--help', () => {
 
 program.parse(process.argv)
 
-logger.log('')
-process.exitCode = mainSafe()
+mainSafe().then(errorCode => {
+    process.exitCode = errorCode
+})

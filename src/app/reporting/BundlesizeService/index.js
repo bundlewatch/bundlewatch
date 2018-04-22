@@ -54,8 +54,11 @@ class BundlesizeService {
             })
             .catch(error => {
                 logger.error(
-                    `Unable to fetch fileDetails for base branch`,
-                    error,
+                    `Unable to fetch fileDetails for baseBranch=${
+                        this.repoBranchBase
+                    } from ${this.bundlesizeServiceStoreUrl} code=${
+                        error.code
+                    }`,
                 )
                 return {}
             })
@@ -81,7 +84,9 @@ class BundlesizeService {
             })
             .catch(error => {
                 logger.error(
-                    `Unable to save fileDetails for current branch`,
+                    `Unable to save fileDetails for currentBranch=${
+                        this.repoCurrentBranch
+                    } code=${error.code}`,
                     error,
                 )
             })

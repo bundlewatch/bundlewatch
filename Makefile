@@ -37,7 +37,9 @@ install: check-versions clean node_modules
 bundlesize: package check-versions node_modules
 	@./lib/bin/index.js ${FLAGS}
 
+ifndef CI
 .PHONY: package
+endif
 package: check-versions node_modules
 	babel src --out-dir=lib --copy-files --ignore .test.js
 

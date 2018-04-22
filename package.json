@@ -69,12 +69,13 @@
     "bundlesize": {
         "files": [
             {
-                "path": "./__testdata__/*.jpg"
+                "path": "./__testdata__/*.jpg",
+                "maxSize": "500kB",
+                "compression": "none"
             },
             {
-                "path": "./__testdata__/doesnt-exist.js",
-                "maxSize": "420B",
-                "compression": "none"
+                "path": "./lib/**/*.js",
+                "maxSize": "2kB"
             }
         ]
     }
