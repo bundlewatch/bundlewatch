@@ -67,11 +67,9 @@ const bundleSizeApi = async customConfig => {
                 url: results.url,
             })
 
-            let failReportedCount = 0
             await Promise.all(
                 results.fullResults.map(result => {
-                    if (result.isFail && failReportedCount < 4) {
-                        failReportedCount += 1
+                    if (result.isFail) {
                         return githubService.fail({
                             message: result.message,
                             filePath: result.filePath,

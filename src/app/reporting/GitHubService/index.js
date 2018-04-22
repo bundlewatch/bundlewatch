@@ -8,6 +8,7 @@ class GitHubService {
         this.repoName = repoName
         this.commitSha = commitSha
         this.githubAuthToken = githubAuthToken
+        this.contexts = new Set()
     }
 
     get repo() {
@@ -37,6 +38,13 @@ class GitHubService {
             context = context.substring(context.length - 17, context.length)
             context = '...' + context
         }
+        if (!this.contexts.has(context) && this.contexts.size >= 5) {
+            logger.warn(
+                `Max reported statuses reached, github status will not be reported`,
+            )
+            return Promise.resolve()
+        }
+        this.contexts.add(context)
 
         return axios({
             method: 'POST',
