@@ -1,3 +1,6 @@
+# bundlesize
+[![CircleCI](https://circleci.com/gh/bundlesize/bundlesize.svg?style=svg)](https://circleci.com/gh/bundlesize/bundlesize)
+
 Inspired by the original [Siddharth Kshetrapal / Bundlesize](https://github.com/siddharthkp/bundlesize)
 
 # In this fork of bundlesize we are aiming to:
