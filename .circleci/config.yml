@@ -10,6 +10,7 @@ jobs:
       - restore_cache:
           keys:
             - deps-v1-{{ checksum "yarn.lock" }}
+            - deps-v1-
 
       - run:
           name: Install Dependencies
@@ -47,29 +48,29 @@ jobs:
             - artifacts/
             - lib/
             - node_modules/
-
-  deploy:
-    docker:
-      - image: circleci/node:8.11.1
-    working_directory: ~/workspace
-    steps:
-      - checkout
-
-      - attach_workspace:
-          at: ~/workspace
-
-      - run:
-          name: Publish Package
-          command: STAGE=prod make deploy
-
-workflows:
-  version: 2
-  build_and_deploy:
-    jobs:
-      - build
-      - deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
+#
+#  deploy:
+#    docker:
+#      - image: circleci/node:8.11.1
+#    working_directory: ~/workspace
+#    steps:
+#      - checkout
+#
+#      - attach_workspace:
+#          at: ~/workspace
+#
+#      - run:
+#          name: Publish Package
+#          command: STAGE=prod make deploy
+#
+#workflows:
+#  version: 2
+#  build_and_deploy:
+#    jobs:
+#      - build
+#      - deploy:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: master
