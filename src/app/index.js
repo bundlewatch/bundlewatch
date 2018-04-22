@@ -71,7 +71,7 @@ const bundleSizeApi = async customConfig => {
             await Promise.all(
                 results.fullResults.map(result => {
                     if (result.isFail && failReportedCount <= 5) {
-                        failReportedCount += 0
+                        failReportedCount += 1
                         const message =
                             failReportedCount === 5
                                 ? `More than 4 failed files, see details for full report`
