@@ -1,0 +1,14 @@
+{
+    "presets": [
+        [
+            "env",
+            {
+                "targets": { "node": "6.10" }
+            }
+        ]
+    ],
+    "plugins": [
+        "transform-es2015-modules-commonjs",
+        "transform-object-rest-spread"
+    ]
+}

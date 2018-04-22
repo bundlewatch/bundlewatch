@@ -1,0 +1,75 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:8.11.1
+    working_directory: ~/workspace
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - deps-v1-{{ checksum "yarn.lock" }}
+
+      - run:
+          name: Install Dependencies
+          command: make install-no-clean
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: deps-v1-{{ checksum "yarn.lock" }}
+
+      - run:
+          name: Lint
+          command: make lint
+          when: always
+
+      - run:
+          name: Tests
+          command: make test
+          when: always
+
+      - run:
+          name: Package functions
+          command: make package
+          when: always
+
+      - store_artifacts:
+          path: artifacts
+
+      - store_test_results:
+          path: artifacts/test_results
+
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - artifacts/
+            - lib/
+            - node_modules/
+
+  deploy:
+    docker:
+      - image: circleci/node:8.11.1
+    working_directory: ~/workspace
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: ~/workspace
+
+      - run:
+          name: Publish Package
+          command: STAGE=prod make deploy
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
