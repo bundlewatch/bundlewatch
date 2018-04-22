@@ -34,7 +34,7 @@ class GitHubService {
         }
 
         let context = 'bundlesize'
-        if (isOverallStatus) {
+        if (!isOverallStatus) {
             this.statusCount += 1
             context += this.statusCount
         }
