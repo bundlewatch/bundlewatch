@@ -33,10 +33,19 @@ class GitHubService {
             return Promise.resolve({})
         }
 
-        let context = filePath || 'bundlesize'
-        if (context.length > 20) {
-            context = context.substring(context.length - 17, context.length)
-            context = '...' + context
+        let context = 'bundlesize'
+        if (filePath) {
+            const TRUNCATE_TO_LENGTH = 30
+            if (filePath.length > TRUNCATE_TO_LENGTH) {
+                context =
+                    '/...' +
+                    context.substring(
+                        filePath.length - TRUNCATE_TO_LENGTH - 4,
+                        filePath.length,
+                    )
+            } else {
+                context = '/' + filePath
+            }
         }
         if (!this.contexts.has(context) && this.contexts.size >= 5) {
             logger.warn(
