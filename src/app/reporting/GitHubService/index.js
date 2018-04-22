@@ -37,14 +37,14 @@ class GitHubService {
         if (filePath) {
             const TRUNCATE_TO_LENGTH = 30
             if (filePath.length > TRUNCATE_TO_LENGTH) {
-                context =
+                context +=
                     '/...' +
                     context.substring(
                         filePath.length - TRUNCATE_TO_LENGTH - 4,
                         filePath.length,
                     )
             } else {
-                context = '/' + filePath
+                context += '/' + filePath
             }
         }
         if (!this.contexts.has(context) && this.contexts.size >= 5) {
