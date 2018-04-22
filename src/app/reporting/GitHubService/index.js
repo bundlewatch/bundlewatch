@@ -35,10 +35,10 @@ class GitHubService {
 
         let context = 'bundlesize'
         if (filePath) {
-            const TRUNCATE_TO_LENGTH = 30
+            const TRUNCATE_TO_LENGTH = 35
             if (filePath.length > TRUNCATE_TO_LENGTH) {
                 context +=
-                    ' ~' +
+                    ' *' +
                     filePath.substring(
                         filePath.length - TRUNCATE_TO_LENGTH - 2,
                         filePath.length,
