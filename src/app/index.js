@@ -70,7 +70,7 @@ const bundleSizeApi = async customConfig => {
             let failReportedCount = 0
             await Promise.all(
                 results.fullResults.map(result => {
-                    if (result.isFail && failReportedCount <= 5) {
+                    if (result.isFail && failReportedCount < 5) {
                         failReportedCount += 1
                         const message =
                             failReportedCount === 5
