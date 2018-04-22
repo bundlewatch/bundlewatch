@@ -25,7 +25,7 @@ Object {
       "isNew": false,
       "isRemoved": false,
       "maxSize": 1048576,
-      "message": "./__testdata__/test-file-1.jpg: 30.71KB < 1MB (6.3KB larger than mockBranchBase) (gzip)",
+      "message": "30.71KB < 1MB (6.3KB larger than mockBranchBase) (gzip)",
       "size": 31448,
     },
     Object {
@@ -35,7 +35,7 @@ Object {
       "isNew": true,
       "isRemoved": false,
       "maxSize": 1048576,
-      "message": "./__testdata__/test-file-2.jpg: 198.6KB < 1MB (gzip)",
+      "message": "198.6KB < 1MB (gzip)",
       "size": 203368,
     },
     Object {
@@ -51,7 +51,7 @@ Object {
   ],
   "isFail": false,
   "summary": "TODO: create sumary",
-  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Afalse%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%3A%2030.71KB%20%3C%201MB%20(6.3KB%20larger%20than%20mockBranchBase)%20(gzip)%22%2C%22isNew%22%3Afalse%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A31448%2C%22baseBranchSize%22%3A25000%2C%22maxSize%22%3A1048576%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%3A%20198.6KB%20%3C%201MB%20(gzip)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A203368%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A1048576%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-deleted.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-deleted.jpg%3A%20File%20removed%20(9.77KB%20smaller%20than%20mockBranchBase)%20(gzip)%22%2C%22isNew%22%3Afalse%2C%22isRemoved%22%3Atrue%2C%22isFail%22%3Afalse%2C%22size%22%3A0%2C%22baseBranchSize%22%3A10000%2C%22maxSize%22%3A0%7D%5D%2C%22summary%22%3A%22TODO%3A%20create%20sumary%22%7D",
+  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Afalse%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%22%2C%22message%22%3A%2230.71KB%20%3C%201MB%20(6.3KB%20larger%20than%20mockBranchBase)%20(gzip)%22%2C%22isNew%22%3Afalse%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A31448%2C%22baseBranchSize%22%3A25000%2C%22maxSize%22%3A1048576%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%22%2C%22message%22%3A%22198.6KB%20%3C%201MB%20(gzip)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A203368%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A1048576%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-deleted.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-deleted.jpg%3A%20File%20removed%20(9.77KB%20smaller%20than%20mockBranchBase)%20(gzip)%22%2C%22isNew%22%3Afalse%2C%22isRemoved%22%3Atrue%2C%22isFail%22%3Afalse%2C%22size%22%3A0%2C%22baseBranchSize%22%3A10000%2C%22maxSize%22%3A0%7D%5D%2C%22summary%22%3A%22TODO%3A%20create%20sumary%22%7D",
 }
 `;
 
@@ -65,7 +65,7 @@ Object {
       "isNew": true,
       "isRemoved": false,
       "maxSize": 102400,
-      "message": "./__testdata__/test-file-1.jpg: 68.5KB < 100KB (no compression)",
+      "message": "68.5KB < 100KB (no compression)",
       "size": 70145,
     },
     Object {
@@ -75,12 +75,12 @@ Object {
       "isNew": true,
       "isRemoved": false,
       "maxSize": 102400,
-      "message": "./__testdata__/test-file-2.jpg: 448.14KB > 100KB (no compression)",
+      "message": "448.14KB > 100KB (no compression)",
       "size": 458900,
     },
   ],
   "isFail": true,
   "summary": "TODO: create sumary",
-  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Atrue%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%3A%2068.5KB%20%3C%20100KB%20(no%20compression)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A70145%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A102400%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%22%2C%22message%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%3A%20448.14KB%20%3E%20100KB%20(no%20compression)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Atrue%2C%22size%22%3A458900%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A102400%7D%5D%2C%22summary%22%3A%22TODO%3A%20create%20sumary%22%7D",
+  "url": "https://service.bundlesize.io/results?d=%7B%22isFail%22%3Atrue%2C%22fullResults%22%3A%5B%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-1.jpg%22%2C%22message%22%3A%2268.5KB%20%3C%20100KB%20(no%20compression)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Afalse%2C%22size%22%3A70145%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A102400%7D%2C%7B%22filePath%22%3A%22.%2F__testdata__%2Ftest-file-2.jpg%22%2C%22message%22%3A%22448.14KB%20%3E%20100KB%20(no%20compression)%22%2C%22isNew%22%3Atrue%2C%22isRemoved%22%3Afalse%2C%22isFail%22%3Atrue%2C%22size%22%3A458900%2C%22baseBranchSize%22%3A0%2C%22maxSize%22%3A102400%7D%5D%2C%22summary%22%3A%22TODO%3A%20create%20sumary%22%7D",
 }
 `;
