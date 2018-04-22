@@ -70,16 +70,12 @@
         "files": [
             {
                 "path": "./__testdata__/*.jpg",
-                "maxSize": "100kB",
+                "maxSize": "500kB",
                 "compression": "none"
             },
             {
                 "path": "./lib/**/*.js",
                 "maxSize": "2kB"
-            },
-            {
-                "path": "./artifacts/bundlesize.tar",
-                "maxSize": "10kB"
             }
         ]
     }

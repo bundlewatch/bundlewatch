@@ -10,7 +10,7 @@ const getLocalFileDetails = ({ files, defaultCompression }) => {
         const paths = glob.sync(file.path)
         if (!paths.length) {
             const errorMessage = `There is no matching file for ${file.path}`
-            logger.warn(errorMessage)
+            logger.error(errorMessage)
             fileDetails[file.path] = {
                 error: errorMessage,
             }
@@ -32,7 +32,7 @@ const getLocalFileDetails = ({ files, defaultCompression }) => {
                     }
                 } else {
                     const errorMessage = `Could not read file ${filePath}}`
-                    logger.warn(errorMessage)
+                    logger.error(errorMessage)
                     fileDetails[filePath] = {
                         error: errorMessage,
                     }
