@@ -31,4 +31,10 @@ new_version_with_v="v$new_version"
 echo "New version with v is $new_version_with_v"
 echo "Version to publish is $new_version\n\n"
 
-run "npm publish --access public"
+echo "Add new version back into package json"
+jq ".version=$new_version" $PACKAGE_VERSION_JSON > $PACKAGE_VERSION_JSON.tmp
+mv $PACKAGE_VERSION_JSON.tmp $PACKAGE_VERSION_JSON
+
+cat $PACKAGE_VERSION_JSON
+
+#run "npm publish --access public"
