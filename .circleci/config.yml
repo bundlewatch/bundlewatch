@@ -63,7 +63,7 @@ jobs:
           at: ~/workspace
 
       - run:
-          name: Lint
+          name: Deploy Package
           command: make deploy
 
 workflows:

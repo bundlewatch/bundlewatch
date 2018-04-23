@@ -17,16 +17,16 @@ Inspired by the original [Siddharth Kshetrapal / Bundlesize](https://github.com/
 
 This is a work in progress, watch this space
 ## TODO
-- [ ] Obtain parity with bundlesize (using Node API approach)
-- [ ] Support new features
-- [ ] Split store into service
+- [x] Obtain parity with bundlesize (using Node API approach)
+- [x] Support new features
+- [x] Split store into service
 - [ ] Docs on how to CONTRIBUTE/LOCAL SETUP etc
 - [ ] Better tests
 
 
 ### Feature list:
-- [ ] Config validation to stop users guessing why bundlesize won't work (with a --validate option)
-- [ ] Update message
+- [x] Config validation to stop users guessing why bundlesize won't work
+- [x] Update message
 - [x] Support branches other than master
 - [ ] Show history of bundlesizes over time
 
