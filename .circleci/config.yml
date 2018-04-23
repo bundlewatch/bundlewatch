@@ -1,5 +1,15 @@
 version: 2
 jobs:
+  greenkeeper:
+      docker:
+          - image: circleci/node:8.11.1
+        working_directory: ~/workspace
+        steps:
+          - checkout
+          - yarn global add greenkeeper-lockfile@1
+          - greenkeeper-lockfile-update
+          - greenkeeper-lockfile-upload
+
   build:
     docker:
       - image: circleci/node:8.11.1
@@ -52,29 +62,33 @@ jobs:
             - artifacts/
             - lib/
             - node_modules/
-#
-#  deploy:
-#    docker:
-#      - image: circleci/node:8.11.1
-#    working_directory: ~/workspace
-#    steps:
-#      - checkout
-#
-#      - attach_workspace:
-#          at: ~/workspace
-#
-#      - run:
-#          name: Publish Package
-#          command: STAGE=prod make deploy
-#
-#workflows:
-#  version: 2
-#  build_and_deploy:
-#    jobs:
-#      - build
-#      - deploy:
-#          requires:
-#            - build
-#          filters:
-#            branches:
-#              only: master
+
+  deploy:
+    docker:
+      - image: circleci/node:8.11.1
+    working_directory: ~/workspace
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: ~/workspace
+
+      - run:
+          name: Publish Package
+          command: STAGE=prod make deploy
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - greenkeeper:
+        contexts: greenkeeper
+      - build:
+        requires:
+          - greenkeeper
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
