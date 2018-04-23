@@ -21,11 +21,11 @@ const getContextForFilePath = filePath => {
 }
 
 class GitHubService {
-    constructor({ repoOwner, repoName, commitSha, githubAuthToken }) {
+    constructor({ repoOwner, repoName, commitSha, githubAccessToken }) {
         this.repoOwner = repoOwner
         this.repoName = repoName
         this.commitSha = commitSha
-        this.githubAuthToken = githubAuthToken
+        this.githubAccessToken = githubAccessToken
         this.contexts = new Set()
     }
 
@@ -35,7 +35,7 @@ class GitHubService {
 
     get enabled() {
         if (
-            this.githubAuthToken &&
+            this.githubAccessToken &&
             this.repoOwner &&
             this.repoName &&
             this.commitSha
@@ -74,7 +74,7 @@ class GitHubService {
                 context,
             },
             headers: {
-                Authorization: `token ${this.githubAuthToken}`,
+                Authorization: `token ${this.githubAccessToken}`,
             },
         }).catch(error => {
             if (error.response) {

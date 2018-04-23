@@ -70,7 +70,7 @@ describe(`bundlesize Node API`, () => {
                 },
             ],
             ci: {
-                githubAuthToken: MOCK_AUTH_TOKEN,
+                githubAccessToken: MOCK_AUTH_TOKEN,
                 repoOwner: MOCK_REPO.owner,
                 repoName: MOCK_REPO.name,
                 repoCurrentBranch: MOCK_REPO.currentBranch,

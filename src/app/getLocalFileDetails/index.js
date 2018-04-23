@@ -26,7 +26,6 @@ const getLocalFileDetails = ({ files, defaultCompression }) => {
                 if (size) {
                     fileDetails[filePath] = {
                         maxSize,
-                        filePath,
                         size,
                         compression,
                     }

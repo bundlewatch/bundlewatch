@@ -7,7 +7,7 @@ const defaultConfig = {
     files: [],
     bundlesizeServiceHost: 'https://service.bundlesize.io', // Can be a custom service, or set to NUll
     ci: {
-        githubAuthToken: process.env.BUNDLESIZE_GITHUB_TOKEN,
+        githubAccessToken: ciEnv.githubAccessToken,
         repoOwner: ciEnv.repoOwner,
         repoName: ciEnv.repoName,
         repoCurrentBranch: ciEnv.repoCurrentBranch,

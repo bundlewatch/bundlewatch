@@ -9,7 +9,7 @@ class BundlesizeService {
         repoCurrentBranch,
         commitSha,
         bundlesizeServiceHost,
-        githubAuthToken,
+        githubAccessToken,
     }) {
         this.repoOwner = repoOwner
         this.repoName = repoName
@@ -17,7 +17,7 @@ class BundlesizeService {
         this.repoCurrentBranch = repoCurrentBranch
         this.commitSha = commitSha
         this.bundlesizeServiceHost = bundlesizeServiceHost
-        this.githubAuthToken = githubAuthToken
+        this.githubAccessToken = githubAccessToken
     }
 
     get bundlesizeServiceStoreUrl() {
@@ -26,7 +26,7 @@ class BundlesizeService {
 
     get enabled() {
         if (
-            this.githubAuthToken &&
+            this.githubAccessToken &&
             this.repoOwner &&
             this.repoName &&
             this.bundlesizeServiceHost
@@ -42,12 +42,15 @@ class BundlesizeService {
             return Promise.resolve({})
         }
 
+        logger.info(`Retrieve comparison`)
+
         return axios
             .post(`${this.bundlesizeServiceStoreUrl}/lookup`, {
                 repoOwner: this.repoOwner,
                 repoName: this.repoName,
                 repoBranch: this.repoBranchBase,
-                githubAuthToken: this.githubAuthToken,
+                githubAccessToken: this.githubAccessToken,
+                commitSha: this.commitSha,
             })
             .then(response => {
                 return response.data.fileDetailsByPath
@@ -56,29 +59,47 @@ class BundlesizeService {
                 logger.error(
                     `Unable to fetch fileDetails for baseBranch=${
                         this.repoBranchBase
-                    } from ${this.bundlesizeServiceStoreUrl} code=${
-                        error.code
-                    }`,
+                    } from ${
+                        this.bundlesizeServiceStoreUrl
+                    } code=${error.code || error.message}`,
                 )
                 return {}
             })
     }
 
     saveFileDetailsForCurrentBranch({ fileDetailsByPath, trackBranches }) {
-        if (!this.enabled || !this.repoCurrentBranch || !!this.repoBranchBase) {
+        if (!this.enabled || !this.repoCurrentBranch) {
             return Promise.resolve()
         }
 
+        if (
+            this.repoBranchBase &&
+            this.repoCurrentBranch !== this.repoBranchBase
+        ) {
+            logger.info(
+                `${this.repoBranchBase} !== ${
+                    this.repoCurrentBranch
+                }, no results saved`,
+            )
+        }
+
         if (!trackBranches.includes(this.repoCurrentBranch)) {
+            logger.info(
+                `${
+                    this.repoCurrentBranch
+                } is not a branch to track, no results saved`,
+            )
             return Promise.resolve()
         }
+
+        logger.info(`Saving results`)
 
         return axios
             .post(`${this.bundlesizeServiceStoreUrl}`, {
                 repoOwner: this.repoOwner,
                 repoName: this.repoName,
                 repoBranch: this.repoCurrentBranch,
-                githubAuthToken: this.githubAuthToken,
+                githubAccessToken: this.githubAccessToken,
                 commitSha: this.commitSha,
                 fileDetailsByPath,
             })
@@ -86,7 +107,7 @@ class BundlesizeService {
                 logger.error(
                     `Unable to save fileDetails for currentBranch=${
                         this.repoCurrentBranch
-                    } code=${error.code}`,
+                    } code=${error.code || error.message}`,
                     error,
                 )
             })

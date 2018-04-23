@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 import readPkgUp from 'read-pkg-up'
 
 import ValidationError from '../app/errors/ValidationError'
@@ -8,27 +9,46 @@ const readConfigFile = configFilePath => {
     try {
         return fs.readFileSync(configFilePath, 'utf8')
     } catch (error) {
-        logger.error(`Exception while trying to read config file`, error)
+        logger.error(`Exception while trying to read JSON config file`, error)
         return null
     }
 }
 
 const getConfigFileJson = configFilePath => {
-    // TODO more advanced, execute JS file etc
     const configFileContents = readConfigFile(configFilePath)
     if (!configFileContents) {
         throw new ValidationError(
-            `Could not find config file: ${configFilePath}}`,
+            `Could not find JSON config file: ${configFilePath}}`,
         )
     }
     try {
         return JSON.parse(configFileContents)
     } catch (error) {
-        logger.error(`Exception while parsing config`, configFilePath)
+        logger.error(`Exception while parsing JSON config`, error)
         throw new ValidationError(
-            `Could not parse config file: ${configFilePath}`,
+            `Could not parse JSON config file: ${configFilePath}`,
         )
     }
+}
+
+const getConfigFileJS = configFilePath => {
+    const projectDir = path.resolve(fs.realpathSync(process.cwd()))
+    const fullPath = `${projectDir}/${configFilePath}`
+    try {
+        return require(fullPath) // eslint-disable-line global-require
+    } catch (error) {
+        logger.error(`Exception while loading JS config`, error)
+        throw new ValidationError(
+            `Exception while loading JS config: ${fullPath}`,
+        )
+    }
+}
+
+const getConfigFileContents = configFilePath => {
+    if (configFilePath.endsWith('.js')) {
+        return getConfigFileJson(getConfigFileJS)
+    }
+    return getConfigFileJson(configFilePath)
 }
 
 const determineConfig = cliOptions => {
@@ -65,7 +85,7 @@ const determineConfig = cliOptions => {
             logger.warn(
                 `configFilePath supplied, config in package.json will be ignored`,
             )
-            return getConfigFileJson(cliOptions.configFilePath)
+            return getConfigFileContents(cliOptions.configFilePath)
         }
     }
 

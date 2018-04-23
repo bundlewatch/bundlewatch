@@ -23,7 +23,7 @@ const main = async ({
         repoBranchBase: ci.repoBranchBase,
         commitSha: ci.commitSha,
         bundlesizeServiceHost,
-        githubAuthToken: ci.githubAuthToken,
+        githubAccessToken: ci.githubAccessToken,
     })
 
     const baseBranchFileDetails = await bundlesizeService.getFileDetailsForBaseBranch()
@@ -55,7 +55,7 @@ const bundleSizeApi = async customConfig => {
         repoOwner: config.ci.repoOwner,
         repoName: config.ci.repoName,
         commitSha: config.ci.commitSha,
-        githubAuthToken: config.ci.githubAuthToken,
+        githubAccessToken: config.ci.githubAccessToken,
     })
     await githubService.start({ message: 'Checking bundlesize...' })
 

@@ -67,6 +67,12 @@
         "testEnvironment": "node"
     },
     "bundlesize": {
+        "ci": {
+            "repoCurrentBranch": "master",
+            "repoName": "bundlesize",
+            "repoOwner": "bundlesize",
+            "commitSha": "e4dbbb3533ccde733b3a94254586b689fba94425"
+        },
         "files": [
             {
                 "path": "./__testdata__/*.jpg",

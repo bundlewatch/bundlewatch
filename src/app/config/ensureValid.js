@@ -24,7 +24,7 @@ const ensureValid = config => {
     }
 
     const requiredOptionsToConnectToBuild = [
-        'githubAuthToken',
+        'githubAccessToken',
         'repoOwner',
         'repoName',
         'commitSha',

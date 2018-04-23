@@ -7,6 +7,10 @@ const log = message => {
     stdout(message)
 }
 
+const info = message => {
+    stdout(chalk.cyan(`[INFO] ${message}`))
+}
+
 const warn = message => {
     stdout(chalk.yellow(`[WARNING] ${message}`))
 }
@@ -27,6 +31,7 @@ const fatal = (messsage, errorStack) => {
 
 export default {
     log,
+    info,
     warn,
     error,
     fatal,

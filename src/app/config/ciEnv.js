@@ -9,7 +9,6 @@ const ciEnv = () => {
     let commitSha
 
     if (env.TRAVIS) {
-        // Reference: https://docs.travis-ci.com/user/environment-variables
         repo = env.TRAVIS_REPO_SLUG
         commitSha = env.TRAVIS_PULL_REQUEST_SHA || env.TRAVIS_COMMIT
         repoCurrentBranch =
@@ -17,23 +16,19 @@ const ciEnv = () => {
                 ? env.TRAVIS_BRANCH
                 : env.TRAVIS_PULL_REQUEST_BRANCH
     } else if (env.CIRCLECI) {
-        // Reference: https://circleci.com/docs/1.0/environment-variables
         repoOwner = env.CIRCLE_PROJECT_USERNAME
         repoName = env.CIRCLE_PROJECT_REPONAME
         commitSha = env.CIRCLE_SHA1
         repoCurrentBranch = env.CIRCLE_BRANCH
     } else if (env.WERCKER) {
-        // Reference: https://devcenter.wercker.com/docs/environment-variables/available-env-vars
         repoOwner = env.WERCKER_GIT_OWNER
         repoName = env.WERCKER_GIT_REPOSITORY
         commitSha = env.WERCKER_GIT_COMMIT
         repoCurrentBranch = env.WERCKER_GIT_BRANCH
     } else if (env.DRONE) {
-        // Reference: http://readme.drone.io/usage/environment-reference
         repo = env.DRONE_REPO || env.CI_REPO
         commitSha = env.DRONE_COMMIT || env.CI_COMMIT
     } else if (env.CI_NAME === 'codeship') {
-        // Reference: https://documentation.codeship.com/basic/builds-and-configuration/set-environment-variables/#default-environment-variables
         repo = env.CI_REPO_NAME
         repoCurrentBranch = env.CI_BRANCH
     } else {
@@ -53,11 +48,17 @@ const ciEnv = () => {
         }
     }
 
+    const githubAccessToken =
+        process.env.GITHUB_ACCESS_TOKEN || process.env.BUNDLESIZE_GITHUB_TOKEN
+
+    // TODO: fine repoBranchBase
+
     return {
         repoOwner,
         repoName,
         repoCurrentBranch,
         repoBranchBase,
+        githubAccessToken,
         commitSha,
     }
 }
