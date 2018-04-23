@@ -73,7 +73,7 @@ lint-fix: check-versions node_modules
 install-no-clean: check-versions node_modules
 
 .PHONY: deploy
-deploy: check-versions node_modules
+deploy:
 	./scripts/deploy.sh
 
 # ----------------- Helpers ------------------
