@@ -62,20 +62,20 @@ jobs:
             - artifacts/
             - lib/
             - node_modules/
-
-  deploy:
-    docker:
-      - image: circleci/node:8.11.1
-    working_directory: ~/workspace
-    steps:
-      - checkout
-
-      - attach_workspace:
-          at: ~/workspace
-
-      - run:
-          name: Publish Package
-          command: STAGE=prod make deploy
+#
+#  deploy:
+#    docker:
+#      - image: circleci/node:8.11.1
+#    working_directory: ~/workspace
+#    steps:
+#      - checkout
+#
+#      - attach_workspace:
+#          at: ~/workspace
+#
+#      - run:
+#          name: Publish Package
+#          command: STAGE=prod make deploy
 
 workflows:
   version: 2
@@ -86,9 +86,9 @@ workflows:
       - build:
         requires:
           - greenkeeper
-      - deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
+#      - deploy:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: master
