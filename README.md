@@ -1,4 +1,6 @@
 # bundlesize
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/bundlesize/bundlesize.svg)](https://greenkeeper.io/)
 [![CircleCI](https://circleci.com/gh/bundlesize/bundlesize.svg?style=svg)](https://circleci.com/gh/bundlesize/bundlesize)
 
 Inspired by the original [Siddharth Kshetrapal / Bundlesize](https://github.com/siddharthkp/bundlesize)
