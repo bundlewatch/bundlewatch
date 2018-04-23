@@ -5,6 +5,9 @@ source "$DIR/shell-helpers.sh"
 
 echo '//registry.npmjs.org/:_authToken=${NPM_PUBLISH_TOKEN}\n' > .npmrc
 
+npm whoami
+exit 1
+
 PACKAGE_VERSION_JSON=package.json
 PACKAGE_VERSION_NPM=@bundlesize/bundlesize
 
