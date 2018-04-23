@@ -40,8 +40,10 @@ bundlesize: package check-versions node_modules
 ifndef CI
 .PHONY: package
 endif
-package: check-versions node_modules
+package: check-versions node_modules ${ARTIFACT_DIR}
 	babel src --out-dir=lib --copy-files --ignore .test.js
+	npm pack
+	mv *.tgz artifacts/
 
 # -------------- Testing and Linting --------------
 
