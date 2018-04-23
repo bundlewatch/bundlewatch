@@ -2,6 +2,24 @@ import axios from 'axios'
 
 import logger from '../../../logger'
 
+const getContextForFilePath = filePath => {
+    let context = 'bundlesize'
+    if (filePath) {
+        const TRUNCATE_TO_LENGTH = 35
+        if (filePath.length > TRUNCATE_TO_LENGTH) {
+            context +=
+                ' *' +
+                filePath.substring(
+                    filePath.length - TRUNCATE_TO_LENGTH - 2,
+                    filePath.length,
+                )
+        } else {
+            context += ' ' + filePath
+        }
+    }
+    return context
+}
+
 class GitHubService {
     constructor({ repoOwner, repoName, commitSha, githubAuthToken }) {
         this.repoOwner = repoOwner
@@ -33,20 +51,8 @@ class GitHubService {
             return Promise.resolve({})
         }
 
-        let context = 'bundlesize'
-        if (filePath) {
-            const TRUNCATE_TO_LENGTH = 35
-            if (filePath.length > TRUNCATE_TO_LENGTH) {
-                context +=
-                    ' *' +
-                    filePath.substring(
-                        filePath.length - TRUNCATE_TO_LENGTH - 2,
-                        filePath.length,
-                    )
-            } else {
-                context += ' ' + filePath
-            }
-        }
+        const context = getContextForFilePath(filePath)
+
         if (!this.contexts.has(context) && this.contexts.size >= 5) {
             logger.warn(
                 `Max reported statuses reached, github status will not be reported`,
