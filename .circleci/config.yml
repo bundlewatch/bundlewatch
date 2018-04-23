@@ -1,14 +1,14 @@
 version: 2
 jobs:
   greenkeeper:
-      docker:
-          - image: circleci/node:8.11.1
-        working_directory: ~/workspace
-        steps:
-          - checkout
-          - yarn global add greenkeeper-lockfile@1
-          - greenkeeper-lockfile-update
-          - greenkeeper-lockfile-upload
+    docker:
+      - image: circleci/node:8.11.1
+    working_directory: ~/workspace
+    steps:
+      - checkout
+      - yarn global add greenkeeper-lockfile@1
+      - greenkeeper-lockfile-update
+      - greenkeeper-lockfile-upload
 
   build:
     docker:
