@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/shell-helpers.sh"
@@ -31,4 +31,4 @@ new_version_with_v="v$new_version"
 echo "New version with v is $new_version_with_v"
 echo "Version to publish is $new_version\n\n"
 
-run "npm publish"
+run "npm publish --access public"
