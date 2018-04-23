@@ -76,6 +76,10 @@
             {
                 "path": "./lib/**/*.js",
                 "maxSize": "2kB"
+            },
+            {
+                "path": "./artifacts/*.tgz",
+                "maxSize": "15kB"
             }
         ]
     }
