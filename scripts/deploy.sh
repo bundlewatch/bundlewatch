@@ -8,8 +8,9 @@ echo '//registry.npmjs.org/:_authToken=${NPM_PUBLISH_TOKEN}\n' > .npmrc
 PACKAGE_VERSION_JSON=package.json
 PACKAGE_VERSION_NPM=@bundlesize/bundlesize
 
-step "Determining version to publish..."
-last_published_version="$(npm view $PACKAGE_VERSION_NPM version)"
+echo "Determining version to publish..."
+#last_published_version="$(npm view $PACKAGE_VERSION_NPM version)"
+last_published_version=0.0.0
 echo "Last published version is $last_published_version"
 
 packaged_version="$(jq '.version' --raw-output $PACKAGE_VERSION_JSON)"
@@ -24,7 +25,7 @@ if [ $? -eq 1 ]; then
 fi
 set -e
 
-step "Incrementing version $new_version"
+echo "Incrementing version $new_version"
 new_version="$(echo "${new_version%.*}.$((${new_version##*.}+1))")"
 new_version_with_v="v$new_version"
 echo "New version with v is $new_version_with_v"
