@@ -62,8 +62,9 @@ jobs:
       - attach_workspace:
           at: ~/workspace
 
-      - type: shell
+      - run:
         name: Deploy Package
+        type: shell
         command: |
           if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
           then
