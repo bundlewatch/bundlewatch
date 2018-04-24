@@ -8,33 +8,9 @@ echo '//registry.npmjs.org/:_authToken=${NPM_PUBLISH_TOKEN}' > .npmrc
 PACKAGE_VERSION_JSON=package.json
 PACKAGE_VERSION_NPM=@bundlesize/bundlesize
 
-echo "Determining version to publish..."
-#last_published_version="$(npm view $PACKAGE_VERSION_NPM version)"
-last_published_version=0.0.0
-echo "Last published version is $last_published_version"
-
-packaged_version="$(jq '.version' --raw-output $PACKAGE_VERSION_JSON)"
-echo "Version in package.json is $packaged_version"
-
-new_version=$last_published_version
-set +e
-vercomp $packaged_version $last_published_version
-if [ $? -eq 1 ]; then
-    echo 'Packaged version is greater. Taking packaged version'
-    new_version=$packaged_version
-fi
-set -e
-
-echo "Incrementing version $new_version"
-new_version="$(echo "${new_version%.*}.$((${new_version##*.}+1))")"
-new_version_with_v="v$new_version"
-echo "New version with v is $new_version_with_v"
-echo "Version to publish is $new_version\n\n"
-
-echo "Add new version back into package json"
-jq ".version=\"$new_version\"" $PACKAGE_VERSION_JSON > $PACKAGE_VERSION_JSON.tmp
+jq ".version=\"$VERSION_TO_PUBLISH\"" $PACKAGE_VERSION_JSON > $PACKAGE_VERSION_JSON.tmp
 mv $PACKAGE_VERSION_JSON.tmp $PACKAGE_VERSION_JSON
 
 cat $PACKAGE_VERSION_JSON
 
-run "npm publish --access public"
+#run "npm publish --access public"
