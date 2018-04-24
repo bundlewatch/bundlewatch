@@ -45,17 +45,24 @@ class BundlesizeService {
         logger.info(`Retrieve comparison`)
 
         return axios
-            .post(`${this.bundlesizeServiceStoreUrl}/lookup`, {
-                repoOwner: this.repoOwner,
-                repoName: this.repoName,
-                repoBranch: this.repoBranchBase,
-                githubAccessToken: this.githubAccessToken,
-                commitSha: this.commitSha,
-            })
+            .post(
+                `${this.bundlesizeServiceStoreUrl}/lookup`,
+                {
+                    repoOwner: this.repoOwner,
+                    repoName: this.repoName,
+                    repoBranch: this.repoBranchBase,
+                    githubAccessToken: this.githubAccessToken,
+                    commitSha: this.commitSha,
+                },
+                {
+                    timeout: 10000,
+                },
+            )
             .then(response => {
                 return response.data.fileDetailsByPath
             })
             .catch(error => {
+                logger.debug(error)
                 logger.error(
                     `Unable to fetch fileDetails for baseBranch=${
                         this.repoBranchBase
@@ -95,20 +102,26 @@ class BundlesizeService {
         logger.info(`Saving results`)
 
         return axios
-            .post(`${this.bundlesizeServiceStoreUrl}`, {
-                repoOwner: this.repoOwner,
-                repoName: this.repoName,
-                repoBranch: this.repoCurrentBranch,
-                githubAccessToken: this.githubAccessToken,
-                commitSha: this.commitSha,
-                fileDetailsByPath,
-            })
+            .post(
+                `${this.bundlesizeServiceStoreUrl}`,
+                {
+                    repoOwner: this.repoOwner,
+                    repoName: this.repoName,
+                    repoBranch: this.repoCurrentBranch,
+                    githubAccessToken: this.githubAccessToken,
+                    commitSha: this.commitSha,
+                    fileDetailsByPath,
+                },
+                {
+                    timeout: 10000,
+                },
+            )
             .catch(error => {
+                logger.debug(error)
                 logger.error(
                     `Unable to save fileDetails for currentBranch=${
                         this.repoCurrentBranch
                     } code=${error.code || error.message}`,
-                    error,
                 )
             })
     }

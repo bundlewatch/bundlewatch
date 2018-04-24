@@ -73,6 +73,7 @@ class GitHubService {
                 description: message,
                 context,
             },
+            timeout: 5000,
             headers: {
                 Authorization: `token ${this.githubAccessToken}`,
             },

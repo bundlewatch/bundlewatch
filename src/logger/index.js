@@ -3,6 +3,13 @@ import chalk from 'chalk'
 const stdout = console.log // eslint-disable-line no-console
 const stderr = console.error // eslint-disable-line no-console
 
+const debug = error => {
+    if (process.env.DEBUG) {
+        stdout(chalk.greenBright(`[DEBUG] ${error.message}`))
+        stderr(error)
+    }
+}
+
 const log = message => {
     stdout(message)
 }
@@ -30,6 +37,7 @@ const fatal = (messsage, errorStack) => {
 }
 
 export default {
+    debug,
     log,
     info,
     warn,
