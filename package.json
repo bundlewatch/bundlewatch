@@ -1,6 +1,6 @@
 {
     "name": "@bundlesize/bundlesize",
-    "version": "0.0.1",
+    "version": "0.0.0",
     "description": "Keep your library size in check",
     "repository": {
         "type": "git",
