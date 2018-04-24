@@ -63,15 +63,15 @@ jobs:
           at: ~/workspace
 
       - type: shell
-      name: Deploy Package
-      command: |
-        if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
-        then
-          version=$(git log -1 --pretty=%B)
-          VERSION_TO_PUBLISH=$version make deploy
-        else
-          echo "Not a release, skipping build"
-        fi
+        name: Deploy Package
+        command: |
+          if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
+          then
+            version=$(git log -1 --pretty=%B)
+            VERSION_TO_PUBLISH=$version make deploy
+          else
+            echo "Not a release, skipping build"
+          fi
 
 workflows:
   version: 2
@@ -87,4 +87,3 @@ workflows:
             only: /^v.*/
           branches:
             ignore: /.*/
-
