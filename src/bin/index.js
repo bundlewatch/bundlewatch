@@ -35,6 +35,13 @@ const main = async () => {
     if (config.files && config.files.length > 0) {
         const results = await bundlesizeApi(config)
 
+        if (results.url) {
+            logger.log('')
+            logger.log(
+                `${chalk.cyanBright('Result breakdown at:')} ${results.url}`,
+            )
+        }
+
         prettyPrintResults(results.fullResults)
 
         if (results.isFail) {
