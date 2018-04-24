@@ -46,7 +46,7 @@ const getConfigFileJS = configFilePath => {
 
 const getConfigFileContents = configFilePath => {
     if (configFilePath.endsWith('.js')) {
-        return getConfigFileJson(getConfigFileJS)
+        return getConfigFileJS(configFilePath)
     }
     return getConfigFileJson(configFilePath)
 }
@@ -80,12 +80,12 @@ const determineConfig = cliOptions => {
         }
     }
 
-    if (cliOptions.configFilePath) {
+    if (cliOptions.config) {
         if (pkgJsonBundlesize) {
             logger.warn(
                 `configFilePath supplied, config in package.json will be ignored`,
             )
-            return getConfigFileContents(cliOptions.configFilePath)
+            return getConfigFileContents(cliOptions.config)
         }
     }
 

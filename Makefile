@@ -35,7 +35,7 @@ install: check-versions clean node_modules
 
 .PHONY: bundlesize
 bundlesize: package check-versions node_modules
-	@./lib/bin/index.js ${FLAGS}
+	./lib/bin/index.js ${FLAGS}
 
 ifndef CI
 .PHONY: package
