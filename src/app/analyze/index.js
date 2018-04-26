@@ -1,4 +1,4 @@
-import analyzeFiles from './analyzeFiles'
+import analyzeFiles, { STATUS } from './analyzeFiles'
 
 const analyze = ({
     currentBranchFileDetails,
@@ -15,9 +15,15 @@ const analyze = ({
     const summary = `TODO: create sumary`
 
     return {
-        isFail: fileResults.reduce((isFail, fileResult) => {
-            return isFail || fileResult.isFail
-        }, false),
+        status: fileResults.reduce((status, fileResult) => {
+            if (status === STATUS.FAIL || fileResult.status === STATUS.FAIL) {
+                return STATUS.FAIL
+            }
+            if (status === STATUS.WARN || fileResult.status === STATUS.WARN) {
+                return STATUS.WARN
+            }
+            return STATUS.PASS
+        }, STATUS.PASS),
         fullResults: fileResults,
         summary,
     }

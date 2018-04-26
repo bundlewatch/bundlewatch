@@ -2,6 +2,7 @@ import getLocalFileDetails from './getLocalFileDetails'
 import BundlesizeService from './reporting/BundlesizeService'
 import GitHubService from './reporting/GitHubService'
 import analyze from './analyze'
+import { STATUS } from './analyze/analyzeFiles'
 import getConfig from './config/getConfig'
 import createURLToResultPage from './resultsPage/createURL'
 
@@ -41,6 +42,11 @@ const main = async ({
     const url = createURLToResultPage({
         results,
         bundlesizeServiceHost,
+        repoOwner: ci.repoOwner,
+        repoName: ci.repoName,
+        repoCurrentBranch: ci.repoCurrentBranch,
+        repoBranchBase: ci.repoBranchBase,
+        commitSha: ci.commitSha,
     })
 
     return {
@@ -61,7 +67,7 @@ const bundleSizeApi = async customConfig => {
 
     try {
         const results = await main(config)
-        if (results.isFail) {
+        if (results.status === STATUS.FAIL) {
             await githubService.fail({
                 message: results.summary,
                 url: results.url,
@@ -79,6 +85,7 @@ const bundleSizeApi = async customConfig => {
                 }),
             )
         } else {
+            // TODO: add warn
             await githubService.pass({
                 message: results.summary,
                 url: results.url,

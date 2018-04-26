@@ -1,5 +1,12 @@
 import bytes from 'bytes'
 
+export const STATUS = {
+    PASS: 'pass',
+    WARN: 'warn',
+    FAIL: 'fail',
+    REMOVED: 'removed',
+}
+
 const getCompressionText = compression => {
     return compression === 'none' ? '(no compression)' : `(${compression})`
 }
@@ -29,9 +36,7 @@ const analyzeFiles = ({
                 )} smaller than ${baseBranchName}) ${getCompressionText(
                     baseBranchFile.compression,
                 )}`,
-                isNew: false,
-                isRemoved: true,
-                isFail: false,
+                status: STATUS.REMOVED,
                 size: 0,
                 baseBranchSize: baseBranchFile.size,
                 maxSize: 0,
@@ -43,22 +48,23 @@ const analyzeFiles = ({
             results.push({
                 filePath,
                 error: currentBranchFile.error,
-                isFail: true,
+                status: 'fail'
             })
             return
         }
 
         const { size, maxSize, compression } = currentBranchFile
 
-        let isFail = false
+        let status
         let message = `${bytes(size)} `
 
         const prettySize = maxSize === Infinity ? 'Infinity' : bytes(maxSize)
 
         if (size > maxSize) {
-            isFail = true
+            status = STATUS.FAIL
             message += `> ${prettySize} `
         } else {
+            status = STATUS.PASS
             message += `< ${prettySize} `
 
             if (baseBranchFile) {
@@ -70,6 +76,8 @@ const analyzeFiles = ({
                     )} smaller than ${baseBranchName}) `
                 } else if (diff > 0) {
                     message += `(${bytes(diff)} larger than ${baseBranchName}) `
+                    // TODO: add in threshold for STATUS.WARN
+                    // STATUS.WARN
                 } else {
                     message += `(no difference) `
                 }
@@ -81,9 +89,7 @@ const analyzeFiles = ({
         results.push({
             filePath,
             message,
-            isNew: !baseBranchFile,
-            isRemoved: false,
-            isFail,
+            status,
             size,
             baseBranchSize: baseBranchFile ? baseBranchFile.size : 0,
             maxSize,
