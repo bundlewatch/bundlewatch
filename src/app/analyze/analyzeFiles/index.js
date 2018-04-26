@@ -48,7 +48,7 @@ const analyzeFiles = ({
             results.push({
                 filePath,
                 error: currentBranchFile.error,
-                status: 'fail'
+                status: 'fail',
             })
             return
         }
