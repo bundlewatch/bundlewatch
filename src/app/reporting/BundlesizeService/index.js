@@ -42,7 +42,7 @@ class BundlesizeService {
             return Promise.resolve({})
         }
 
-        logger.info(`Retrieve comparison`)
+        logger.info(`Retrieving comparison`)
 
         return axios
             .post(

@@ -5,7 +5,7 @@ import chalk from 'chalk'
 
 import determineConfig from './determineConfig'
 import logger from '../logger'
-import bundlesizeApi from '../app'
+import bundlesizeApi, { STATUSES } from '../app'
 
 const prettyPrintResults = fullResults => {
     logger.log('')
@@ -17,9 +17,16 @@ const prettyPrintResults = fullResults => {
             return
         }
 
-        if (result.isFail) {
+        if (result.status === STATUSES.FAIL) {
             logger.log(
                 `${chalk.redBright('FAIL')} ${filePath} ${result.message}`,
+            )
+            return
+        }
+
+        if (result.status === STATUSES.WARN) {
+            logger.log(
+                `${chalk.yellowBright('WARN')} ${filePath} ${result.message}`,
             )
             return
         }
@@ -44,13 +51,22 @@ const main = async () => {
 
         prettyPrintResults(results.fullResults)
 
-        if (results.isFail) {
+        if (results.status === STATUSES.FAIL) {
             logger.log(chalk.redBright(`bundlesize FAIL`))
+            logger.log(results.summary)
             logger.log('')
             return 1
         }
 
+        if (results.status === STATUSES.WARN) {
+            logger.log(chalk.redBright(`bundlesize WARN`))
+            logger.log(results.summary)
+            logger.log('')
+            return 0
+        }
+
         logger.log(chalk.greenBright(`bundlesize PASS`))
+        logger.log(results.summary)
         logger.log('')
 
         return 0

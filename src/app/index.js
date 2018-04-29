@@ -2,7 +2,7 @@ import getLocalFileDetails from './getLocalFileDetails'
 import BundlesizeService from './reporting/BundlesizeService'
 import GitHubService from './reporting/GitHubService'
 import analyze from './analyze'
-import { STATUS } from './analyze/analyzeFiles'
+import { STATUSES } from './analyze/analyzeFiles'
 import getConfig from './config/getConfig'
 import createURLToResultPage from './resultsPage/createURL'
 
@@ -67,7 +67,7 @@ const bundleSizeApi = async customConfig => {
 
     try {
         const results = await main(config)
-        if (results.status === STATUS.FAIL) {
+        if (results.status === STATUSES.FAIL) {
             await githubService.fail({
                 message: results.summary,
                 url: results.url,
@@ -75,7 +75,7 @@ const bundleSizeApi = async customConfig => {
 
             await Promise.all(
                 results.fullResults.map(result => {
-                    if (result.isFail) {
+                    if (result.status === STATUSES.FAIL) {
                         return githubService.fail({
                             message: result.message,
                             filePath: result.filePath,
@@ -101,3 +101,4 @@ const bundleSizeApi = async customConfig => {
 }
 
 export default bundleSizeApi
+export { STATUSES }

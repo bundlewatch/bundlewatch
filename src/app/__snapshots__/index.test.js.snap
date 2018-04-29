@@ -10,8 +10,8 @@ Object {
     },
   ],
   "status": "fail",
-  "summary": "TODO: create sumary",
-  "url": "https://service.bundlesize.io/results?d=details%7CrepoOwner%7CrepoName%7CrepoCurrentBranch%7CrepoBranchBase%7Cmaster%7CcommitSha%7Cresults%7Cstatus%7Cfail%7CfullResults%7CfilePath%7C.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%7Cerror%7CThere%2Bis%2Bno%2Bmatching%2Bfile%2Bfor%2B.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%7Csummary%7CTODO%3A%2Bcreate%2Bsumary%5E%5E%5E%240%7C%241%7C-5%7C2%7C-5%7C3%7C-5%7C4%7C5%7C6%7C-5%5D%7C7%7C%248%7C9%7CA%7C%40%24B%7CC%7CD%7CE%7C8%7C9%5D%5D%7CF%7CG%5D%5D",
+  "summary": "FAIL :: maxSize check failed",
+  "url": "https://service.bundlesize.io/results?d=details%7CrepoOwner%7CrepoName%7CrepoCurrentBranch%7CrepoBranchBase%7Cmaster%7CcommitSha%7Cresults%7Cstatus%7Cfail%7CfullResults%7CfilePath%7C.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%7Cerror%7CThere%2Bis%2Bno%2Bmatching%2Bfile%2Bfor%2B.%2F__testdata__%2Ftest-file-doesnt-exist.jpg%7Csummary%7CFAIL%2B%3A%3A%2BmaxSize%2Bcheck%2Bfailed%5E%5E%5E%240%7C%241%7C-5%7C2%7C-5%7C3%7C-5%7C4%7C5%7C6%7C-5%5D%7C7%7C%248%7C9%7CA%7C%40%24B%7CC%7CD%7CE%7C8%7C9%5D%5D%7CF%7CG%5D%5D",
 }
 `;
 
@@ -44,8 +44,8 @@ Object {
     },
   ],
   "status": "pass",
-  "summary": "TODO: create sumary",
-  "url": "https://service.bundlesize.io/results?d=details%7CrepoOwner%7Cmockowner%7CrepoName%7Cmockname%7CrepoCurrentBranch%7CmockCurrentBranch%7CrepoBranchBase%7CmockBranchBase%7CcommitSha%7Cresults%7Cstatus%7Cpass%7CfullResults%7CfilePath%7C.%2F__testdata__%2Ftest-file-1.jpg%7Cmessage%7C30.71KB%2B%3C%2B1MB%2B(6.3KB%2Blarger%2Bthan%2BmockBranchBase)%2B(gzip)%7Csize%7CbaseBranchSize%7CmaxSize%7C.%2F__testdata__%2Ftest-file-2.jpg%7C198.6KB%2B%3C%2B1MB%2B(gzip)%7C.%2F__testdata__%2Ftest-file-deleted.jpg%7C.%2F__testdata__%2Ftest-file-deleted.jpg%3A%2BFile%2Bremoved%2B(9.77KB%2Bsmaller%2Bthan%2BmockBranchBase)%2B(gzip)%7Cremoved%7Csummary%7CTODO%3A%2Bcreate%2Bsumary%5EO9K%7CJAG%7CMH34%7C4CX4%7C0%7CMH34%7C0%7C7PS%7C0%5E%5E%240%7C%241%7C2%7C3%7C4%7C5%7C6%7C7%7C8%7C9%7C8%5D%7CA%7C%24B%7CC%7CD%7C%40%24E%7CF%7CG%7CH%7CB%7CC%7CI%7CS%7CJ%7CT%7CK%7CU%5D%7C%24E%7CL%7CG%7CM%7CB%7CC%7CI%7CV%7CJ%7CW%7CK%7CX%5D%7C%24E%7CN%7CG%7CO%7CB%7CP%7CI%7CY%7CJ%7CZ%7CK%7C10%5D%5D%7CQ%7CR%5D%5D",
+  "summary": "PASS :: Everything is in check (+204.9KB, -9.77KB)",
+  "url": "https://service.bundlesize.io/results?d=details%7CrepoOwner%7Cmockowner%7CrepoName%7Cmockname%7CrepoCurrentBranch%7CmockCurrentBranch%7CrepoBranchBase%7CmockBranchBase%7CcommitSha%7Cresults%7Cstatus%7Cpass%7CfullResults%7CfilePath%7C.%2F__testdata__%2Ftest-file-1.jpg%7Cmessage%7C30.71KB%2B%3C%2B1MB%2B(6.3KB%2Blarger%2Bthan%2BmockBranchBase)%2B(gzip)%7Csize%7CbaseBranchSize%7CmaxSize%7C.%2F__testdata__%2Ftest-file-2.jpg%7C198.6KB%2B%3C%2B1MB%2B(gzip)%7C.%2F__testdata__%2Ftest-file-deleted.jpg%7C.%2F__testdata__%2Ftest-file-deleted.jpg%3A%2BFile%2Bremoved%2B(9.77KB%2Bsmaller%2Bthan%2BmockBranchBase)%2B(gzip)%7Cremoved%7Csummary%7CPASS%2B%3A%3A%2BEverything%2Bis%2Bin%2Bcheck%2B(%252B204.9KB%2C%2B-9.77KB)%5EO9K%7CJAG%7CMH34%7C4CX4%7C0%7CMH34%7C0%7C7PS%7C0%5E%5E%240%7C%241%7C2%7C3%7C4%7C5%7C6%7C7%7C8%7C9%7C8%5D%7CA%7C%24B%7CC%7CD%7C%40%24E%7CF%7CG%7CH%7CB%7CC%7CI%7CS%7CJ%7CT%7CK%7CU%5D%7C%24E%7CL%7CG%7CM%7CB%7CC%7CI%7CV%7CJ%7CW%7CK%7CX%5D%7C%24E%7CN%7CG%7CO%7CB%7CP%7CI%7CY%7CJ%7CZ%7CK%7C10%5D%5D%7CQ%7CR%5D%5D",
 }
 `;
 
@@ -70,7 +70,7 @@ Object {
     },
   ],
   "status": "fail",
-  "summary": "TODO: create sumary",
-  "url": "https://service.bundlesize.io/results?d=details%7CrepoOwner%7CrepoName%7CrepoCurrentBranch%7CrepoBranchBase%7Cmaster%7CcommitSha%7Cresults%7Cstatus%7Cfail%7CfullResults%7CfilePath%7C.%2F__testdata__%2Ftest-file-1.jpg%7Cmessage%7C68.5KB%2B%3C%2B100KB%2B(no%2Bcompression)%7Cpass%7Csize%7CbaseBranchSize%7CmaxSize%7C.%2F__testdata__%2Ftest-file-2.jpg%7C448.14KB%2B%3E%2B100KB%2B(no%2Bcompression)%7Csummary%7CTODO%3A%2Bcreate%2Bsumary%5E1I4H%7C0%7C270G%7C9U38%7C0%7C270G%5E%5E%240%7C%241%7C-5%7C2%7C-5%7C3%7C-5%7C4%7C5%7C6%7C-5%5D%7C7%7C%248%7C9%7CA%7C%40%24B%7CC%7CD%7CE%7C8%7CF%7CG%7CN%7CH%7CO%7CI%7CP%5D%7C%24B%7CJ%7CD%7CK%7C8%7C9%7CG%7CQ%7CH%7CR%7CI%7CS%5D%5D%7CL%7CM%5D%5D",
+  "summary": "FAIL :: maxSize check failed",
+  "url": "https://service.bundlesize.io/results?d=details%7CrepoOwner%7CrepoName%7CrepoCurrentBranch%7CrepoBranchBase%7Cmaster%7CcommitSha%7Cresults%7Cstatus%7Cfail%7CfullResults%7CfilePath%7C.%2F__testdata__%2Ftest-file-1.jpg%7Cmessage%7C68.5KB%2B%3C%2B100KB%2B(no%2Bcompression)%7Cpass%7Csize%7CbaseBranchSize%7CmaxSize%7C.%2F__testdata__%2Ftest-file-2.jpg%7C448.14KB%2B%3E%2B100KB%2B(no%2Bcompression)%7Csummary%7CFAIL%2B%3A%3A%2BmaxSize%2Bcheck%2Bfailed%5E1I4H%7C0%7C270G%7C9U38%7C0%7C270G%5E%5E%240%7C%241%7C-5%7C2%7C-5%7C3%7C-5%7C4%7C5%7C6%7C-5%5D%7C7%7C%248%7C9%7CA%7C%40%24B%7CC%7CD%7CE%7C8%7CF%7CG%7CN%7CH%7CO%7CI%7CP%5D%7C%24B%7CJ%7CD%7CK%7C8%7C9%7CG%7CQ%7CH%7CR%7CI%7CS%5D%5D%7CL%7CM%5D%5D",
 }
 `;

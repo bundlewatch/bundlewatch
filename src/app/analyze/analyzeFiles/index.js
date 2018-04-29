@@ -1,6 +1,6 @@
 import bytes from 'bytes'
 
-export const STATUS = {
+export const STATUSES = {
     PASS: 'pass',
     WARN: 'warn',
     FAIL: 'fail',
@@ -36,7 +36,7 @@ const analyzeFiles = ({
                 )} smaller than ${baseBranchName}) ${getCompressionText(
                     baseBranchFile.compression,
                 )}`,
-                status: STATUS.REMOVED,
+                status: STATUSES.REMOVED,
                 size: 0,
                 baseBranchSize: baseBranchFile.size,
                 maxSize: 0,
@@ -61,10 +61,10 @@ const analyzeFiles = ({
         const prettySize = maxSize === Infinity ? 'Infinity' : bytes(maxSize)
 
         if (size > maxSize) {
-            status = STATUS.FAIL
+            status = STATUSES.FAIL
             message += `> ${prettySize} `
         } else {
-            status = STATUS.PASS
+            status = STATUSES.PASS
             message += `< ${prettySize} `
 
             if (baseBranchFile) {
@@ -76,8 +76,8 @@ const analyzeFiles = ({
                     )} smaller than ${baseBranchName}) `
                 } else if (diff > 0) {
                     message += `(${bytes(diff)} larger than ${baseBranchName}) `
-                    // TODO: add in threshold for STATUS.WARN
-                    // STATUS.WARN
+                    // TODO: add in threshold for STATUSES.WARN
+                    // STATUSES.WARN
                 } else {
                     message += `(no difference) `
                 }
