@@ -1,30 +1,24 @@
-<!--- Provide a general summary of your changes in the Title above -->
+<!-- Thanks for submitting a pull request! Please provide enough information so that others can review your pull request. -->
 
-## Description
+**What kind of change does this PR introduce?**
 
-<!--- Describe your changes  -->
+<!-- E.g. a bugfix, feature, refactoring, build related change, etc… -->
 
-## Motivation and Context
+**Did you add tests for your changes?**
 
-<!--- Why is this change required? What problem does it solve? -->
-<!--- If it fixes an open issue, please link to the issue here. -->
+<!-- Note that we won't merge your changes if you don't add tests -->
 
-## Screenshots (if appropriate):
+**If relevant, link to documentation update:**
 
-## Types of changes
+<!-- Link PR from bundlesize/bundlesize.io here, or N/A -->
 
-<!--- Leave the one fitting to your PR  -->
+**Summary**
 
-- Bug fix (non-breaking change which fixes an issue)
-- New feature (non-breaking change which adds functionality)
-- Breaking change (fix or feature that would cause existing functionality to change)
+<!-- Explain the **motivation** for making this change. What existing problem does the pull request solve? -->
+<!-- Try to link to an open issue for more information. -->
 
-## Checklist:
+**Does this PR introduce a breaking change?**
 
-<!--- Go over all the following points and make sure you have done all of those -->
-<!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
+<!-- If this PR introduces a breaking change, please describe the impact and a migration path for existing applications. -->
 
-- My code follows the code style of this project.
-- If my change requires a change to the documentation I have updated the documentation accordingly.
-- I have read the **CONTRIBUTING** document.
-- I created an issue for the Pull Request
+**Other information**
