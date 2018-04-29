@@ -42,9 +42,6 @@
         "lodash.merge": "^4.6.1",
         "read-pkg-up": "^3.0.0"
     },
-    "optionalDepdencies": {
-        "brotli-size": "0.0.1"
-    },
     "devDependencies": {
         "axios-mock-adapter": "^1.15.0",
         "babel-cli": "^6.26.0",
@@ -66,6 +63,9 @@
     },
     "jest": {
         "testEnvironment": "node"
+    },
+    "engines": {
+        "node": ">=6.11.5"
     },
     "bundlesize": {
         "files": [
