@@ -11,7 +11,7 @@
 [![node][node]][node-url]
 [![deps][deps]][deps-url]
 [![builds][builds]][builds-url]
-[![licenses][licenses]][licenses-url]
+[![licenses][licenses]]
 
 
   <br>
@@ -74,4 +74,3 @@ Follow the documentation on [bundlesize.io](http://bundlesize.io/)
 [builds-url]: https://circleci.com/gh/bundlesize/bundlesize
 
 [licenses-url]: https://img.shields.io/npm/l/@bundlesize/bundlesize.svg
-[licenses]: https://github.com/bundlesize/bundlesize/blob/master/LICENSE
