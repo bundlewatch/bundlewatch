@@ -19,6 +19,7 @@ describe(`bundlesize Node API`, () => {
 
         // TODO: assert logger.warn called
 
+        delete result.url
         expect(result).toMatchSnapshot()
     })
 
@@ -32,6 +33,7 @@ describe(`bundlesize Node API`, () => {
             ],
         })
 
+        delete result.url
         expect(result).toMatchSnapshot()
     })
 
@@ -79,6 +81,7 @@ describe(`bundlesize Node API`, () => {
             },
         })
 
+        delete result.url
         expect(result).toMatchSnapshot()
     })
 })
