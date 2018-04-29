@@ -62,7 +62,7 @@ Follow the documentation on [bundlesize.io](http://bundlesize.io/)
 [npm-url]: https://npmjs.com/package/@bundlesize/bundlesize
 
 [node]: https://img.shields.io/node/v/@bundlesize/bundlesize.svg
-[node-url
+[node-url]: https://nodejs.org
 
 [bundlesize]: https://img.shields.io/badge/bundlesize-checked-green.svg
 [bundlesize-url]: http://bundlesize.io
