@@ -74,7 +74,7 @@ const main = async () => {
 
     logger.error(`Configuration missing:
     Run ${chalk.italic('bundlesize --help')} for examples and options
-    Documentation available at: http://bundlesize.io/#/getting-started`)
+    Documentation available at: http://bundlesize.io/`)
     return 1
 }
 
