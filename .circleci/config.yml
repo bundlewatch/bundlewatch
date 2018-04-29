@@ -39,6 +39,9 @@ jobs:
       - run:
           name: Run bundlesize in our CI for testing
           command: make bundlesize
+      - run:
+          name: Run Deploy
+          command: make deploy
 
       - store_artifacts:
           path: artifacts
