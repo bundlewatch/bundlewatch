@@ -1,6 +1,7 @@
 import jsonpack from 'jsonpack/main'
+import shortenURL from './shortenURL'
 
-const createURL = ({
+const createURL = async ({
     results,
     bundlesizeServiceHost,
     repoOwner,
@@ -22,8 +23,9 @@ const createURL = ({
         results,
     })
     const urlResultData = encodeURIComponent(packedJSON)
-    const url = `${bundlesizeServiceHost}/results?d=${urlResultData}`
-    return url
+    const longURL = `${bundlesizeServiceHost}/results?d=${urlResultData}`
+    const shortURL = await shortenURL(longURL)
+    return shortURL
 }
 
 export default createURL
