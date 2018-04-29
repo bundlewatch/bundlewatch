@@ -65,23 +65,19 @@ jobs:
       - run:
           name: Deploy Package
           command: make deploy
-
 workflows:
   version: 2
-  un-tagged-build:
+  build-n-deploy:
     jobs:
       - build:
           filters:
             tags:
-              ignore: /^v.*/
-  tagged-build-deplou:
-    jobs:
-      - build:
+              only: /.*/
+      - deploy:
+          requires:
+            - build
           filters:
-            branches:
-              ignore: /.*/
             tags:
               only: /^v.*/
-      - deploy:
-        requires:
-          - build
+            branches:
+              ignore: /.*/
