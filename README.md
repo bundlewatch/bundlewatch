@@ -1,37 +1,41 @@
-# bundlesize
-[![CircleCI](https://circleci.com/gh/bundlesize/bundlesize.svg?style=svg)](https://circleci.com/gh/bundlesize/bundlesize)
+<p align="center">
+  <img src="https://cdn.rawgit.com/bundlesize/bundlesize.io/master/docs/_assets/logo-large.svg" height="100px">
+  <br><br>
+  <b>Keep your bundle size in check</b>
+  <br>
+</p>
+
+  [![npm version](https://badge.fury.io/js/%40bundlesize%2Fbundlesize.svg)](https://badge.fury.io/js/%40bundlesize%2Fbundlesize)
+  [![CircleCI](https://circleci.com/gh/bundlesize/bundlesize.svg?style=svg)](https://circleci.com/gh/bundlesize/bundlesize)
+  
 
 Inspired by the original [Siddharth Kshetrapal / Bundlesize](https://github.com/siddharthkp/bundlesize)
 
-# In this fork of bundlesize we are aiming to:
+# Getting Started and Configuration
+Follow the documentation on the new site [bundlesize.io](http://bundlesize.io/)
+
+
+
+## Why the change in direction from the original?
+- The original bundlesize has entered maintenance mode, pull requests are left hanging
 - Split store into seperate app -> bundlesize/service with infrastructure as code
 - Enough test coverage to support CD
 - Node API Support
-- Lower the barier to contributing
+- Lower the barrier to contributing, build a trusted community of contributors to have continous improvement
 - Lots lots more
 
 
-## Want to help? Join us on slack and find out
-[bundlesize-bundlesize on slack](https://join.slack.com/t/bundlesize-bundlesize/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc)
-
-
-This is a work in progress, watch this space
-## TODO
-- [x] Obtain parity with bundlesize (using Node API approach)
-- [x] Support new features
-- [x] Split store into service
-- [ ] Docs on how to CONTRIBUTE/LOCAL SETUP etc
-- [ ] Better tests
-
-
-### Feature list:
+### New features:
 - [x] Config validation to stop users guessing why bundlesize won't work
-- [x] Update message
-- [x] Support branches other than master
-- [ ] Show history of bundlesizes over time
+- [x] New and improved CI behaviour
+- [x] Better comparisons between branches, support branches other than master
+- [ ] Show history of bundlesizes over time (Coming soon)
 
 
 
 ### Enabling for CI:
 https://github.com/login/oauth/authorize?scope=repo%3Astatus&client_id=04fcf325dd26ca2a159f
+
+## Want to help? 
+[Join us on Slack](https://join.slack.com/t/bundlesize-bundlesize/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing
 
