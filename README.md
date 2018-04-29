@@ -66,8 +66,8 @@ To get started with bundlesize, head over to the [documentation on bundlesize.io
 [bundlesize]: https://img.shields.io/badge/bundlesize-checked-green.svg
 [bundlesize-url]: http://bundlesize.io
 
-[deps]: https://img.shields.io/david/@bundlesize/bundlesize.svg
-[deps-url]: https://david-dm.org/@bundlesize/bundlesize
+[deps]: https://img.shields.io/david/bundlesize/bundlesize.svg
+[deps-url]: https://david-dm.org/bundlesize/bundlesize
 
 [builds]: https://img.shields.io/circleci/project/github/bundlesize/bundlesize.svg
 [builds-url]: https://circleci.com/gh/bundlesize/bundlesize
