@@ -7,7 +7,7 @@
 
 [![npm][npm]][npm-url]
 
-[![bundlesize]https://img.shields.io/badge/bundlesize-checked-green.svg](http://bundlesize.io)
+[![bundlesize][https://img.shields.io/badge/bundlesize-checked-green.svg](http://bundlesize.io)
 [![node][node]][node-url]
 [![deps][deps]][deps-url]
 [![builds][builds]][builds-url]
@@ -18,8 +18,8 @@
 	<a href="https://npmcharts.com/compare/@bundlesize/bundlesize?minimal=true">
 		<img src="https://img.shields.io/npm/dm/@bundlesize/bundlesize.svg">
 	</a>
-	<a href="https://github.com/@bundlesize/bundlesize/graphs/contributors">
-		<img src="https://img.shields.io/github/contributors/@bundlesize/bundlesize.svg">
+	<a href="https://github.com/bundlesize/bundlesize/graphs/contributors">
+		<img src="https://img.shields.io/github/contributors/bundlesize/bundlesize.svg">
 	</a>
   <h1>bundlesize</h1>
   <p>
