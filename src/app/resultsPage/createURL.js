@@ -1,3 +1,4 @@
+import lodashMerge from 'lodash.merge'
 import jsonpack from 'jsonpack/main'
 
 const createURL = ({
@@ -9,8 +10,13 @@ const createURL = ({
     repoBranchBase,
     commitSha,
 }) => {
-    // TODO strip out data, etc
-    // TODO url shortern service?
+    const strippedResultsForURL = lodashMerge({}, results)
+    strippedResultsForURL.fullResults.map(result => {
+        const strippedResult = result
+        delete strippedResult.message
+        return strippedResult
+    })
+
     const packedJSON = jsonpack.pack({
         details: {
             repoOwner,
@@ -19,7 +25,7 @@ const createURL = ({
             repoBranchBase,
             commitSha,
         },
-        results,
+        results: strippedResultsForURL,
     })
     const urlResultData = encodeURIComponent(packedJSON)
     const url = `${bundlesizeServiceHost}/results?d=${urlResultData}`
