@@ -41,18 +41,18 @@ const ensureValid = config => {
 
     if (missingOptions.length === 0) {
         if (!config.bundlesizeServiceHost) {
-            logger.warn(`bundlesizeServiceHost was not supplied, bundlesize comaprisions unavilable:
-    Learn more at: https://github.com/bundlesize/bundlesize#historgram
+            logger.warn(`bundlesizeServiceHost was not supplied, bundlesize comparisons unavilable:
+    Learn more at: http://bundlesize.io/#/configuration/build-comparisons
             `)
         } else {
             if (!config.ci.repoBranchBase) {
                 logger.warn(`The ci.repoBranchCase was not supplied, bundlesize comparisons unavailable:
-    Learn more at: https://github.com/bundlesize/bundlesize#build-status
+    Learn more at: http://bundlesize.io/#/configuration/build-comparisons
                 `)
             }
             if (!config.ci.repoCurrentBranch) {
                 logger.warn(`The ci.repoCurrentBranch was not supplied, bundlesize results with not be saved:
-    Learn more at: https://github.com/bundlesize/bundlesize#build-status
+    Learn more at: http://bundlesize.io/#/configuration/build-comparisons
             `)
             }
         }
@@ -60,8 +60,8 @@ const ensureValid = config => {
         logger.warn(`Some CI configuration options were not found (${missingOptions.join(
             ', ',
         )}):
-    bundlesize will be unable to report CI status, or save comparison data
-    Learn more at: https://github.com/bundlesize/bundlesize#build-status
+    bundlesize will be unable to report build status, or save comparison data
+    Learn more at: http://bundlesize.io/#/getting-started/the-best-parts
         `)
     }
 }

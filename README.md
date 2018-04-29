@@ -1,6 +1,5 @@
 # bundlesize
 [![CircleCI](https://circleci.com/gh/bundlesize/bundlesize.svg?style=svg)](https://circleci.com/gh/bundlesize/bundlesize)
-
 Inspired by the original [Siddharth Kshetrapal / Bundlesize](https://github.com/siddharthkp/bundlesize)
 
 # In this fork of bundlesize we are aiming to:
@@ -24,10 +23,12 @@ This is a work in progress, watch this space
 - [ ] Better tests
 
 
-### Feature list:
+### Additional features:
 - [x] Config validation to stop users guessing why bundlesize won't work
-- [x] Update message
+- [x] Better details breakdown
 - [x] Support branches other than master
+- [x] Support for your own server for storing data
+- [x] CI Status Reporting improvements
 - [ ] Show history of bundlesizes over time
 
 
