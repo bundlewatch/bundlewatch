@@ -7,7 +7,7 @@
 
 [![npm][npm]][npm-url]
 
-[![bundlesize][https://img.shields.io/badge/bundlesize-checked-green.svg](http://bundlesize.io)
+[![bundlesize][bundlesize]](bundlesize-url)
 [![node][node]][node-url]
 [![deps][deps]][deps-url]
 [![builds][builds]][builds-url]
@@ -62,7 +62,10 @@ Follow the documentation on [bundlesize.io](http://bundlesize.io/)
 [npm-url]: https://npmjs.com/package/@bundlesize/bundlesize
 
 [node]: https://img.shields.io/node/v/@bundlesize/bundlesize.svg
-[node-url]: https://nodejs.org
+[node-url
+
+[bundlesize]: https://img.shields.io/badge/bundlesize-checked-green.svg
+[bundlesize-url]: http://bundlesize.io
 
 [deps]: https://img.shields.io/david/@bundlesize/bundlesize.svg
 [deps-url]: https://david-dm.org/@bundlesize/bundlesize
