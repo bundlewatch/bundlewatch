@@ -28,7 +28,7 @@
   </p>
 </div>
 
-Inspired by the [original Bundlesize by Siddharth Kshetrapal](https://github.com/siddharthkp/bundlesize)
+Inspired by [Siddharth Kshetrapal original Bundlesize](https://github.com/siddharthkp/bundlesize)
 
 # Getting Started and Configuration
 To get started with bundlesize, head over to the [documentation on bundlesize.io](http://bundlesize.io/)
