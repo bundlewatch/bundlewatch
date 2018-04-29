@@ -10,7 +10,7 @@ Object {
     },
   ],
   "status": "fail",
-  "summary": "FAIL :: maxSize check failed",
+  "summary": "maxSize check failed",
 }
 `;
 
@@ -43,7 +43,7 @@ Object {
     },
   ],
   "status": "pass",
-  "summary": "PASS :: Everything is in check (+204.9KB, -9.77KB)",
+  "summary": "Everything is in check (+204.9KB, -9.77KB)",
 }
 `;
 
@@ -68,6 +68,6 @@ Object {
     },
   ],
   "status": "fail",
-  "summary": "FAIL :: maxSize check failed",
+  "summary": "maxSize check failed",
 }
 `;

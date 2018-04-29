@@ -31,7 +31,7 @@ const getOverallDifference = fullResults => {
 
 const getSummary = ({ overallStatus, fullResults, baseBranchName }) => {
     if (overallStatus === STATUSES.FAIL) {
-        return `FAIL :: maxSize check failed`
+        return `maxSize check failed`
     }
 
     let differenceSummary = ''
@@ -41,9 +41,9 @@ const getSummary = ({ overallStatus, fullResults, baseBranchName }) => {
     }
 
     if (overallStatus === STATUSES.WARN) {
-        return `WARN :: File(s) have passed tolerance thresholds ${differenceSummary}`
+        return `File(s) have passed tolerance thresholds ${differenceSummary}`
     }
-    return `PASS :: Everything is in check ${differenceSummary}`
+    return `Everything is in check ${differenceSummary}`
 }
 
 const analyze = ({

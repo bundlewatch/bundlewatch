@@ -39,7 +39,7 @@ const main = async ({
         baseBranchName: ci.repoBranchBase,
     })
 
-    const url = createURLToResultPage({
+    const url = await createURLToResultPage({
         results,
         bundlesizeServiceHost,
         repoOwner: ci.repoOwner,
