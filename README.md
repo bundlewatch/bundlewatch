@@ -12,17 +12,17 @@
 Inspired by the original [Siddharth Kshetrapal / Bundlesize](https://github.com/siddharthkp/bundlesize)
 
 # Getting Started and Configuration
-Follow the documentation on the new site [bundlesize.io](http://bundlesize.io/)
+Follow the documentation on [bundlesize.io](http://bundlesize.io/)
 
 
 
 ## Why the change in direction from the original?
-- The original bundlesize has entered maintenance mode, pull requests are left hanging
+- The original bundlesize has entered maintenance mode, pull requests are left hanging, we wanted to reboost the community and start growing bundlesize out
 - Split store into seperate app -> bundlesize/service with infrastructure as code
+- Launched documentation website
 - Enough test coverage to support CD
 - Node API Support
 - Lower the barrier to contributing, build a trusted community of contributors to have continous improvement
-- Lots lots more
 
 
 ### New features:
