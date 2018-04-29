@@ -7,7 +7,7 @@
 
 [![npm][npm]][npm-url]
 
-[![bundlesize][bundlesize]](bundlesize-url)
+[![bundlesize][bundlesize]][bundlesize-url]
 [![node][node]][node-url]
 [![deps][deps]][deps-url]
 [![builds][builds]][builds-url]
