@@ -27,7 +27,8 @@
     Sharp increases in bundlesize can signal something is wrong: added a package that bloaded the slug, wrong import, forgot to minify.
   </p>
 </div>
-Inspired by the original [Siddharth Kshetrapal / Bundlesize](https://github.com/siddharthkp/bundlesize)
+
+Inspired by the [original Bundlesize by Siddharth Kshetrapal](https://github.com/siddharthkp/bundlesize)
 
 # Getting Started and Configuration
 To get started with bundlesize, head over to the [documentation on bundlesize.io](http://bundlesize.io/)
