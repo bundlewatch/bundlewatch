@@ -17,19 +17,19 @@ Follow the documentation on the new site [bundlesize.io](http://bundlesize.io/)
 
 
 ## Why the change in direction from the original?
-- The original bundlesize has entered maintaince mode, pull requests are left hanging, 
+- The original bundlesize has entered maintenance mode, pull requests are left hanging
 - Split store into seperate app -> bundlesize/service with infrastructure as code
 - Enough test coverage to support CD
 - Node API Support
-- Lower the barier to contributing, build a trusted community of contributors to have continous improvement
+- Lower the barrier to contributing, build a trusted community of contributors to have continous improvement
 - Lots lots more
 
 
 ### New features:
 - [x] Config validation to stop users guessing why bundlesize won't work
 - [x] New and improved CI behaviour
-- [x] Better diffing between branches, Support branches other than master
-- [ ] Show history of bundlesizes over time (Comming soon)
+- [x] Better comparisons between branches, support branches other than master
+- [ ] Show history of bundlesizes over time (Coming soon)
 
 
 
