@@ -85,8 +85,8 @@ const determineConfig = cliOptions => {
             logger.warn(
                 `configFilePath supplied, config in package.json will be ignored`,
             )
-            return getConfigFileContents(cliOptions.config)
         }
+        return getConfigFileContents(cliOptions.config)
     }
 
     if (pkgJsonBundlesize) {
