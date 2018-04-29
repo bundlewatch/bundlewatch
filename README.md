@@ -23,16 +23,15 @@
 	</a>
   <h1>bundlesize</h1>
   <p>
-    bundlesize is a file size checker. Its main purpose is to ensure bundled browser assets don't jump in file size (e.g. added a package that bloaded the slug, wrong import, forgot to minify).
+    bundlesize is a file size checker. Its main purpose is to ensure bundled browser assets don't jump in file size. <br />
+    Sharp increases in bundlesize can signal something is wrong: added a package that bloaded the slug, wrong import, forgot to minify.
   </p>
 </div>
 
-
-
-Inspired by the original [Siddharth Kshetrapal / Bundlesize](https://github.com/siddharthkp/bundlesize)
+Inspired by the [original Bundlesize by Siddharth Kshetrapal](https://github.com/siddharthkp/bundlesize)
 
 # Getting Started and Configuration
-Follow the documentation on [bundlesize.io](http://bundlesize.io/)
+To get started with bundlesize, head over to the [documentation on bundlesize.io](http://bundlesize.io/)
 
 
 
@@ -67,8 +66,8 @@ Follow the documentation on [bundlesize.io](http://bundlesize.io/)
 [bundlesize]: https://img.shields.io/badge/bundlesize-checked-green.svg
 [bundlesize-url]: http://bundlesize.io
 
-[deps]: https://img.shields.io/david/@bundlesize/bundlesize.svg
-[deps-url]: https://david-dm.org/@bundlesize/bundlesize
+[deps]: https://img.shields.io/david/bundlesize/bundlesize.svg
+[deps-url]: https://david-dm.org/bundlesize/bundlesize
 
 [builds]: https://img.shields.io/circleci/project/github/bundlesize/bundlesize.svg
 [builds-url]: https://circleci.com/gh/bundlesize/bundlesize
