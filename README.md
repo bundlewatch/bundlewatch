@@ -74,4 +74,4 @@ Follow the documentation on [bundlesize.io](http://bundlesize.io/)
 [builds-url]: https://circleci.com/gh/bundlesize/bundlesize
 
 [licenses-url]: https://img.shields.io/npm/l/@bundlesize/bundlesize.svg
-[licenses]: https://github.com/bundlesize/bundlesize/master/LICENSE
+[licenses]: https://github.com/bundlesize/bundlesize/blob/master/LICENSE
