@@ -3,7 +3,7 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/shell-helpers.sh"
 
-version=$(git describe)
+version=$(git describe --tags)
 version=$( echo $version | cut -d 'v' -f 2 )
 
 # 0.0.35 6 char max
