@@ -50,8 +50,8 @@ const ciEnv = () => {
 
     const githubAccessToken =
         process.env.GITHUB_ACCESS_TOKEN || process.env.BUNDLESIZE_GITHUB_TOKEN
-    
-    const repoBranchBase = env.CI_BRANCH_BASE
+
+    repoBranchBase = env.CI_BRANCH_BASE
 
     // TODO: fine repoBranchBase
 
