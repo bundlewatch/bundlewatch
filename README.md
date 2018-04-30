@@ -54,7 +54,7 @@ To get started with bundlesize, head over to the [documentation on bundlesize.io
 
 
 ## Want to help?
-[See the Contributing docs](_CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlesize-bundlesize/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing
+[See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlesize-bundlesize/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing
 
 
 [npm]: https://img.shields.io/npm/v/@bundlesize/bundlesize.svg
