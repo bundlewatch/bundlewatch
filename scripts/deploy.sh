@@ -25,8 +25,6 @@ PACKAGE_VERSION_NPM=@bundlesize/bundlesize
 jq ".version=\"$version\"" $PACKAGE_VERSION_JSON > $PACKAGE_VERSION_JSON.tmp
 mv $PACKAGE_VERSION_JSON.tmp $PACKAGE_VERSION_JSON
 
-cat $PACKAGE_VERSION_JSON
-
-#run "npm publish --access public"
+run "npm publish --access public"
 
 echo "Deployed!"
