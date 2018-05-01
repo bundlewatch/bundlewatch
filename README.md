@@ -66,8 +66,8 @@ To get started with bundlewatch, head over to the [documentation on bundlewatch.
 [bundlewatch]: https://img.shields.io/badge/bundle-watched-blue.svg
 [bundlewatch-url]: http://bundlewatch.io
 
-[deps]: https://img.shields.io/david/bundlewatch.svg
-[deps-url]: https://david-dm.org/bundlewatch
+[deps]: https://img.shields.io/david/bundlewatch/bundlewatch.svg
+[deps-url]: https://david-dm.org/bundlewatch/bundlewatch
 
 [builds]: https://img.shields.io/circleci/project/github/bundlewatch/bundlewatch.svg
 [builds-url]: https://circleci.com/gh/bundlewatch/bundlewatch
