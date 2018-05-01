@@ -1,5 +1,5 @@
 {
-    "name": "@bundlesize/bundlesize",
+    "name": "bundlewatch",
     "version": "0.0.0",
     "description": "Keep your library size in check",
     "repository": {
