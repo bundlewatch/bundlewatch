@@ -21,9 +21,9 @@
 	<a href="https://github.com/bundlewatch/bundlewatch/graphs/contributors">
 		<img src="https://img.shields.io/github/contributors/bundlewatch/bundlewatch.svg">
 	</a>
-  <h1>bundlewatch</h1>
+  <h1>BundleWatch</h1>
   <p>
-    bundlewatch is a file size checker. Its main purpose is to ensure bundled browser assets don't jump in file size. <br />
+    BundleWatch is a file size checker. Its main purpose is to ensure bundled browser assets don't jump in file size. <br />
     Sharp increases in bundlewatch can signal something is wrong: added a package that bloaded the slug, wrong import, forgot to minify.
   </p>
 </div>
@@ -31,12 +31,12 @@
 Inspired by [Siddharth Kshetrapal bundlesize](https://github.com/siddharthkp/bundlesize)
 
 # Getting Started and Configuration
-To get started with bundlewatch, head over to the [documentation on bundlewatch.io](http://bundlewatch.io/)
+To get started with BundleWatch, head over to the [documentation on bundlewatch.io](http://bundlewatch.io/)
 
 
 
 ## Why the change in direction from bundlesize?
-- bundlesize has entered maintenance mode, pull requests are left hanging, we wanted to reboost the community and start growing bundlewatch out
+- bundlesize has entered maintenance mode, pull requests are left hanging, we wanted to reboost the community and start growing BundleWatch out
 - Split store into seperate app -> bundlewatch/service with infrastructure as code
 - Launched documentation website
 - Enough test coverage to support CD
@@ -54,7 +54,7 @@ To get started with bundlewatch, head over to the [documentation on bundlewatch.
 
 
 ## Want to help?
-[See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlewatch-bundlewatch/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing
+[See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlewatch/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing
 
 
 [npm]: https://img.shields.io/npm/v/bundlewatch.svg
