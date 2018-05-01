@@ -3,7 +3,7 @@
 
 **Do you want to request a *feature* or report a *bug*?**
 
-<!-- Please ask questions [on Slack](https://join.slack.com/t/bundlesize-bundlesize/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) -->
+<!-- Please ask questions [on Slack](https://join.slack.com/t/bundlewatch-bundlewatch/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) -->
 
 **What is the current behavior?**
 
@@ -16,4 +16,4 @@
 
 **If this is a feature request, what is motivation or use case for changing the behavior?**
 
-**Please mention other relevant information such as the browser version, Node.js version, bundlesize version, and Operating System.**
+**Please mention other relevant information such as the browser version, Node.js version, bundlewatch version, and Operating System.**

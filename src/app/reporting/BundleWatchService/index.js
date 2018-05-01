@@ -1,14 +1,14 @@
 import logger from '../../../logger'
 import axios from 'axios'
 
-class BundlesizeService {
+class bundlewatchService {
     constructor({
         repoOwner,
         repoName,
         repoBranchBase,
         repoCurrentBranch,
         commitSha,
-        bundlesizeServiceHost,
+        bundlewatchServiceHost,
         githubAccessToken,
     }) {
         this.repoOwner = repoOwner
@@ -16,12 +16,12 @@ class BundlesizeService {
         this.repoBranchBase = repoBranchBase
         this.repoCurrentBranch = repoCurrentBranch
         this.commitSha = commitSha
-        this.bundlesizeServiceHost = bundlesizeServiceHost
+        this.bundlewatchServiceHost = bundlewatchServiceHost
         this.githubAccessToken = githubAccessToken
     }
 
-    get bundlesizeServiceStoreUrl() {
-        return `${this.bundlesizeServiceHost}/store`
+    get bundlewatchServiceStoreUrl() {
+        return `${this.bundlewatchServiceHost}/store`
     }
 
     get enabled() {
@@ -29,7 +29,7 @@ class BundlesizeService {
             this.githubAccessToken &&
             this.repoOwner &&
             this.repoName &&
-            this.bundlesizeServiceHost
+            this.bundlewatchServiceHost
         ) {
             return true
         }
@@ -46,7 +46,7 @@ class BundlesizeService {
 
         return axios
             .post(
-                `${this.bundlesizeServiceStoreUrl}/lookup`,
+                `${this.bundlewatchServiceStoreUrl}/lookup`,
                 {
                     repoOwner: this.repoOwner,
                     repoName: this.repoName,
@@ -67,7 +67,7 @@ class BundlesizeService {
                     `Unable to fetch fileDetails for baseBranch=${
                         this.repoBranchBase
                     } from ${
-                        this.bundlesizeServiceStoreUrl
+                        this.bundlewatchServiceStoreUrl
                     } code=${error.code || error.message}`,
                 )
                 return {}
@@ -103,7 +103,7 @@ class BundlesizeService {
 
         return axios
             .post(
-                `${this.bundlesizeServiceStoreUrl}`,
+                `${this.bundlewatchServiceStoreUrl}`,
                 {
                     repoOwner: this.repoOwner,
                     repoName: this.repoName,
@@ -127,4 +127,4 @@ class BundlesizeService {
     }
 }
 
-export default BundlesizeService
+export default bundlewatchService

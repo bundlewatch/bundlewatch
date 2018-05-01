@@ -1,5 +1,5 @@
 import getLocalFileDetails from './getLocalFileDetails'
-import BundlesizeService from './reporting/BundlesizeService'
+import BundleWatchService from './reporting/BundleWatchService'
 import GitHubService from './reporting/GitHubService'
 import analyze from './analyze'
 import { STATUSES } from './analyze/analyzeFiles'
@@ -8,7 +8,7 @@ import createURLToResultPage from './resultsPage/createURL'
 
 const main = async ({
     files,
-    bundlesizeServiceHost,
+    bundlewatchServiceHost,
     ci,
     defaultCompression,
 }) => {
@@ -17,18 +17,18 @@ const main = async ({
         defaultCompression: defaultCompression,
     })
 
-    const bundlesizeService = new BundlesizeService({
+    const bundlewatchService = new BundleWatchService({
         repoOwner: ci.repoOwner,
         repoName: ci.repoName,
         repoCurrentBranch: ci.repoCurrentBranch,
         repoBranchBase: ci.repoBranchBase,
         commitSha: ci.commitSha,
-        bundlesizeServiceHost,
+        bundlewatchServiceHost,
         githubAccessToken: ci.githubAccessToken,
     })
 
-    const baseBranchFileDetails = await bundlesizeService.getFileDetailsForBaseBranch()
-    await bundlesizeService.saveFileDetailsForCurrentBranch({
+    const baseBranchFileDetails = await bundlewatchService.getFileDetailsForBaseBranch()
+    await bundlewatchService.saveFileDetailsForCurrentBranch({
         fileDetailsByPath: currentBranchFileDetails,
         trackBranches: ci.trackBranches,
     })
@@ -41,7 +41,7 @@ const main = async ({
 
     const url = await createURLToResultPage({
         results,
-        bundlesizeServiceHost,
+        bundlewatchServiceHost,
         repoOwner: ci.repoOwner,
         repoName: ci.repoName,
         repoCurrentBranch: ci.repoCurrentBranch,
@@ -55,7 +55,7 @@ const main = async ({
     }
 }
 
-const bundleSizeApi = async customConfig => {
+const bundlewatchApi = async customConfig => {
     const config = getConfig(customConfig)
     const githubService = new GitHubService({
         repoOwner: config.ci.repoOwner,
@@ -63,7 +63,7 @@ const bundleSizeApi = async customConfig => {
         commitSha: config.ci.commitSha,
         githubAccessToken: config.ci.githubAccessToken,
     })
-    await githubService.start({ message: 'Checking bundlesize...' })
+    await githubService.start({ message: 'Checking bundlewatch...' })
 
     try {
         const results = await main(config)
@@ -100,5 +100,5 @@ const bundleSizeApi = async customConfig => {
     }
 }
 
-export default bundleSizeApi
+export default bundlewatchApi
 export { STATUSES }

@@ -5,7 +5,7 @@ import chalk from 'chalk'
 
 import determineConfig from './determineConfig'
 import logger from '../logger'
-import bundlesizeApi, { STATUSES } from '../app'
+import bundlewatchApi, { STATUSES } from '../app'
 
 const prettyPrintResults = fullResults => {
     logger.log('')
@@ -40,7 +40,7 @@ const main = async () => {
     const config = determineConfig(program)
 
     if (config.files && config.files.length > 0) {
-        const results = await bundlesizeApi(config)
+        const results = await bundlewatchApi(config)
 
         if (results.url) {
             logger.log('')
@@ -52,20 +52,20 @@ const main = async () => {
         prettyPrintResults(results.fullResults)
 
         if (results.status === STATUSES.FAIL) {
-            logger.log(chalk.redBright(`bundlesize FAIL`))
+            logger.log(chalk.redBright(`bundlewatch FAIL`))
             logger.log(results.summary)
             logger.log('')
             return 1
         }
 
         if (results.status === STATUSES.WARN) {
-            logger.log(chalk.redBright(`bundlesize WARN`))
+            logger.log(chalk.redBright(`bundlewatch WARN`))
             logger.log(results.summary)
             logger.log('')
             return 0
         }
 
-        logger.log(chalk.greenBright(`bundlesize PASS`))
+        logger.log(chalk.greenBright(`bundlewatch PASS`))
         logger.log(results.summary)
         logger.log('')
 
@@ -73,8 +73,8 @@ const main = async () => {
     }
 
     logger.error(`Configuration missing:
-    Run ${chalk.italic('bundlesize --help')} for examples and options
-    Documentation available at: http://bundlesize.io/`)
+    Run ${chalk.italic('bundlewatch --help')} for examples and options
+    Documentation available at: http://bundlewatch.io/`)
     return 1
 }
 
@@ -110,13 +110,13 @@ program.on('--help', () => {
     logger.log('  Examples:')
     logger.log('')
     logger.log('   Read configuration from package.json')
-    logger.log('     $ bundlesize ')
+    logger.log('     $ bundlewatch ')
     logger.log('')
     logger.log('   Read configuration from file')
-    logger.log('     $ bundlesize --config internals/bundlesize.config.js')
+    logger.log('     $ bundlewatch --config internals/bundlewatch.config.js')
     logger.log('')
     logger.log('   Use command line')
-    logger.log('     $ bundlesize --max-size 100KB ./src/*.js /lib/*.js')
+    logger.log('     $ bundlewatch --max-size 100KB ./src/*.js /lib/*.js')
     logger.log('')
     logger.log('')
 })

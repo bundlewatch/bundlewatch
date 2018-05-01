@@ -3,7 +3,7 @@ import axios from 'axios'
 import logger from '../../../logger'
 
 const getContextForFilePath = filePath => {
-    let context = 'bundlesize'
+    let context = 'bundlewatch'
     if (filePath) {
         const TRUNCATE_TO_LENGTH = 35
         if (filePath.length > TRUNCATE_TO_LENGTH) {

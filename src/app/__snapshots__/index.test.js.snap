@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`bundlesize Node API Works when files dont exist, shows warning 1`] = `
+exports[`bundlewatch Node API Works when files dont exist, shows warning 1`] = `
 Object {
   "fullResults": Array [
     Object {
@@ -14,7 +14,7 @@ Object {
 }
 `;
 
-exports[`bundlesize Node API Works with CI environment 1`] = `
+exports[`bundlewatch Node API Works with CI environment 1`] = `
 Object {
   "fullResults": Array [
     Object {
@@ -47,7 +47,7 @@ Object {
 }
 `;
 
-exports[`bundlesize Node API Works with basic options 1`] = `
+exports[`bundlewatch Node API Works with basic options 1`] = `
 Object {
   "fullResults": Array [
     Object {

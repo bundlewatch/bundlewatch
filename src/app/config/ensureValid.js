@@ -40,19 +40,19 @@ const ensureValid = config => {
     )
 
     if (missingOptions.length === 0) {
-        if (!config.bundlesizeServiceHost) {
-            logger.warn(`bundlesizeServiceHost was not supplied, bundlesize comparisons unavilable:
-    Learn more at: http://bundlesize.io/#/getting-started/the-best-parts
+        if (!config.bundlewatchServiceHost) {
+            logger.warn(`bundlewatchServiceHost was not supplied, bundlewatch comparisons unavilable:
+    Learn more at: http://bundlewatch.io/#/getting-started/the-best-parts
             `)
         } else {
             if (!config.ci.repoBranchBase) {
-                logger.warn(`The ci.repoBranchCase was not supplied, bundlesize comparisons unavailable:
-    Learn more at: http://bundlesize.io/#/getting-started/the-best-parts
+                logger.warn(`The ci.repoBranchCase was not supplied, bundlewatch comparisons unavailable:
+    Learn more at: http://bundlewatch.io/#/getting-started/the-best-parts
                 `)
             }
             if (!config.ci.repoCurrentBranch) {
-                logger.warn(`The ci.repoCurrentBranch was not supplied, bundlesize results with not be saved:
-    Learn more at: http://bundlesize.io/#/getting-started/the-best-parts
+                logger.warn(`The ci.repoCurrentBranch was not supplied, bundlewatch results with not be saved:
+    Learn more at: http://bundlewatch.io/#/getting-started/the-best-parts
             `)
             }
         }
@@ -60,8 +60,8 @@ const ensureValid = config => {
         logger.warn(`Some CI configuration options were not found (${missingOptions.join(
             ', ',
         )}):
-    bundlesize will be unable to report build status, or save comparison data
-    Learn more at: http://bundlesize.io/#/getting-started/the-best-parts
+    bundlewatch will be unable to report build status, or save comparison data
+    Learn more at: http://bundlewatch.io/#/getting-started/the-best-parts
         `)
     }
 }

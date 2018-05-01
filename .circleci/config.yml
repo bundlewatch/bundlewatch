@@ -37,8 +37,8 @@ jobs:
           when: always
 
       - run:
-          name: Run bundlesize in our CI for testing
-          command: make bundlesize
+          name: Run bundlewatch in our CI for testing
+          command: make bundlewatch
 
       - store_artifacts:
           path: artifacts

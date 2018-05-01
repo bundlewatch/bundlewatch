@@ -3,11 +3,11 @@ import MockAdapter from 'axios-mock-adapter'
 
 const networkMock = new MockAdapter(axios)
 
-import bundlesizeApi from '.'
+import bundlewatchApi from '.'
 
-describe(`bundlesize Node API`, () => {
+describe(`bundlewatch Node API`, () => {
     it('Works with basic options', async () => {
-        const result = await bundlesizeApi({
+        const result = await bundlewatchApi({
             files: [
                 {
                     path: './__testdata__/*.jpg',
@@ -24,7 +24,7 @@ describe(`bundlesize Node API`, () => {
     })
 
     it(`Works when files dont exist, shows warning`, async () => {
-        const result = await bundlesizeApi({
+        const result = await bundlewatchApi({
             files: [
                 {
                     path: './__testdata__/test-file-doesnt-exist.jpg',
@@ -48,7 +48,7 @@ describe(`bundlesize Node API`, () => {
         }
 
         networkMock
-            .onPost('https://service.bundlesize.io/store/lookup')
+            .onPost('https://service.bundlewatch.io/store/lookup')
             .reply(200, {
                 fileDetailsByPath: {
                     './__testdata__/test-file-1.jpg': {
@@ -64,7 +64,7 @@ describe(`bundlesize Node API`, () => {
 
         // TODO: assert save was called
 
-        const result = await bundlesizeApi({
+        const result = await bundlewatchApi({
             files: [
                 {
                     path: './__testdata__/*.jpg',

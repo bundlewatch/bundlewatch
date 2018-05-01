@@ -19,22 +19,22 @@ help:
 	@echo "--------------------- Useful Commands for Development ----------------------"
 	@echo "make help                            - show this help message"
 	@echo "make install                         - install dependencies, blows up node_modules"
-	@echo "make bundlesize                      - runs the bundlesize command in the project"
+	@echo "make bundlewatch                      - runs the bundlewatch command in the project"
 	@echo "make test                            - runs test"
 	@echo "make test-watch                      - watches test"
 	@echo "make test-snapshots                  - runs test and overwrites snapshots"
 	@echo "make lint                            - runs eslint"
 	@echo "make lint-fix                        - attempts to autofix linting errors"
 	@echo "make watch                           - babelize locally for development"
-	@echo "make package                         - package (babelize) bundlesize ready for distribution"
+	@echo "make package                         - package (babelize) bundlewatch ready for distribution"
 
 # ---- Installing, Building and Running ----
 
 .PHONY: install
 install: check-versions clean node_modules
 
-.PHONY: bundlesize
-bundlesize: package check-versions node_modules
+.PHONY: bundlewatch
+bundlewatch: package check-versions node_modules
 	./lib/bin/index.js ${FLAGS}
 
 ifndef CI

@@ -10,7 +10,7 @@
 
 **If relevant, link to documentation update:**
 
-<!-- Link PR from bundlesize/bundlesize.io here, or N/A -->
+<!-- Link PR from bundlewatch/bundlewatch.io here, or N/A -->
 
 **Summary**
 

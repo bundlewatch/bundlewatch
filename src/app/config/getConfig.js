@@ -5,7 +5,7 @@ import ensureValid from './ensureValid'
 
 const defaultConfig = {
     files: [],
-    bundlesizeServiceHost: 'https://service.bundlesize.io', // Can be a custom service, or set to NUll
+    bundlewatchServiceHost: 'https://service.bundlewatch.io', // Can be a custom service, or set to NUll
     ci: {
         githubAccessToken: ciEnv.githubAccessToken,
         repoOwner: ciEnv.repoOwner,

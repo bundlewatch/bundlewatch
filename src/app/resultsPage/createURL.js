@@ -4,7 +4,7 @@ import shortenURL from './shortenURL'
 
 const createURL = async ({
     results,
-    bundlesizeServiceHost,
+    bundlewatchServiceHost,
     repoOwner,
     repoName,
     repoCurrentBranch,
@@ -29,7 +29,7 @@ const createURL = async ({
         results: strippedResultsForURL,
     })
     const urlResultData = encodeURIComponent(packedJSON)
-    const longURL = `${bundlesizeServiceHost}/results?d=${urlResultData}`
+    const longURL = `${bundlewatchServiceHost}/results?d=${urlResultData}`
     const shortURL = await shortenURL(longURL)
     return shortURL
 }

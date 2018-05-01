@@ -20,7 +20,7 @@ echo "Deploying...."
 echo '//registry.npmjs.org/:_authToken=${NPM_PUBLISH_TOKEN}' > .npmrc
 
 PACKAGE_VERSION_JSON=package.json
-PACKAGE_VERSION_NPM=@bundlesize/bundlesize
+PACKAGE_VERSION_NPM=@bundlewatch/bundlewatch
 
 jq ".version=\"$version\"" $PACKAGE_VERSION_JSON > $PACKAGE_VERSION_JSON.tmp
 mv $PACKAGE_VERSION_JSON.tmp $PACKAGE_VERSION_JSON

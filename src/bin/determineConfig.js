@@ -53,10 +53,10 @@ const getConfigFileContents = configFilePath => {
 
 const determineConfig = cliOptions => {
     const pkgJson = readPkgUp.sync().pkg
-    let pkgJsonBundlesize = pkgJson.bundlesize
+    let pkgJsonbundlewatch = pkgJson.bundlewatch
 
     if (cliOptions.args && cliOptions.args.length > 0) {
-        if (pkgJsonBundlesize) {
+        if (pkgJsonbundlewatch) {
             logger.warn(
                 `CLI files supplied, config in package.json will be ignored`,
             )
@@ -81,7 +81,7 @@ const determineConfig = cliOptions => {
     }
 
     if (cliOptions.config) {
-        if (pkgJsonBundlesize) {
+        if (pkgJsonbundlewatch) {
             logger.warn(
                 `configFilePath supplied, config in package.json will be ignored`,
             )
@@ -89,13 +89,13 @@ const determineConfig = cliOptions => {
         return getConfigFileContents(cliOptions.config)
     }
 
-    if (pkgJsonBundlesize) {
-        if (Array.isArray(pkgJsonBundlesize)) {
+    if (pkgJsonbundlewatch) {
+        if (Array.isArray(pkgJsonbundlewatch)) {
             return {
-                files: pkgJsonBundlesize,
+                files: pkgJsonbundlewatch,
             }
         }
-        return pkgJsonBundlesize
+        return pkgJsonbundlewatch
     }
 
     return {}
