@@ -15,8 +15,8 @@
 
 
   <br>
-	<a href="https://npmcharts.com/compare/@bundlewatch/bundlewatch?minimal=true">
-		<img src="https://img.shields.io/npm/dm/@bundlewatch/bundlewatch.svg">
+	<a href="https://npmcharts.com/compare/bundlewatch?minimal=true">
+		<img src="https://img.shields.io/npm/dm/bundlewatch.svg">
 	</a>
 	<a href="https://github.com/bundlewatch/bundlewatch/graphs/contributors">
 		<img src="https://img.shields.io/github/contributors/bundlewatch/bundlewatch.svg">
@@ -57,20 +57,20 @@ To get started with bundlewatch, head over to the [documentation on bundlewatch.
 [See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlewatch-bundlewatch/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing
 
 
-[npm]: https://img.shields.io/npm/v/@bundlewatch/bundlewatch.svg
-[npm-url]: https://npmjs.com/package/@bundlewatch/bundlewatch
+[npm]: https://img.shields.io/npm/v/bundlewatch.svg
+[npm-url]: https://npmjs.com/package/bundlewatch
 
-[node]: https://img.shields.io/node/v/@bundlewatch/bundlewatch.svg
+[node]: https://img.shields.io/node/v/bundlewatch.svg
 [node-url]: https://nodejs.org
 
-[bundlewatch]: https://img.shields.io/badge/bundlewatch-checked-green.svg
+[bundlewatch]: https://img.shields.io/badge/bundle-watched-blue.svg
 [bundlewatch-url]: http://bundlewatch.io
 
-[deps]: https://img.shields.io/david/bundlewatch/bundlewatch.svg
-[deps-url]: https://david-dm.org/bundlewatch/bundlewatch
+[deps]: https://img.shields.io/david/bundlewatch.svg
+[deps-url]: https://david-dm.org/bundlewatch
 
 [builds]: https://img.shields.io/circleci/project/github/bundlewatch/bundlewatch.svg
 [builds-url]: https://circleci.com/gh/bundlewatch/bundlewatch
 
-[licenses]: https://img.shields.io/npm/l/@bundlewatch/bundlewatch.svg
+[licenses]: https://img.shields.io/npm/l/bundlewatch.svg
 [licenses-url]: https://github.com/bundlewatch/bundlewatch/blob/master/LICENSE
