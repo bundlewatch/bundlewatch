@@ -67,9 +67,11 @@ class bundlewatchService {
                 logger.error(
                     `Unable to fetch fileDetails for baseBranch=${
                         this.repoBranchBase
-                    } from ${
-                        this.bundlewatchServiceStoreUrl
-                    } code=${error.code === 422 ? authFailureMessage : error.code || error.message}`,
+                    } from ${this.bundlewatchServiceStoreUrl}
+                    code=${ error.code === 422
+                        ? authFailureMessage
+                        : error.code || error.message
+                    }`,
                 )
                 return {}
             })
