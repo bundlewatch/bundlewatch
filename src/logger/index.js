@@ -5,8 +5,16 @@ const stderr = console.error // eslint-disable-line no-console
 
 const debug = error => {
     if (process.env.DEBUG) {
+        const debugObject = error.response
+            ? error.response.data
+            : error.response
         stdout(chalk.greenBright(`[DEBUG] ${error.message}`))
         stderr(error)
+        try {
+            stderr(JSON.stringify(debugObject, undefined, 2))
+        } catch (e) {
+            // eat it
+        }
     }
 }
 
