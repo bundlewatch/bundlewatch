@@ -24,7 +24,7 @@
   <h1>BundleWatch</h1>
   <p>
     BundleWatch is a file size checker. Its main purpose is to ensure bundled browser assets don't jump in file size. <br />
-    Sharp increases in bundlewatch can signal something is wrong: added a package that bloaded the slug, wrong import, forgot to minify.
+    Sharp increases in BundleWatch can signal that something is wrong: adding a package that bloated the slug, a wrong import, forgetting to minify.
   </p>
 </div>
 
@@ -35,22 +35,22 @@ To get started with BundleWatch, head over to the [documentation on bundlewatch.
 
 
 
-## Why the change in direction from bundlesize?
-- bundlesize has entered maintenance mode, pull requests are left hanging, we wanted to reboost the community and start growing BundleWatch out
-- Split store into seperate app -> bundlewatch/service with infrastructure as code
+## Why BundleWatch over bundlesize?
+- Bundlesize has entered maintenance mode and pull requests are left hanging, so we wanted to reboot the community through creating BundleWatch
+- [BundleWatch/service](https://github.com/bundlewatch/service) with infrastructure as code
 - Launched documentation website
 - Enough test coverage to support CD
 - Node API Support
-- Lower the barrier to contributing, build a trusted community of contributors to have continous improvement
+- Lower barrier to contributing, build a trusted community of contributors to have continuous improvement
 
 
-### Additional features:
-- [x] Config validation to stop users guessing why bundlewatch won't work
-- [x] Better details breakdown
+### Additional Features:
+- [x] Config validation to stop users from guessing why BundleWatch won't work
+- [x] Better results breakdown page [see diffing against branches](http://bundlewatch.io/#/getting-started/the-best-parts?id=diffing-against-branches-other-than-master)
 - [x] Better comparisons between branches, support branches other than master
 - [x] Support for your own server for storing data
 - [x] New and improved CI behaviour
-- [ ] Show history of bundlewatchs over time (Coming soon)
+- [ ] Show history of BundleWatchs over time (coming soon)
 
 
 ## Want to help?
