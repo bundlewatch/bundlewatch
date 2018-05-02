@@ -63,12 +63,15 @@ class bundlewatchService {
             })
             .catch(error => {
                 logger.debug(error)
+                const authFailureMessage = `GitHub Auth Token failed, is your code correct? Do you have access to this repo?`
                 logger.error(
                     `Unable to fetch fileDetails for baseBranch=${
                         this.repoBranchBase
-                    } from ${
-                        this.bundlewatchServiceStoreUrl
-                    } code=${error.code || error.message}`,
+                    } from ${this.bundlewatchServiceStoreUrl}
+                    code=${ error.code === 422
+                        ? authFailureMessage
+                        : error.code || error.message
+                    }`,
                 )
                 return {}
             })
