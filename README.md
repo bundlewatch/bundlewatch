@@ -65,7 +65,11 @@ BundleWatch reports when files are over maxSize, but can also:
 
 ## Build Status and Diffing
 Let's run through getting setup up with build status:
-![build status preview](https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-status-preview.png)
+
+<div align="center">
+    <img alt="build status preview" src="https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-status-preview.png" width="700px">
+</div>
+
 ### CI Variables needed by bundlewatch
 The most efficient way to get this running is to ensure that some environment variables are available for BundleWatch to find.
 - `CI_REPO_OWNER` github.com/**facebook**/react
@@ -92,12 +96,13 @@ This will give you your `BUNDLEWATCH_GITHUB_TOKEN`. You will need to set this as
 
 ## Diffing Against Branches Other Than Master
 After setting up the above, BundleWatch will automatically diff against master.
-![build results preview](https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-results-preview.png)
+
+<div align="center">
+    <img alt="build results preview" src="https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-results-preview.png" width="700px">
+</div>
+
 If you want to set up diffing for other branches (e.g. develop) there is one more CI variable that is required.
 - `CI_BRANCH_BASE`
-
-
-
 
 
 
