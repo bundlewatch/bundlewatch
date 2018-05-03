@@ -99,7 +99,7 @@ Full [documentation avialable on bundlewatch.io](http://bundlewatch.io/)
 
 
 
-# I use to use bundlesize, why should I switch to BundleWatch?
+# I use bundlesize, why should I switch to BundleWatch?
 - Bundlesize has entered maintenance mode and pull requests are left hanging, so we wanted to reboot the community through creating BundleWatch
 - [BundleWatch/service](https://github.com/bundlewatch/service) with infrastructure as code
 - Launched documentation website
