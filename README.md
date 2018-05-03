@@ -66,7 +66,7 @@ Reports buildwatch statues back to your GitHub Pull Requests
 </div>
 
 
-### CI Variables needed by BundleWatch
+## CI Variables needed by BundleWatch
 The most efficient way to get this running is to ensure that some environment variables are available for BundleWatch to find.
 - `CI_REPO_OWNER` github.com/**facebook**/react
 - `CI_REPO_NAME`  github.com/facebook/**react**
@@ -78,7 +78,7 @@ If you're using, _Travis_, _CircleCI_ or _Wrecker_ these should all work out of 
 > Have a look at the source code to see which variables are automatically found: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/ciEnv.js#L36-L39
 
 
-### CI Auth Variables Needed by BundleWatch
+## CI Auth Variables Needed by BundleWatch
 - `BUNDLEWATCH_GITHUB_TOKEN`
 
 You will need to give BundleWatch access to your GitHub Statuses, which can be done by heading to:
@@ -118,7 +118,7 @@ Full [documentation avialable on bundlewatch.io](http://bundlewatch.io/)
 
 
 
-## Want to help?
+# Want to help? Become a contributor
 [See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlewatch/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing
 
 
