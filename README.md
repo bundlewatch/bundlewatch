@@ -121,6 +121,7 @@ Full [documentation avialable on bundlewatch.io](http://bundlewatch.io/)
 # Want to help? Become a contributor
 [See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlewatch/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing
 
+&copy; 2018 BundleWatch
 
 [npm]: https://img.shields.io/npm/v/bundlewatch.svg
 [npm-url]: https://npmjs.com/package/bundlewatch
