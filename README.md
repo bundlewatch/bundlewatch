@@ -90,15 +90,10 @@ This will give you your `BUNDLEWATCH_GITHUB_TOKEN`. You will need to set this as
 !> Ensure you keep this token secret, so rouge parties can't write to your repo statuses.
 
 
-## Diffing Against Branches Other Than Master
-After setting up the above, BundleWatch will automatically diff against master.
-
+## This link here will link you off to the results page
 <div align="center">
     <img alt="build results preview" src="https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-results-preview.png" width="700px">
 </div>
-
-If you want to set up diffing for other branches (e.g. develop) there is one more CI variable that is required.
-- `CI_BRANCH_BASE`
 
 
 
