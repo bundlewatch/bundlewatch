@@ -54,10 +54,6 @@ BundleWatch FAIL
 ```
 As seen above, BundleWatch is running the files through a maxSize check.
 
-
-?> BundleWatch can do a lot more, too! [check out the-best-parts of BundleWatch](getting-started/the-best-parts.md?id=the-best-parts)
-
-
 # The Best Parts
 BundleWatch reports when files are over maxSize, but can also:
 - Report build statuses back to GitHub
