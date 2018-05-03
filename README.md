@@ -31,42 +31,41 @@
 Inspired by [Siddharth Kshetrapal bundlesize](https://github.com/siddharthkp/bundlesize)
 
 # Getting Started and Configuration
-To get started with BundleWatch, head over to the [documentation on bundlewatch.io](http://bundlewatch.io/)
 
-
-
-
-## Installation
+## Install the BundleWatch package
 - NPM: `npm install bundlewatch --save-dev`
 - Yarn: `yarn add bundlewatch --dev`
 
-
-## Basic Usage
-```bash
-$yarn run bundlewatch --max-size 100kb ./webpack-build/*.js
-
-Result breakdown at: https://ja2r7.app.goo.gl/aDzEQjBVMXxrCgaa7
-
-PASS ./webpack-build/app.js: 30.71KB < 100KB (gzip)
-FAIL ./webpack-build/vendor.js: 198.6KB > 100KB (gzip)
-
-BundleWatch FAIL
+## Add some basic configuration to your `.package.json`
+```json
+{
+    "name": "my package name",
+    "version": "0.0.1",
+    "bundlewatch" : {
+        "files": [
+            {
+                "path": "myfolder/*.js",
+                "maxSize": "100kB"
+            }
+        ]
+    }
+}
 ```
-As seen above, BundleWatch is running the files through a maxSize check.
 
-# The Best Parts
-BundleWatch reports when files are over maxSize, but can also:
-- Report build statuses back to GitHub
-- Show how many files have changed (against develop, master etc)
+## Test it out
+- NPM: `npm run bundlewatch`
+- Yarn: `yarn run bundlewatch`
 
-## Build Status and Diffing
-Let's run through getting setup up with build status:
+
+## Adding build status
+Reports buildwatch statues back to your GitHub Pull Requests
 
 <div align="center">
     <img alt="build status preview" src="https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-status-preview.png" width="700px">
 </div>
 
-### CI Variables needed by bundlewatch
+
+### CI Variables needed by BundleWatch
 The most efficient way to get this running is to ensure that some environment variables are available for BundleWatch to find.
 - `CI_REPO_OWNER` github.com/**facebook**/react
 - `CI_REPO_NAME`  github.com/facebook/**react**
@@ -75,9 +74,8 @@ The most efficient way to get this running is to ensure that some environment va
 
 If you're using, _Travis_, _CircleCI_ or _Wrecker_ these should all work out of the box.
 
-!> Have a look at the source code to see which variables are automatically found: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/ciEnv.js#L36-L39
+> Have a look at the source code to see which variables are automatically found: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/ciEnv.js#L36-L39
 
-> If CI variables aren't for you, you can also set them using config files or the Node API.
 
 ### CI Auth Variables Needed by BundleWatch
 - `BUNDLEWATCH_GITHUB_TOKEN`
@@ -87,17 +85,20 @@ https://service.bundlewatch.io/setup-github
 
 This will give you your `BUNDLEWATCH_GITHUB_TOKEN`. You will need to set this as an environment variable in CI.
 
-!> Ensure you keep this token secret, so rouge parties can't write to your repo statuses.
 
-
-## This link here will link you off to the results page
+## That's it
+After setting up above you will have BuildStatus on your Pull Requests. Clicking the _details_ link on the reported status will show you a results file breakdown.
 <div align="center">
     <img alt="build results preview" src="https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-results-preview.png" width="700px">
 </div>
 
 
+# Additional Documentation
+Full [documentation avialable on bundlewatch.io](http://bundlewatch.io/)
 
-## I use to use bundlesize, why should I switch to BundleWatch?
+
+
+# I use to use bundlesize, why should I switch to BundleWatch?
 - Bundlesize has entered maintenance mode and pull requests are left hanging, so we wanted to reboot the community through creating BundleWatch
 - [BundleWatch/service](https://github.com/bundlewatch/service) with infrastructure as code
 - Launched documentation website
@@ -107,6 +108,7 @@ This will give you your `BUNDLEWATCH_GITHUB_TOKEN`. You will need to set this as
 
 ### Additional Features:
 - [x] Config validation to stop users from guessing why BundleWatch won't work
+- [x] Support for config file path
 - [x] Better results breakdown page [see diffing against branches](http://bundlewatch.io/#/getting-started/the-best-parts?id=diffing-against-branches-other-than-master)
 - [x] Better comparisons between branches, support branches other than master
 - [x] Support for your own server for storing data
@@ -126,7 +128,7 @@ This will give you your `BUNDLEWATCH_GITHUB_TOKEN`. You will need to set this as
 [node-url]: https://nodejs.org
 
 [bundlewatch]: https://img.shields.io/badge/bundle-watched-blue.svg
-[bundlewatch-url]: http://bundlewatch.io
+[bundlewatch-url]: https://bundlewatch.io
 
 [deps]: https://img.shields.io/david/bundlewatch/bundlewatch.svg
 [deps-url]: https://david-dm.org/bundlewatch/bundlewatch
