@@ -30,13 +30,12 @@
 
 Inspired by [Siddharth Kshetrapal bundlesize](https://github.com/siddharthkp/bundlesize)
 
-# Getting Started and Configuration
-
-## Install the BundleWatch package
+# Getting Started
+Install the BundleWatch package
 - NPM: `npm install bundlewatch --save-dev`
 - Yarn: `yarn add bundlewatch --dev`
 
-## Add some basic configuration to your `.package.json`
+Add some basic configuration to your .package.json`
 ```json
 {
     "name": "my package name",
@@ -52,12 +51,14 @@ Inspired by [Siddharth Kshetrapal bundlesize](https://github.com/siddharthkp/bun
 }
 ```
 
-## Test it out
+And run
 - NPM: `npm run bundlewatch`
 - Yarn: `yarn run bundlewatch`
 
+This will give you command line output. If you want BundleWatch to report build status on your pull requests, see below.
 
-## Adding build status
+
+# Adding build status
 Reports buildwatch statues back to your GitHub Pull Requests
 
 <div align="center">
