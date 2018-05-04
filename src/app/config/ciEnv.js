@@ -40,8 +40,10 @@ const ciEnv = () => {
         
         repoOwner = env.CI_REPO_OWNER
         repoName = env.CI_REPO_NAME
-        commitSha = env.CI_COMMIT_SHA || env.GIT_COMMIT
-        repoCurrentBranch = env.CI_BRANCH || env.GIT_BRANCH
+        commitSha = env.CI_COMMIT_SHA
+            || env.GIT_COMMIT
+        repoCurrentBranch = env.CI_BRANCH
+            || env.GIT_BRANCH
     }
 
     if (repo) {
