@@ -34,16 +34,14 @@ const ciEnv = () => {
     } else {
         // Best effort
         // TODO extract cip repo owner, ci repo name if possible from GIT_URL
-        // GIT_URL || 
+        // GIT_URL ||
         // git@github.com:user/repo.git
         // [https://github.com/user/repo.git]
-        
+
         repoOwner = env.CI_REPO_OWNER
         repoName = env.CI_REPO_NAME
-        commitSha = env.CI_COMMIT_SHA
-            || env.GIT_COMMIT
-        repoCurrentBranch = env.CI_BRANCH
-            || env.GIT_BRANCH
+        commitSha = env.CI_COMMIT_SHA || env.GIT_COMMIT
+        repoCurrentBranch = env.CI_BRANCH || env.GIT_BRANCH
     }
 
     if (repo) {
