@@ -51,7 +51,7 @@ Add some basic configuration to your .package.json`
 }
 ```
 
-How to run:
+Usage:
 - NPM: `npm run bundlewatch`
 - Yarn: `yarn run bundlewatch`
 
