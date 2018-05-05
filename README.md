@@ -65,19 +65,6 @@ BundleWatch can report its status on your GitHub Pull Requests.
     <img alt="build status preview" src="https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-status-preview.png" width="700px">
 </div>
 
-
-## CI Variables Needed by BundleWatch:
-The most efficient way to get this running is to ensure that some environment variables are available for BundleWatch to find.
-- `CI_REPO_OWNER` github.com/**facebook**/react
-- `CI_REPO_NAME`  github.com/facebook/**react**
-- `CI_BRANCH`
-- `CI_COMMIT_SHA`
-
-If you're using, _Travis_, _CircleCI_ or _Wrecker_ these should all work out of the box.
-
-> Have a look at the source code to see which variables are automatically found: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/ciEnv.js#L36-L39
-
-
 ## CI Auth Variables Needed by BundleWatch:
 - `BUNDLEWATCH_GITHUB_TOKEN`
 
@@ -87,7 +74,22 @@ https://service.bundlewatch.io/setup-github
 This will give you your `BUNDLEWATCH_GITHUB_TOKEN`. You will need to set this as an environment variable in CI.
 
 
-## That's It
+## CI Variables Needed by BundleWatch:
+The most efficient way to get this running is to ensure that some environment variables are available for BundleWatch to find.
+- `CI_REPO_OWNER` github.com/**facebook**/react
+- `CI_REPO_NAME`  github.com/facebook/**react**
+- `CI_COMMIT_SHA`
+- `CI_BRANCH`
+
+If you're using, _Travis_, _CircleCI_ or _Wrecker_ these should all work out of the box.
+
+> Have a look at the source code to see which variables are automatically found: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/ciEnv.js#L36-L39
+
+
+
+
+
+## Viewing the results breakdown
 After setting up the above you will have BuildStatus on your Pull Requests. Clicking the _details_ link on the reported status will show you a results file breakdown.
 <div align="center">
     <img alt="build results preview" src="https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-results-preview.png" width="700px">
