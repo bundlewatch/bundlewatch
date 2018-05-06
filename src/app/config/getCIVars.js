@@ -28,17 +28,14 @@ const getCIVars = env => {
         commitSha = env.DRONE_COMMIT || env.CI_COMMIT
         repoCurrentBranch = env.DRONE_COMMIT_BRANCH
         repoBranchBase = env.DRONE_REPO_BRANCH
-    } else if (env.CI_NAME === 'codeship') {
-        repo = env.CI_REPO_NAME
-        repoCurrentBranch = env.CI_BRANCH
     }
-
     // Take CI preffered vars over everything
     repoOwner = env.CI_REPO_OWNER || repoOwner
     repoName = env.CI_REPO_NAME || repoName
     commitSha = env.CI_COMMIT_SHA || env.GIT_COMMIT || commitSha
     repoCurrentBranch = env.CI_BRANCH || env.GIT_BRANCH || repoCurrentBranch
     repoBranchBase = env.CI_BRANCH_BASE || repoBranchBase
+    repo = env.CI_REPO_NAME
 
     if (!repo) {
         const gitUrl = env.GIT_URL
