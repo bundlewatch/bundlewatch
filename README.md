@@ -143,7 +143,7 @@ Full [documentation avialable on bundlewatch.io](http://bundlewatch.io/)
 [deps-url]: https://david-dm.org/bundlewatch/bundlewatch
 
 [test]: https://coveralls.io/repos/github/bundlewatch/bundlewatch/badge.svg?branch=master
-[test-url]: https://coveralls.io/github/bundlewatch/bundlewatch?branch=maste
+[test-url]: https://coveralls.io/github/bundlewatch/bundlewatch?branch=master
 
 [builds]: https://img.shields.io/circleci/project/github/bundlewatch/bundlewatch.svg
 [builds-url]: https://circleci.com/gh/bundlewatch/bundlewatch
