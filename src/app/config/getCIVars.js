@@ -1,5 +1,4 @@
-const ciEnv = () => {
-    const env = process.env
+const getCIVars = env => {
     let repo
 
     let repoOwner
@@ -11,10 +10,8 @@ const ciEnv = () => {
     if (env.TRAVIS) {
         repo = env.TRAVIS_REPO_SLUG
         commitSha = env.TRAVIS_PULL_REQUEST_SHA || env.TRAVIS_COMMIT
-        repoCurrentBranch =
-            env.TRAVIS_EVENT_TYPE === 'push'
-                ? env.TRAVIS_BRANCH
-                : env.TRAVIS_PULL_REQUEST_BRANCH
+        repoCurrentBranch = env.TRAVIS_BRANCH
+        repoBranchBase = env.TRAVIS_PULL_REQUEST_BRANCH
     } else if (env.CIRCLECI) {
         repoOwner = env.CIRCLE_PROJECT_USERNAME
         repoName = env.CIRCLE_PROJECT_REPONAME
@@ -26,17 +23,30 @@ const ciEnv = () => {
         commitSha = env.WERCKER_GIT_COMMIT
         repoCurrentBranch = env.WERCKER_GIT_BRANCH
     } else if (env.DRONE) {
-        repo = env.DRONE_REPO || env.CI_REPO
+        repoOwner = env.DRONE_REPO_OWNER
+        repoName = env.DRONE_REPO_NAME
         commitSha = env.DRONE_COMMIT || env.CI_COMMIT
+        repoCurrentBranch = env.DRONE_COMMIT_BRANCH
+        repoBranchBase = env.DRONE_REPO_BRANCH
     } else if (env.CI_NAME === 'codeship') {
         repo = env.CI_REPO_NAME
         repoCurrentBranch = env.CI_BRANCH
-    } else {
-        // Best effort
-        repoOwner = env.CI_REPO_OWNER
-        repoName = env.CI_REPO_NAME
-        commitSha = env.CI_COMMIT_SHA
-        repoCurrentBranch = env.CI_BRANCH
+    }
+
+    // Take CI preffered vars over everything
+    repoOwner = env.CI_REPO_OWNER || repoOwner
+    repoName = env.CI_REPO_NAME || repoName
+    commitSha = env.CI_COMMIT_SHA || env.GIT_COMMIT || commitSha
+    repoCurrentBranch = env.CI_BRANCH || env.GIT_BRANCH || repoCurrentBranch
+    repoBranchBase = env.CI_BRANCH_BASE || repoBranchBase
+
+    if (!repo) {
+        const gitUrl = env.GIT_URL
+        if (gitUrl) {
+            const GET_REPO_FROM_STRING = /github\.com[/:](.*).git/
+            const repoMatcher = GET_REPO_FROM_STRING.exec(gitUrl)
+            repo = repoMatcher[1]
+        }
     }
 
     if (repo) {
@@ -49,11 +59,7 @@ const ciEnv = () => {
     }
 
     const githubAccessToken =
-        process.env.BUNDLEWATCH_GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN
-
-    repoBranchBase = env.CI_BRANCH_BASE
-
-    // TODO: fine repoBranchBase
+        env.BUNDLEWATCH_GITHUB_TOKEN || env.GITHUB_ACCESS_TOKEN
 
     return {
         repoOwner,
@@ -65,4 +71,4 @@ const ciEnv = () => {
     }
 }
 
-export default ciEnv()
+export default getCIVars
