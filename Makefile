@@ -71,9 +71,6 @@ lint-fix: check-versions node_modules
 
 # --------------- CI Scripts -----------------
 
-.PHONY: install-no-clean
-install-no-clean: check-versions node_modules
-
 .PHONY: deploy
 deploy:
 	./scripts/deploy.sh
