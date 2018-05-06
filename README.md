@@ -11,6 +11,7 @@
 [![node][node]][node-url]
 [![deps][deps]][deps-url]
 [![builds][builds]][builds-url]
+[![test][test]][test-url]
 [![licenses][licenses]][licenses-url]
 
 
@@ -140,6 +141,9 @@ Full [documentation avialable on bundlewatch.io](http://bundlewatch.io/)
 
 [deps]: https://img.shields.io/david/bundlewatch/bundlewatch.svg
 [deps-url]: https://david-dm.org/bundlewatch/bundlewatch
+
+[test]: https://coveralls.io/repos/github/bundlewatch/bundlewatch/badge.svg?branch=master
+[test-url]: https://coveralls.io/github/bundlewatch/bundlewatch?branch=maste
 
 [builds]: https://img.shields.io/circleci/project/github/bundlewatch/bundlewatch.svg
 [builds-url]: https://circleci.com/gh/bundlewatch/bundlewatch
