@@ -2,12 +2,14 @@ import fs from 'fs'
 import gzip from 'gzip-size'
 import logger from '../../logger'
 
+import ValidationError from '../errors/ValidationError'
+
 const getBrotliSize = data => {
     let brotli
     try {
         brotli = require('brotli-size') // eslint-disable-line global-require
     } catch (e) {
-        throw new Error(
+        throw new ValidationError(
             `'brotli-size' package has not been installed, please install package to use this compression type`,
         )
     }

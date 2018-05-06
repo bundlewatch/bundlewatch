@@ -84,4 +84,22 @@ describe(`bundlewatch Node API`, () => {
         delete result.url
         expect(result).toMatchSnapshot()
     })
+
+    it('Throws validations error when using brotli compression without the package', async () => {
+        let error
+        try {
+            await bundlewatchApi({
+                files: [
+                    {
+                        path: './__testdata__/*.jpg',
+                        maxSize: '100kB',
+                    },
+                ],
+                defaultCompression: 'brotli',
+            })
+        } catch (e) {
+            error = e
+        }
+        expect(error).toMatchSnapshot()
+    })
 })
