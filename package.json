@@ -48,6 +48,7 @@
         "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
         "babel-plugin-transform-object-rest-spread": "^6.26.0",
         "babel-preset-env": "^1.6.1",
+        "coveralls": "^3.0.1",
         "eslint": "^4.9.0",
         "eslint-config-airbnb-base": "^12.1.0",
         "eslint-config-prettier": "^2.9.0",
@@ -61,7 +62,9 @@
         "prettier": "^1.6.0"
     },
     "jest": {
-        "testEnvironment": "node"
+        "testEnvironment": "node",
+        "collectCoverage": true,
+        "coverageDirectory": "artifacts/test_results/jest/coverage"
     },
     "engines": {
         "node": ">=6.11.5"

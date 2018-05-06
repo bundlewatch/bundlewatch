@@ -6,11 +6,12 @@ export PATH := $(shell yarn bin):$(PATH)
 ifdef CI
     ESLINT_ARGS=--format junit --output-file $(ARTIFACT_DIR)/test_results/eslint/eslint.junit.xml
 	JEST_ENV_VARIABLES=JEST_SUITE_NAME="Jest Tests" JEST_JUNIT_OUTPUT=$(ARTIFACT_DIR)/test_results/jest/jest.junit.xml
-    JEST_EXTRA_ARGS=--testResultsProcessor ./node_modules/jest-junit
+    JEST_EXTRA_ARGS=--testResultsProcessor ./node_modules/jest-junit --coverageReporters=text-lcov | coveralls
+    YARN_ARGS=--froze-lockfile
 else
     ESLINT_ARGS=
     JEST_ENV_VARIABLES=
-    JEST_EXTRA_ARGS=
+    YARN_ARGS=
 endif
 
 
@@ -50,15 +51,15 @@ package: check-versions node_modules ${ARTIFACT_DIR}
 
 .PHONY: test
 test: check-versions node_modules ${ARTIFACT_DIR}
-	@${JEST_ENV_VARIABLES} jest ${JEST_ARGS}
+	${JEST_ENV_VARIABLES} jest ${JEST_EXTRA_ARGS}
 
 .PHONY: test-snapshots
 test-snapshots: check-versions node_modules ${ARTIFACT_DIR}
-	@${JEST_ENV_VARIABLES} jest -u ${JEST_ARGS}
+	${JEST_ENV_VARIABLES} jest -u ${JEST_EXTRA_ARGS}
 
 .PHONY: test-watch
 test-watch: check-versions node_modules
-	@jest --watch
+	jest --watch
 
 .PHONY: lint
 lint: check-versions node_modules ${ARTIFACT_DIR}
@@ -85,12 +86,12 @@ check-versions:
 
 .PHONY: clean
 clean:
-	@rm -rf ${ARTIFACT_DIR}
-	@rm -rf node_modules
+	rm -rf ${ARTIFACT_DIR}
+	rm -rf node_modules
 
 ${ARTIFACT_DIR}:
-	@mkdir -p ${ARTIFACT_DIR}/test_results/eslint
+	mkdir -p ${ARTIFACT_DIR}/test_results/eslint
 
 node_modules:
-	yarn install
-	@touch node_modules
+	yarn install ${YARN_ARGS}
+	touch node_modules
