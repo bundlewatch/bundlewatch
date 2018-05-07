@@ -112,7 +112,7 @@ Full [documentation avialable on bundlewatch.io](https://bundlewatch.io/)
 - Launched [bundlewatch.io documentation website](https://bundlewatch.io)
 - Enough test coverage to support CD
 - Node API Support
-- Lower barrier to contributing, build a trusted community of contributors to have continuous improvement
+- Lower barrier to contributing (automated testing and publishing), build a trusted community of contributors to have continuous improvement
 
 ### Additional Features:
 - [x] Config validation to stop users from guessing why BundleWatch won't work
