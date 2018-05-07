@@ -36,7 +36,7 @@ Install the BundleWatch package:
 - NPM: `npm install bundlewatch --save-dev`
 - Yarn: `yarn add bundlewatch --dev`
 
-Add some basic configuration to your .package.json`
+Add some basic configuration to your `package.json`
 ```json
 {
     "name": "my package name",
