@@ -102,7 +102,7 @@ After setting up the above you will have BuildStatus on your Pull Requests. Clic
 
 
 # Additional Documentation:
-Full [documentation avialable on bundlewatch.io](http://bundlewatch.io/)
+Full [documentation avialable on bundlewatch.io](https://bundlewatch.io/)
 
 
 
@@ -117,7 +117,7 @@ Full [documentation avialable on bundlewatch.io](http://bundlewatch.io/)
 ### Additional Features:
 - [x] Config validation to stop users from guessing why BundleWatch won't work
 - [x] Support for config file path
-- [x] Better results breakdown page [see diffing against branches](http://bundlewatch.io/#/getting-started/the-best-parts?id=diffing-against-branches-other-than-master)
+- [x] Better results breakdown page
 - [x] Better comparisons between branches, support branches other than master
 - [x] Support for your own server for storing data
 - [x] New and improved CI behaviour
