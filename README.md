@@ -84,7 +84,7 @@ The most efficient way to get this running is to ensure that some environment va
 
 If you're using, _Travis_, _CircleCI_ or _Wrecker_ these should all work out of the box.
 
-> Have a look at the source code to see which variables are automatically found: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/ciEnv.js#L36-L39
+> Have a look at the source code to see which variables are automatically found: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/getCIVars.js
 
 
 
