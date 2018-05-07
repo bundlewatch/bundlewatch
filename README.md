@@ -108,8 +108,8 @@ Full [documentation avialable on bundlewatch.io](https://bundlewatch.io/)
 
 # I use bundlesize, why should I switch to BundleWatch?
 - Bundlesize has entered maintenance mode and pull requests are left hanging, so we wanted to reboot the community through creating BundleWatch
-- [BundleWatch/service](https://github.com/bundlewatch/service) with infrastructure as code
-- Launched documentation website
+- New [BundleWatch service](https://github.com/bundlewatch/service) with infrastructure as code
+- Launched [bundlewatch.io documentation website](https://bundlewatch.io)
 - Enough test coverage to support CD
 - Node API Support
 - Lower barrier to contributing, build a trusted community of contributors to have continuous improvement
