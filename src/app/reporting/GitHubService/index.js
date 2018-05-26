@@ -78,6 +78,8 @@ class GitHubService {
                 Authorization: `token ${this.githubAccessToken}`,
             },
         }).catch(error => {
+            // eslint-disable-next-line no-console
+            console.error('update status error', error)
             if (error.response) {
                 logger.error(
                     `GitHubService HTTP_${error.response.status} :: ${
@@ -93,7 +95,7 @@ class GitHubService {
     createIssueComment({ body }) {
         return axios({
             method: 'POST',
-            url: `https://api.github.com/repos/${this.repo}/issues/25/comments`,
+            url: `https://api.github.com/repos/${this.repo}/issues/26/comments`,
             responseType: 'json',
             data: {
                 body,
@@ -103,6 +105,8 @@ class GitHubService {
                 Authorization: `token ${this.githubAccessToken}`,
             },
         }).catch(error => {
+            // eslint-disable-next-line no-console
+            console.error('create comment error', error)
             if (error.response) {
                 logger.error(
                     `GitHubService HTTP_${error.response.status} :: ${
