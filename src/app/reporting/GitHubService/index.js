@@ -90,6 +90,31 @@ class GitHubService {
         })
     }
 
+    createIssueComment({ body }) {
+        return axios({
+            method: 'POST',
+            url: `https://api.github.com/repos/${this.repo}/issues/25/comments`,
+            responseType: 'json',
+            data: {
+                body,
+            },
+            timeout: 5000,
+            headers: {
+                Authorization: `token ${this.githubAccessToken}`,
+            },
+        }).catch(error => {
+            if (error.response) {
+                logger.error(
+                    `GitHubService HTTP_${error.response.status} :: ${
+                        error.response.data ? error.response.data.message : ''
+                    }`,
+                )
+                return
+            }
+            throw error
+        })
+    }
+
     start({ message }) {
         return this.update(message, undefined, 'pending')
     }
