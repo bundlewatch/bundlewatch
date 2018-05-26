@@ -7,8 +7,8 @@ export const mockFileResults = {
     ],
     oneFileSmaller: [
         {
-            size: 200,
-            baseBranchSize: 50,
+            size: 50,
+            baseBranchSize: 200,
         },
     ],
     oneFileLargerOneFileSmallerOverallSmaller: [

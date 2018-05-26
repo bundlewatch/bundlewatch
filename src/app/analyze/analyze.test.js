@@ -26,8 +26,8 @@ describe('getOverallDifference', () => {
         const overallDifference = getOverallDifference(
             mockFileResults.oneFileSmaller,
         )
-        expect(overallDifference.totalAdded).toEqual(150)
-        expect(overallDifference.totalRemoved).toEqual(0)
+        expect(overallDifference.totalAdded).toEqual(0)
+        expect(overallDifference.totalRemoved).toEqual(150)
     })
 
     it('Returns both bytes added and removed when some files are larger and some are smaller', () => {
