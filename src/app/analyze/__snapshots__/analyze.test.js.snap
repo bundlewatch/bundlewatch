@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getOverallDifference Results match snapshot for the same input 1`] = `
+Object {
+  "percentageChange": -3.125,
+  "totalAdded": 25,
+  "totalRemoved": 50,
+}
+`;

@@ -13,7 +13,7 @@ const getOverallStatus = fileResults => {
     }, STATUSES.PASS)
 }
 
-const getOverallDifference = fullResults => {
+export const getOverallDifference = fullResults => {
     let totalBaseBranchSize = 0
     let totalFileResultSize = 0
     let totalAdded = 0
