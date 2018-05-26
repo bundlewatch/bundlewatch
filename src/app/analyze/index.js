@@ -13,20 +13,45 @@ const getOverallStatus = fileResults => {
     }, STATUSES.PASS)
 }
 
-const getOverallDifference = fullResults => {
+export const getOverallDifference = fullResults => {
+    let totalBaseBranchSize = 0
+    let totalFileResultSize = 0
     let totalAdded = 0
     let totalRemoved = 0
     fullResults.forEach(fileResult => {
+        totalBaseBranchSize += fileResult.baseBranchSize
+        totalFileResultSize += fileResult.size
         if (fileResult.size < fileResult.baseBranchSize) {
             totalRemoved += fileResult.baseBranchSize - fileResult.size
         } else {
             totalAdded += fileResult.size - fileResult.baseBranchSize
         }
     })
+    const percentageChange = totalBaseBranchSize
+        ? (totalFileResultSize - totalBaseBranchSize) /
+          totalBaseBranchSize *
+          100
+        : null
+
     return {
         totalAdded,
         totalRemoved,
+        percentageChange,
     }
+}
+
+export const getPercentageChangeString = percentageChange => {
+    if (percentageChange === null) {
+        return ''
+    }
+    const percentageChangeFixed = percentageChange.toFixed(1)
+    if (percentageChange > 0) {
+        return `+${percentageChangeFixed}%`
+    }
+    if (percentageChange < 0) {
+        return `${percentageChangeFixed}%`
+    }
+    return `±${percentageChangeFixed}%`
 }
 
 const getSummary = ({ overallStatus, fullResults, baseBranchName }) => {
@@ -36,8 +61,20 @@ const getSummary = ({ overallStatus, fullResults, baseBranchName }) => {
 
     let differenceSummary = ''
     if (baseBranchName) {
-        const { totalAdded, totalRemoved } = getOverallDifference(fullResults)
-        differenceSummary = `(+${bytes(totalAdded)}, -${bytes(totalRemoved)})`
+        const {
+            totalAdded,
+            totalRemoved,
+            percentageChange,
+        } = getOverallDifference(fullResults)
+        const percentageChangeString = getPercentageChangeString(
+            percentageChange,
+        )
+        const percentageChangeStringWithComma = percentageChangeString
+            ? `, ${percentageChangeString}`
+            : ''
+        differenceSummary = `(+${bytes(totalAdded)}, -${bytes(
+            totalRemoved,
+        )}${percentageChangeStringWithComma})`
     }
 
     if (overallStatus === STATUSES.WARN) {

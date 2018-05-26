@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getOverallDifference Results match snapshot for the same input oneFileLarger 1`] = `
+Object {
+  "percentageChange": -3.125,
+  "totalAdded": 25,
+  "totalRemoved": 50,
+}
+`;
+
+exports[`getOverallDifference Results match snapshot for the same input oneFileLargerOneFileSmallerOverallLarger 1`] = `
+Object {
+  "percentageChange": -3.125,
+  "totalAdded": 25,
+  "totalRemoved": 50,
+}
+`;
+
+exports[`getOverallDifference Results match snapshot for the same input oneFileLargerOneFileSmallerOverallSmaller 1`] = `
+Object {
+  "percentageChange": -3.125,
+  "totalAdded": 25,
+  "totalRemoved": 50,
+}
+`;
+
+exports[`getOverallDifference Results match snapshot for the same input oneFileSmaller 1`] = `
+Object {
+  "percentageChange": -3.125,
+  "totalAdded": 25,
+  "totalRemoved": 50,
+}
+`;
