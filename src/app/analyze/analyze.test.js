@@ -2,12 +2,16 @@ import { getOverallDifference } from '.'
 import { mockFileResults } from './analyze.test.mockdata'
 
 describe('getOverallDifference', () => {
-    it('Results match snapshot for the same input', () => {
-        expect(
-            getOverallDifference(
-                mockFileResults.oneFileLargerOneFileSmallerOverallSmaller,
-            ),
-        ).toMatchSnapshot()
+    describe('Results match snapshot for the same input', () => {
+        Object.keys(mockFileResults).forEach(mockFileResult => {
+            it(mockFileResult, () => {
+                expect(
+                    getOverallDifference(
+                        mockFileResults.oneFileLargerOneFileSmallerOverallSmaller,
+                    ),
+                ).toMatchSnapshot()
+            })
+        })
     })
 
     it('Returns bytes added when the file is larger than the base one', () => {
