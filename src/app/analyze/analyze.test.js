@@ -68,7 +68,7 @@ describe('getOverallDifference', () => {
         expect(overallDifference.totalRemoved).toEqual(50)
     })
 
-    it('Returns a negative percentage change when the overall bundle size is larger', () => {
+    it('Returns a positive percentage change when the overall bundle size is larger', () => {
         const overallDifference = getOverallDifference(
             mockFileResults.oneFileLargerOneFileSmallerOverallLarger,
         )
