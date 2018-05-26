@@ -103,8 +103,6 @@ class GitHubService {
                 Authorization: `token ${this.githubAccessToken}`,
             },
         }).catch(error => {
-            // eslint-disable-next-line no-console
-            console.error(error)
             if (error.response) {
                 logger.error(
                     `GitHubService HTTP_${error.response.status} :: ${
