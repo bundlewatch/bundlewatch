@@ -40,18 +40,18 @@ export const getOverallDifference = fullResults => {
     }
 }
 
-const getPercentageChangeString = percentageChange => {
+export const getPercentageChangeString = percentageChange => {
     if (percentageChange === null) {
         return ''
     }
     const percentageChangeFixed = percentageChange.toFixed(1)
     if (percentageChange > 0) {
-        return `, +${percentageChangeFixed}%`
+        return `+${percentageChangeFixed}%`
     }
     if (percentageChange < 0) {
-        return `, ${percentageChangeFixed}%`
+        return `${percentageChangeFixed}%`
     }
-    return `, ±${percentageChangeFixed}%`
+    return `±${percentageChangeFixed}%`
 }
 
 const getSummary = ({ overallStatus, fullResults, baseBranchName }) => {
@@ -69,9 +69,12 @@ const getSummary = ({ overallStatus, fullResults, baseBranchName }) => {
         const percentageChangeString = getPercentageChangeString(
             percentageChange,
         )
+        const percentageChangeStringWithComma = percentageChangeString
+            ? `, ${percentageChangeString}`
+            : ''
         differenceSummary = `(+${bytes(totalAdded)}, -${bytes(
             totalRemoved,
-        )}${percentageChangeString})`
+        )}${percentageChangeStringWithComma})`
     }
 
     if (overallStatus === STATUSES.WARN) {

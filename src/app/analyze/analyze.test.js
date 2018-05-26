@@ -1,4 +1,4 @@
-import { getOverallDifference } from '.'
+import { getOverallDifference, getPercentageChangeString } from '.'
 import { mockFileResults } from './analyze.test.mockdata'
 
 describe('getOverallDifference', () => {
@@ -50,5 +50,27 @@ describe('getOverallDifference', () => {
             mockFileResults.oneFileLargerOneFileSmallerOverallSmaller,
         )
         expect(overallDifference.percentageChange).toEqual(-3.125)
+    })
+})
+
+describe('getPercentageChangeString', () => {
+    it('Returns an empty string if the percentage change is null', () => {
+        expect(getPercentageChangeString(null)).toEqual('')
+    })
+
+    it('Prepends a + sign for positive percentage change', () => {
+        expect(getPercentageChangeString(1.2)).toEqual('+1.2%')
+    })
+
+    it('Prepends a - sign for negative percentage change', () => {
+        expect(getPercentageChangeString(-1.2)).toEqual('-1.2%')
+    })
+
+    it('Prepends a ± sign for zero percentage change', () => {
+        expect(getPercentageChangeString(0)).toEqual('±0.0%')
+    })
+
+    it('Fixes to one decimal place', () => {
+        expect(getPercentageChangeString(1.2345)).toEqual('+1.2%')
     })
 })
