@@ -13,8 +13,6 @@
 [![dev-deps][dev-deps]][dev-deps-url]
 [![builds][builds]][builds-url]
 [![test][test]][test-url]
-[![licenses][licenses]][licenses-url]
-
 
   <br>
 	<a href="https://npmcharts.com/compare/bundlewatch?minimal=true">
@@ -22,6 +20,9 @@
 	</a>
 	<a href="https://github.com/bundlewatch/bundlewatch/graphs/contributors">
 		<img src="https://img.shields.io/github/contributors/bundlewatch/bundlewatch.svg">
+	</a>
+    <a href="https://github.com/bundlewatch/bundlewatch/blob/master/LICENSE">
+		<img src="https://img.shields.io/npm/l/bundlewatch.svg">
 	</a>
   <h1>BundleWatch</h1>
   <p>
@@ -157,8 +158,5 @@ Contributions of any kind are welcome! [See the Contributing docs](CONTRIBUTING.
 
 [builds]: https://img.shields.io/circleci/project/github/bundlewatch/bundlewatch.svg
 [builds-url]: https://circleci.com/gh/bundlewatch/bundlewatch
-
-[licenses]: https://img.shields.io/npm/l/bundlewatch.svg
-[licenses-url]: https://github.com/bundlewatch/bundlewatch/blob/master/LICENSE
 
 [emojis]: https://github.com/kentcdodds/all-contributors#emoji-key
