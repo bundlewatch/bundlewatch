@@ -1,13 +1,11 @@
-import axios from 'axios'
-import MockAdapter from 'axios-mock-adapter'
+import getSize from './getSize'
+import ValidationError from '../errors/ValidationError'
 
-const networkMock = new MockAdapter(axios)
+import getLocalFileDetails from '.'
 
-import bundlewatchApi from '.'
-
-describe(`bundlewatch Node API`, () => {
+describe(`getLocalFileDetails`, () => {
     it('Works with basic options', async () => {
-        const result = await bundlewatchApi({
+        const result = await getLocalFileDetails({
             files: [
                 {
                     path: './__testdata__/*.jpg',
@@ -24,7 +22,7 @@ describe(`bundlewatch Node API`, () => {
     })
 
     it(`Works when files dont exist, shows warning`, async () => {
-        const result = await bundlewatchApi({
+        const result = await getLocalFileDetails({
             files: [
                 {
                     path: './__testdata__/test-file-doesnt-exist.jpg',
@@ -47,24 +45,7 @@ describe(`bundlewatch Node API`, () => {
             commitSha: 'mockCommitsha',
         }
 
-        networkMock
-            .onPost('https://service.bundlewatch.io/store/lookup')
-            .reply(200, {
-                fileDetailsByPath: {
-                    './__testdata__/test-file-1.jpg': {
-                        size: 25000,
-                        compression: 'gzip',
-                    },
-                    './__testdata__/test-file-deleted.jpg': {
-                        size: 10000,
-                        compression: 'gzip',
-                    },
-                },
-            })
-
-        // TODO: assert save was called
-
-        const result = await bundlewatchApi({
+        const result = await getLocalFileDetails({
             files: [
                 {
                     path: './__testdata__/*.jpg',
@@ -84,6 +65,15 @@ describe(`bundlewatch Node API`, () => {
         delete result.url
         expect(result).toMatchSnapshot()
     })
+})
 
-
+describe('getSize', () => {
+    it('Throws validations error when using brotli compression without the package', async () => {
+        expect(() =>
+            getSize({
+                filePath: './__testdata__/test-file-1.jpg',
+                compression: 'brotli',
+            }),
+        ).toThrow(ValidationError)
+    })
 })
