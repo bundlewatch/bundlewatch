@@ -5,70 +5,13 @@ import chalk from 'chalk'
 
 import determineConfig from './determineConfig'
 import logger from '../logger'
-import bundlewatchApi, { STATUSES } from '../app'
-
-const prettyPrintResults = fullResults => {
-    logger.log('')
-    fullResults.forEach(result => {
-        const filePath = chalk.italic(result.filePath) + ':'
-
-        if (result.error) {
-            logger.log(`${chalk.red('ERROR')} ${filePath} ${result.error}`)
-            return
-        }
-
-        if (result.status === STATUSES.FAIL) {
-            logger.log(
-                `${chalk.redBright('FAIL')} ${filePath} ${result.message}`,
-            )
-            return
-        }
-
-        if (result.status === STATUSES.WARN) {
-            logger.log(
-                `${chalk.yellowBright('WARN')} ${filePath} ${result.message}`,
-            )
-            return
-        }
-
-        logger.log(`${chalk.greenBright('PASS')} ${filePath} ${result.message}`)
-    })
-    logger.log('')
-}
+import bundlewatchApi from '../app'
 
 const main = async () => {
     const config = determineConfig(program)
 
     if (config.files && config.files.length > 0) {
-        const results = await bundlewatchApi(config)
-
-        if (results.url) {
-            logger.log('')
-            logger.log(
-                `${chalk.cyanBright('Result breakdown at:')} ${results.url}`,
-            )
-        }
-
-        prettyPrintResults(results.fullResults)
-
-        if (results.status === STATUSES.FAIL) {
-            logger.log(chalk.redBright(`bundlewatch FAIL`))
-            logger.log(results.summary)
-            logger.log('')
-            return 1
-        }
-
-        if (results.status === STATUSES.WARN) {
-            logger.log(chalk.redBright(`bundlewatch WARN`))
-            logger.log(results.summary)
-            logger.log('')
-            return 0
-        }
-
-        logger.log(chalk.greenBright(`bundlewatch PASS`))
-        logger.log(results.summary)
-        logger.log('')
-
+        await bundlewatchApi(config)
         return 0
     }
 
@@ -80,8 +23,7 @@ const main = async () => {
 
 const mainSafe = async () => {
     try {
-        const errorCode = await main()
-        return errorCode
+        return await main()
     } catch (error) {
         if (error.type === 'ValidationError') {
             logger.fatal(error.message)
