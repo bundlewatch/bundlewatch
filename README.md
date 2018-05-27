@@ -124,9 +124,15 @@ Full [documentation avialable on bundlewatch.io](https://bundlewatch.io/)
 - [ ] Show history of BundleWatchs over time (coming soon)
 
 
+# Contributors
 
-# Want to Help? Become a Contributor
-[See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlewatch/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing.
+Thanks goes to these wonderful people ([emoji key][emojis]):
+
+| [<img src="https://avatars.githubusercontent.com/u/3534236?v=3" width="100px;"/><br /><sub><b>Jake Bolam</b></sub>](https://github.com/jakebolam)<br />[💻](https://github.com/bundlewatch/bundlewatch/commits?author=jakebolam) | [<img src="https://avatars.githubusercontent.com/u/6020693?v=3" width="100px;"/><br /><sub><b>Shouvik D'costa</b></sub>](https://github.com/sdcosta)<br />[💻](https://github.com/bundlewatch/bundlewatch/commits?author=sdcosta) | [<img src="https://avatars.githubusercontent.com/u/0000000?v=3" width="100px;"/><br /><sub><b>Tyler Benning</b></sub>](https://github.com/)<br />🎨  | [<img src="https://avatars.githubusercontent.com/u/20323414?v=3" width="100px;"/><br /><sub><b>Lelia Rosenthal</b></sub>](https://github.com/leilarosenthal)<br />[📖](https://github.com/bundlewatch/bundlewatch.io/commits?author=leilarosenthal)  | [<img src="https://avatars.githubusercontent.com/u/3876970?v=3" width="100px;"/><br /><sub><b>Francois Campbell</b></sub>](https://github.com/francoiscampbell)<br />[💻](https://github.com/bundlewatch/bundlewatch/commits?author=francoiscampbell)  | 
+| :---: | :---: | :---: | :---: | :---: |
+
+## Want to Help? Become a Contributor
+Contributions of any kind are welcome! [See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlewatch/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing.
 
 &copy; 2018 BundleWatch
 
@@ -150,3 +156,5 @@ Full [documentation avialable on bundlewatch.io](https://bundlewatch.io/)
 
 [licenses]: https://img.shields.io/npm/l/bundlewatch.svg
 [licenses-url]: https://github.com/bundlewatch/bundlewatch/blob/master/LICENSE
+
+[emojis]: https://github.com/kentcdodds/all-contributors#emoji-key
