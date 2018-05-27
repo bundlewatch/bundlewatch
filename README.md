@@ -10,6 +10,7 @@
 
 [![node][node]][node-url]
 [![deps][deps]][deps-url]
+[![dev-deps][dev-deps]][dev-deps-url]
 [![builds][builds]][builds-url]
 [![test][test]][test-url]
 [![licenses][licenses]][licenses-url]
@@ -145,8 +146,11 @@ Contributions of any kind are welcome! [See the Contributing docs](CONTRIBUTING.
 [bundlewatch]: https://img.shields.io/badge/bundle-watched-blue.svg
 [bundlewatch-url]: https://bundlewatch.io
 
-[deps]: https://img.shields.io/david/bundlewatch/bundlewatch.svg
+[deps]: https://david-dm.org/bundlewatch/bundlewatch/status.svg
 [deps-url]: https://david-dm.org/bundlewatch/bundlewatch
+
+[dev-deps]: https://david-dm.org/bundlewatch/bundlewatch/dev-status.svg
+[dev-deps-url]: https://david-dm.org/bundlewatch/bundlewatch?type=dev
 
 [test]: https://coveralls.io/repos/github/bundlewatch/bundlewatch/badge.svg?branch=master
 [test-url]: https://coveralls.io/github/bundlewatch/bundlewatch?branch=master
