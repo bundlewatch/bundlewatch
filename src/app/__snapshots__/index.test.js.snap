@@ -1,12 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`bundlewatch Node API Throws validations error when using brotli compression without the package 1`] = `
-ValidationError {
-  "message": "'brotli-size' package has not been installed, please install package to use this compression type",
-  "type": "ValidationError",
-}
-`;
-
 exports[`bundlewatch Node API Works when files dont exist, shows warning 1`] = `
 Object {
   "fullResults": Array [
