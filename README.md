@@ -10,10 +10,9 @@
 
 [![node][node]][node-url]
 [![deps][deps]][deps-url]
+[![dev-deps][dev-deps]][dev-deps-url]
 [![builds][builds]][builds-url]
 [![test][test]][test-url]
-[![licenses][licenses]][licenses-url]
-
 
   <br>
 	<a href="https://npmcharts.com/compare/bundlewatch?minimal=true">
@@ -21,6 +20,9 @@
 	</a>
 	<a href="https://github.com/bundlewatch/bundlewatch/graphs/contributors">
 		<img src="https://img.shields.io/github/contributors/bundlewatch/bundlewatch.svg">
+	</a>
+    <a href="https://github.com/bundlewatch/bundlewatch/blob/master/LICENSE">
+		<img src="https://img.shields.io/npm/l/bundlewatch.svg">
 	</a>
   <h1>BundleWatch</h1>
   <p>
@@ -145,16 +147,16 @@ Contributions of any kind are welcome! [See the Contributing docs](CONTRIBUTING.
 [bundlewatch]: https://img.shields.io/badge/bundle-watched-blue.svg
 [bundlewatch-url]: https://bundlewatch.io
 
-[deps]: https://img.shields.io/david/bundlewatch/bundlewatch.svg
+[deps]: https://david-dm.org/bundlewatch/bundlewatch/status.svg
 [deps-url]: https://david-dm.org/bundlewatch/bundlewatch
+
+[dev-deps]: https://david-dm.org/bundlewatch/bundlewatch/dev-status.svg
+[dev-deps-url]: https://david-dm.org/bundlewatch/bundlewatch?type=dev
 
 [test]: https://coveralls.io/repos/github/bundlewatch/bundlewatch/badge.svg?branch=master
 [test-url]: https://coveralls.io/github/bundlewatch/bundlewatch?branch=master
 
 [builds]: https://img.shields.io/circleci/project/github/bundlewatch/bundlewatch.svg
 [builds-url]: https://circleci.com/gh/bundlewatch/bundlewatch
-
-[licenses]: https://img.shields.io/npm/l/bundlewatch.svg
-[licenses-url]: https://github.com/bundlewatch/bundlewatch/blob/master/LICENSE
 
 [emojis]: https://github.com/kentcdodds/all-contributors#emoji-key
