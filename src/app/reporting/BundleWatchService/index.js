@@ -42,6 +42,7 @@ class BundlewatchService {
                     repoOwner: this.repoOwner,
                     repoName: this.repoName,
                     repoBranch: this.repoCurrentBranch,
+                    baseBranchName: this.repoBranchBase,
                     githubAccessToken: this.githubAccessToken,
                     bundlewatchServiceHost: this.bundlewatchServiceHost,
                     commitSha: this.commitSha,
