@@ -68,7 +68,7 @@
     },
     "engines": {
         "node": ">=6.11.5",
-        "yarn": "1.16.0"
+        "yarn": "1.5.1"
     },
     "bundlewatch": {
         "files": [
