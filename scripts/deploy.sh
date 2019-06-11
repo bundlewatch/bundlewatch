@@ -17,7 +17,7 @@ fi
 echo "${version} appears to be a release tag"
 echo "Deploying...."
 
-echo "//registry.npmjs.org/:_authToken=${NPM_PUBLISH_TOKEN}" > .npmrc
+echo '//registry.npmjs.org/:_authToken=${NPM_PUBLISH_TOKEN}' > .npmrc
 
 PACKAGE_VERSION_JSON=package.json
 PACKAGE_VERSION_NPM=@bundlewatch/bundlewatch
