@@ -67,8 +67,7 @@
         "coverageDirectory": "artifacts/test_results/jest/coverage"
     },
     "engines": {
-        "node": ">=6.11.5",
-        "yarn": "1.5.1"
+        "node": ">=6.11.5"
     },
     "bundlewatch": {
         "files": [
