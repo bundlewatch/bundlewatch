@@ -31,6 +31,15 @@
       "contributions": [
         "design"
       ]
+    },
+    {
+      "login": "leilarosenthal",
+      "name": "Leila Rosenthal",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/20323414?v=4",
+      "profile": "http://www.6ixsushi.com",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
