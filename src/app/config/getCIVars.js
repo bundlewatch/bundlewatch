@@ -35,7 +35,7 @@ const getCIVars = env => {
     commitSha = env.CI_COMMIT_SHA || env.GIT_COMMIT || commitSha
     repoCurrentBranch = env.CI_BRANCH || env.GIT_BRANCH || repoCurrentBranch
     repoBranchBase = env.CI_BRANCH_BASE || repoBranchBase
-    repo = env.CI_REPO_NAME
+    repo = env.CI_REPO_NAME || repo
 
     if (!repo) {
         const gitUrl = env.GIT_URL
