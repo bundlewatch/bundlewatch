@@ -60,6 +60,15 @@
         "code",
         "security"
       ]
+    },
+    {
+      "login": "pascaliske",
+      "name": "Pascal Iske",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/7473880?v=4",
+      "profile": "https://pascal-iske.de",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
