@@ -46,7 +46,7 @@ const ensureValid = config => {
             `)
         } else {
             if (!config.ci.repoBranchBase) {
-                logger.warn(`The ci.repoBranchCase was not supplied, bundlewatch comparisons unavailable:
+                logger.warn(`The ci.repoBranchBase was not supplied, bundlewatch comparisons unavailable:
     Learn more at: http://bundlewatch.io/#/getting-started/the-best-parts
                 `)
             }

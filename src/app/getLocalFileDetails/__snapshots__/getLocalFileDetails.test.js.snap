@@ -1,0 +1,77 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`bundlewatch Node API Works when files dont exist, shows warning 1`] = `
+Object {
+  "./__testdata__/test-file-doesnt-exist.jpg": Object {
+    "error": "There is no matching file for ./__testdata__/test-file-doesnt-exist.jpg",
+  },
+}
+`;
+
+exports[`bundlewatch Node API Works with CI environment 1`] = `
+Object {
+  "./__testdata__/test-file-1.jpg": Object {
+    "compression": undefined,
+    "maxSize": 1048576,
+    "size": 70145,
+  },
+  "./__testdata__/test-file-2.jpg": Object {
+    "compression": undefined,
+    "maxSize": 1048576,
+    "size": 458900,
+  },
+}
+`;
+
+exports[`bundlewatch Node API Works with basic options 1`] = `
+Object {
+  "./__testdata__/test-file-1.jpg": Object {
+    "compression": "none",
+    "maxSize": 102400,
+    "size": 70145,
+  },
+  "./__testdata__/test-file-2.jpg": Object {
+    "compression": "none",
+    "maxSize": 102400,
+    "size": 458900,
+  },
+}
+`;
+
+exports[`getLocalFileDetails Works when files dont exist, shows warning 1`] = `
+Object {
+  "./__testdata__/test-file-doesnt-exist.jpg": Object {
+    "error": "There is no matching file for ./__testdata__/test-file-doesnt-exist.jpg",
+  },
+}
+`;
+
+exports[`getLocalFileDetails Works with CI environment 1`] = `
+Object {
+  "./__testdata__/test-file-1.jpg": Object {
+    "compression": undefined,
+    "maxSize": 1048576,
+    "size": 70145,
+  },
+  "./__testdata__/test-file-2.jpg": Object {
+    "compression": undefined,
+    "maxSize": 1048576,
+    "size": 458900,
+  },
+}
+`;
+
+exports[`getLocalFileDetails Works with basic options 1`] = `
+Object {
+  "./__testdata__/test-file-1.jpg": Object {
+    "compression": "none",
+    "maxSize": 102400,
+    "size": 70145,
+  },
+  "./__testdata__/test-file-2.jpg": Object {
+    "compression": "none",
+    "maxSize": 102400,
+    "size": 458900,
+  },
+}
+`;
