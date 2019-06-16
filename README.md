@@ -156,7 +156,7 @@ Contributions of any kind are welcome! [See the Contributing docs](CONTRIBUTING.
 [test]: https://coveralls.io/repos/github/bundlewatch/bundlewatch/badge.svg?branch=master
 [test-url]: https://coveralls.io/github/bundlewatch/bundlewatch?branch=master
 
-[builds]: https://img.shields.io/circleci/project/github/bundlewatch/bundlewatch.svg
+[builds]: https://img.shields.io/circleci/project/github/bundlewatch/bundlewatch/master.svg
 [builds-url]: https://circleci.com/gh/bundlewatch/bundlewatch
 
 [emojis]: https://github.com/kentcdodds/all-contributors#emoji-key
