@@ -63,9 +63,7 @@ class GitHubService {
 
         return axios({
             method: 'POST',
-            url: `https://api.github.com/repos/${this.repo}/statuses/${
-                this.commitSha
-            }`,
+            url: `https://api.github.com/repos/${this.repo}/statuses/${this.commitSha}`,
             responseType: 'json',
             data: {
                 state: status,
