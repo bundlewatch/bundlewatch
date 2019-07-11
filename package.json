@@ -38,10 +38,10 @@
         "chalk": "^2.4.0",
         "commander": "^2.15.1",
         "glob": "^7.1.2",
-        "gzip-size": "^4.0.0",
+        "gzip-size": "^5.1.1",
         "jsonpack": "^1.1.5",
         "lodash.merge": "^4.6.1",
-        "read-pkg-up": "^3.0.0"
+        "read-pkg-up": "^6.0.0"
     },
     "devDependencies": {
         "axios-mock-adapter": "^1.15.0",
