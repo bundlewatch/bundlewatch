@@ -28,6 +28,11 @@ const getCIVars = env => {
         commitSha = env.DRONE_COMMIT || env.CI_COMMIT
         repoCurrentBranch = env.DRONE_COMMIT_BRANCH
         repoBranchBase = env.DRONE_REPO_BRANCH
+    } else if (env.GITHUB_ACTIONS) {
+        repoOwner = env.GITHUB_REPOSITORY.split('/')[0]
+        repoName = env.GITHUB_REPOSITORY.split('/')[1]
+        commitSha = env.GITHUB_SHA
+        repoCurrentBranch = env.GITHUB_REF
     }
     // Take CI preffered vars over everything
     repoOwner = env.CI_REPO_OWNER || repoOwner
