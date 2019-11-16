@@ -85,7 +85,7 @@ The most efficient way to get this running is to ensure that some environment va
 - `CI_COMMIT_SHA`
 - `CI_BRANCH`
 
-If you're using, _Travis_, _CircleCI_, _Wrecker_ or _Drone_ these should all work out of the box.
+If you're using, _Travis_, _CircleCI_, _Wrecker_, _Drone_ or _GitHub Actions_ these should all work out of the box.
 
 > Have a look at the source code to see which variables are automatically found: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/getCIVars.js
 
