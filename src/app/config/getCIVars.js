@@ -32,7 +32,8 @@ const getCIVars = env => {
         repoOwner = env.GITHUB_REPOSITORY.split('/')[0]
         repoName = env.GITHUB_REPOSITORY.split('/')[1]
         commitSha = env.GITHUB_SHA
-        repoCurrentBranch = env.GITHUB_REF
+        // GitHub only provides ref (read more: https://stackoverflow.com/q/1526471)
+        repoCurrentBranch = env.GITHUB_REF.replace(/^refs\/heads\//, '')
     }
     // Take CI preffered vars over everything
     repoOwner = env.CI_REPO_OWNER || repoOwner

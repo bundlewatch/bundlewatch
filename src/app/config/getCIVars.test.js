@@ -5,6 +5,7 @@ describe(`getCIVars`, () => {
     const mockRepoName = 'reponame_mock'
     const mockRepo = `${mockRepoOwner}/${mockRepoName}`
     const mockBranchBase = `mock_branch_base`
+    const mockRef = `refs/heads/mock_branch_base`
     const mockCommitSha = `ffac537e6cbbf934b08745a378932722df287a53`
 
     it(`Extracts GIT_URL (ssh) correct`, () => {
@@ -39,7 +40,7 @@ describe(`getCIVars`, () => {
             GITHUB_ACTIONS: true,
             GITHUB_REPOSITORY: mockRepo,
             GITHUB_SHA: mockCommitSha,
-            GITHUB_REF: mockBranchBase,
+            GITHUB_REF: mockRef,
         })
         expect(ciVars.repoOwner).toBe(mockRepoOwner)
         expect(ciVars.repoName).toBe(mockRepoName)
