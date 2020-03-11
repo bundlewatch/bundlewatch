@@ -70,7 +70,7 @@
         "coverageDirectory": "artifacts/test_results/jest/coverage"
     },
     "engines": {
-        "node": ">=6.11.5"
+        "node": ">=10"
     },
     "bundlewatch": {
         "files": [
