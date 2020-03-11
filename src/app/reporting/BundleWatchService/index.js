@@ -84,17 +84,13 @@ class bundlewatchService {
             this.repoCurrentBranch !== this.repoBranchBase
         ) {
             logger.info(
-                `${this.repoBranchBase} !== ${
-                    this.repoCurrentBranch
-                }, no results saved`,
+                `${this.repoBranchBase} !== ${this.repoCurrentBranch}, no results saved`,
             )
         }
 
         if (!trackBranches.includes(this.repoCurrentBranch)) {
             logger.info(
-                `${
-                    this.repoCurrentBranch
-                } is not a branch to track, no results saved`,
+                `${this.repoCurrentBranch} is not a branch to track, no results saved`,
             )
             return Promise.resolve()
         }

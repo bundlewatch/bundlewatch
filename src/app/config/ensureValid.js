@@ -42,17 +42,17 @@ const ensureValid = config => {
     if (missingOptions.length === 0) {
         if (!config.bundlewatchServiceHost) {
             logger.warn(`bundlewatchServiceHost was not supplied, bundlewatch comparisons unavilable:
-    Learn more at: http://bundlewatch.io/#/getting-started/the-best-parts
+    Learn more at: https://bundlewatch.io/
             `)
         } else {
             if (!config.ci.repoBranchBase) {
                 logger.warn(`The ci.repoBranchCase was not supplied, bundlewatch comparisons unavailable:
-    Learn more at: http://bundlewatch.io/#/getting-started/the-best-parts
+    Learn more at: https://bundlewatch.io/
                 `)
             }
             if (!config.ci.repoCurrentBranch) {
                 logger.warn(`The ci.repoCurrentBranch was not supplied, bundlewatch results with not be saved:
-    Learn more at: http://bundlewatch.io/#/getting-started/the-best-parts
+    Learn more at: https://bundlewatch.io/
             `)
             }
         }
@@ -61,7 +61,7 @@ const ensureValid = config => {
             ', ',
         )}):
     bundlewatch will be unable to report build status, or save comparison data
-    Learn more at: http://bundlewatch.io/#/getting-started/the-best-parts
+    Learn more at: https://bundlewatch.io/
         `)
     }
 }

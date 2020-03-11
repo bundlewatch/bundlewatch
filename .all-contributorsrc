@@ -1,0 +1,79 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "jakebolam",
+      "name": "Jake Bolam",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/3534236?v=4",
+      "profile": "https://jakebolam.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "sdcosta",
+      "name": "Shouvik DCosta",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6020693?v=4",
+      "profile": "https://opensource.tophat.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "tbenning",
+      "name": "Tyler Benning",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/7265547?v=4",
+      "profile": "http://www.tylerbenning.com",
+      "contributions": [
+        "design"
+      ]
+    },
+    {
+      "login": "leilarosenthal",
+      "name": "Leila Rosenthal",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/20323414?v=4",
+      "profile": "http://www.6ixsushi.com",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "francoiscampbell",
+      "name": "Francois Campbell",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/3876970?v=4",
+      "profile": "https://github.com/francoiscampbell",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "iamogbz",
+      "name": "Emmanuel Ogbizi",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/2528959?v=4",
+      "profile": "http://emmanuel.ogbizi.com",
+      "contributions": [
+        "maintenance",
+        "code",
+        "security"
+      ]
+    },
+    {
+      "login": "pascaliske",
+      "name": "Pascal Iske",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/7473880?v=4",
+      "profile": "https://pascal-iske.de",
+      "contributions": [
+        "bug"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "bundlewatch",
+  "projectOwner": "bundlewatch",
+  "repoType": "github",
+  "repoHost": "https://github.com"
+}

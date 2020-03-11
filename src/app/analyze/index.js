@@ -28,8 +28,7 @@ export const getOverallDifference = fullResults => {
         }
     })
     const percentageChange = totalBaseBranchSize
-        ? (totalFileResultSize - totalBaseBranchSize) /
-          totalBaseBranchSize *
+        ? ((totalFileResultSize - totalBaseBranchSize) / totalBaseBranchSize) *
           100
         : null
 

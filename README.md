@@ -7,6 +7,7 @@
 
 [![npm][npm]][npm-url]
 [![bundlewatch][bundlewatch]][bundlewatch-url]
+[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors)
 
 [![node][node]][node-url]
 [![deps][deps]][deps-url]
@@ -84,7 +85,7 @@ The most efficient way to get this running is to ensure that some environment va
 - `CI_COMMIT_SHA`
 - `CI_BRANCH`
 
-If you're using, _Travis_, _CircleCI_, _Wrecker_ or _Drone_ these should all work out of the box.
+If you're using, _Travis_, _CircleCI_, _Wrecker_, _Drone_ or _GitHub Actions_ these should all work out of the box.
 
 > Have a look at the source code to see which variables are automatically found: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/getCIVars.js
 
@@ -125,18 +126,20 @@ Full [documentation avialable on bundlewatch.io](https://bundlewatch.io/)
 - [x] New and improved CI behaviour
 - [ ] Show history of BundleWatchs over time (coming soon)
 
+## Contributors
 
-# Contributors
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
-Thanks goes to these wonderful people ([emoji key][emojis]):
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore -->
+<table><tr><td align="center"><a href="https://jakebolam.com"><img src="https://avatars2.githubusercontent.com/u/3534236?v=4" width="100px;" alt="Jake Bolam"/><br /><sub><b>Jake Bolam</b></sub></a><br /><a href="https://github.com/bundlewatch/bundlewatch/commits?author=jakebolam" title="Code">💻</a></td><td align="center"><a href="https://opensource.tophat.com"><img src="https://avatars0.githubusercontent.com/u/6020693?v=4" width="100px;" alt="Shouvik DCosta"/><br /><sub><b>Shouvik DCosta</b></sub></a><br /><a href="https://github.com/bundlewatch/bundlewatch/commits?author=sdcosta" title="Code">💻</a></td><td align="center"><a href="http://www.tylerbenning.com"><img src="https://avatars2.githubusercontent.com/u/7265547?v=4" width="100px;" alt="Tyler Benning"/><br /><sub><b>Tyler Benning</b></sub></a><br /><a href="#design-tbenning" title="Design">🎨</a></td><td align="center"><a href="http://www.6ixsushi.com"><img src="https://avatars3.githubusercontent.com/u/20323414?v=4" width="100px;" alt="Leila Rosenthal"/><br /><sub><b>Leila Rosenthal</b></sub></a><br /><a href="https://github.com/bundlewatch/bundlewatch/commits?author=leilarosenthal" title="Documentation">📖</a></td><td align="center"><a href="https://github.com/francoiscampbell"><img src="https://avatars3.githubusercontent.com/u/3876970?v=4" width="100px;" alt="Francois Campbell"/><br /><sub><b>Francois Campbell</b></sub></a><br /><a href="https://github.com/bundlewatch/bundlewatch/commits?author=francoiscampbell" title="Code">💻</a></td><td align="center"><a href="http://emmanuel.ogbizi.com"><img src="https://avatars0.githubusercontent.com/u/2528959?v=4" width="100px;" alt="Emmanuel Ogbizi"/><br /><sub><b>Emmanuel Ogbizi</b></sub></a><br /><a href="#maintenance-iamogbz" title="Maintenance">🚧</a> <a href="https://github.com/bundlewatch/bundlewatch/commits?author=iamogbz" title="Code">💻</a> <a href="#security-iamogbz" title="Security">🛡️</a></td><td align="center"><a href="https://pascal-iske.de"><img src="https://avatars2.githubusercontent.com/u/7473880?v=4" width="100px;" alt="Pascal Iske"/><br /><sub><b>Pascal Iske</b></sub></a><br /><a href="https://github.com/bundlewatch/bundlewatch/issues?q=author%3Apascaliske" title="Bug reports">🐛</a></td></tr></table>
 
-| [<img src="https://avatars.githubusercontent.com/u/3534236?v=3" width="100px;"/><br /><sub><b>Jake Bolam</b></sub>](https://github.com/jakebolam)<br />[💻](https://github.com/bundlewatch/bundlewatch/commits?author=jakebolam) | [<img src="https://avatars.githubusercontent.com/u/6020693?v=3" width="100px;"/><br /><sub><b>Shouvik D'costa</b></sub>](https://github.com/sdcosta)<br />[💻](https://github.com/bundlewatch/bundlewatch/commits?author=sdcosta) | [<img src="https://avatars.githubusercontent.com/u/7265547?v=3" width="100px;"/><br /><sub><b>Tyler Benning</b></sub>](https://github.com/tbenning)<br />🎨  | [<img src="https://avatars.githubusercontent.com/u/20323414?v=3" width="100px;"/><br /><sub><b>Lelia Rosenthal</b></sub>](https://github.com/leilarosenthal)<br />[📖](https://github.com/bundlewatch/bundlewatch.io/commits?author=leilarosenthal)  | [<img src="https://avatars.githubusercontent.com/u/3876970?v=3" width="100px;"/><br /><sub><b>Francois Campbell</b></sub>](https://github.com/francoiscampbell)<br />[💻](https://github.com/bundlewatch/bundlewatch/commits?author=francoiscampbell)  | 
-| :---: | :---: | :---: | :---: | :---: |
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ## Want to Help? Become a Contributor
 Contributions of any kind are welcome! [See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlewatch/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing.
-
-&copy; 2018 BundleWatch
 
 [npm]: https://img.shields.io/npm/v/bundlewatch.svg
 [npm-url]: https://npmjs.com/package/bundlewatch
@@ -159,4 +162,3 @@ Contributions of any kind are welcome! [See the Contributing docs](CONTRIBUTING.
 [builds]: https://img.shields.io/circleci/project/github/bundlewatch/bundlewatch/master.svg
 [builds-url]: https://circleci.com/gh/bundlewatch/bundlewatch
 
-[emojis]: https://github.com/kentcdodds/all-contributors#emoji-key
