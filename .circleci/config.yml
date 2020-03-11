@@ -29,6 +29,9 @@ jobs:
       - run:
           name: Tests
           command: make test
+          environment:
+            COVERALLS_SERVICE_NAME: circleci
+            COVERALLS_REPO_TOKEN: 0m2NB6D3Rt25IkwpnQXhDF5TZoh3qyJwk
           when: always
 
       - run:
