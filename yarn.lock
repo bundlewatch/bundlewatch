@@ -729,11 +729,12 @@ aws4@^1.8.0:
   integrity sha512-ReZxvNHIOv88FlT7rxcXIIC0fPt4KZqZbOlivyWtXLt8ESx84zd3kMC6iK5jVeS2qt+g7ftS7ye4fi06X5rtRQ==
 
 axios-mock-adapter@^1.15.0:
-  version "1.17.0"
-  resolved "https://registry.yarnpkg.com/axios-mock-adapter/-/axios-mock-adapter-1.17.0.tgz#0dbee43c606d4aaba5a43d88d96d6661a7cc3c04"
-  integrity sha512-q3efmwJUOO4g+wsLNSk9Ps1UlJoF3fQ3FSEe4uEEhkRtu7SoiAVPj8R3Hc/WP55MBTVFzaDP9QkdJhdVhP8A1Q==
+  version "1.18.1"
+  resolved "https://registry.yarnpkg.com/axios-mock-adapter/-/axios-mock-adapter-1.18.1.tgz#a2ba2638ef513d954793f96bde3e26bd4a1b7940"
+  integrity sha512-kFBZsG1Ma5yxjRGHq5KuuL55mPb7WzFULhypquEhzPg8SH5CXICb+qwC2CCA5u+GQVpiqGPwKSRkd3mBCs6gdw==
   dependencies:
-    deep-equal "^1.0.1"
+    fast-deep-equal "^3.1.1"
+    is-buffer "^2.0.3"
 
 axios@^0.19.0:
   version "0.19.2"
@@ -1842,11 +1843,6 @@ dedent@^0.7.0:
   resolved "https://registry.yarnpkg.com/dedent/-/dedent-0.7.0.tgz#2495ddbaf6eb874abb0e1be9df22d2e5a544326c"
   integrity sha1-JJXduvbrh0q7Dhvp3yLS5aVEMmw=
 
-deep-equal@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/deep-equal/-/deep-equal-1.0.1.tgz#f5d260292b660e084eff4cdbc9f08ad3247448b5"
-  integrity sha1-9dJgKStmDghO/0zbyfCK0yR0SLU=
-
 deep-extend@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/deep-extend/-/deep-extend-0.6.0.tgz#c4fa7c95404a17a9c3e8ca7e1537312b736330ac"
@@ -2924,6 +2920,11 @@ is-buffer@^1.1.5:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-1.1.6.tgz#efaa2ea9daa0d7ab2ea13a97b2b8ad51fefbe8be"
   integrity sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==
+
+is-buffer@^2.0.3:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-2.0.4.tgz#3e572f23c8411a5cfd9557c849e3665e0b290623"
+  integrity sha512-Kq1rokWXOPXWuaMAqZiJW4XxsmD9zGx9q4aePabbn3qCRGedtH7Cm+zV8WETitMfu1wdh+Rvd6w5egwSngUX2A==
 
 is-callable@^1.1.4, is-callable@^1.1.5:
   version "1.1.5"
