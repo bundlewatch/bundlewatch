@@ -105,7 +105,7 @@ After setting up the above you will have BuildStatus on your Pull Requests. Clic
 
 
 # Additional Documentation:
-Full [documentation avialable on bundlewatch.io](https://bundlewatch.io/)
+Full [documentation available on bundlewatch.io](https://bundlewatch.io/)
 
 
 
