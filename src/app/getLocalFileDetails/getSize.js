@@ -19,7 +19,7 @@ const getBrotliSize = (data) => {
 const getSize = ({ filePath, compression }) => {
     let data
     try {
-        data = fs.readFileSync(filePath, 'utf8')
+        data = fs.readFileSync(filePath)
     } catch (error) {
         logger.error(`Could not read file: ${filePath}}`, error)
         return null
