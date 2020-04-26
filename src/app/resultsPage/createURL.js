@@ -12,7 +12,7 @@ const createURL = async ({
     commitSha,
 }) => {
     const strippedResultsForURL = lodashMerge({}, results)
-    strippedResultsForURL.fullResults.map(result => {
+    strippedResultsForURL.fullResults.map((result) => {
         const strippedResult = result
         delete strippedResult.message
         return strippedResult

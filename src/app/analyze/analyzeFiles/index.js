@@ -7,7 +7,7 @@ export const STATUSES = {
     REMOVED: 'removed',
 }
 
-const getCompressionText = compression => {
+const getCompressionText = (compression) => {
     return compression === 'none' ? '(no compression)' : `(${compression})`
 }
 
@@ -23,7 +23,7 @@ const analyzeFiles = ({
 
     const results = []
 
-    uniqueFilePaths.forEach(filePath => {
+    uniqueFilePaths.forEach((filePath) => {
         const currentBranchFile = currentBranchFileDetails[filePath]
         const baseBranchFile = baseBranchFileDetails[filePath]
 

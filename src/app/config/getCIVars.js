@@ -1,4 +1,4 @@
-const getCIVars = env => {
+const getCIVars = (env) => {
     let repo
 
     let repoOwner

@@ -4,7 +4,7 @@ import logger from '../../logger'
 
 import ValidationError from '../errors/ValidationError'
 
-const getBrotliSize = data => {
+const getBrotliSize = (data) => {
     let brotli
     try {
         brotli = require('brotli-size') // eslint-disable-line global-require

@@ -7,9 +7,9 @@ import determineConfig from './determineConfig'
 import logger from '../logger'
 import bundlewatchApi, { STATUSES } from '../app'
 
-const prettyPrintResults = fullResults => {
+const prettyPrintResults = (fullResults) => {
     logger.log('')
-    fullResults.forEach(result => {
+    fullResults.forEach((result) => {
         const filePath = chalk.italic(result.filePath) + ':'
 
         if (result.error) {
@@ -123,6 +123,6 @@ program.on('--help', () => {
 
 program.parse(process.argv)
 
-mainSafe().then(errorCode => {
+mainSafe().then((errorCode) => {
     process.exitCode = errorCode
 })

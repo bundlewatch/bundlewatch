@@ -6,7 +6,7 @@ import logger from '../../logger'
 const getLocalFileDetails = ({ files, defaultCompression }) => {
     const fileDetails = {}
 
-    files.forEach(file => {
+    files.forEach((file) => {
         const paths = glob.sync(file.path)
         if (!paths.length) {
             const errorMessage = `There is no matching file for ${file.path}`
@@ -15,7 +15,7 @@ const getLocalFileDetails = ({ files, defaultCompression }) => {
                 error: errorMessage,
             }
         } else {
-            paths.forEach(filePath => {
+            paths.forEach((filePath) => {
                 const maxSize = bytes(file.maxSize) || Infinity
                 const compression = file.compression || defaultCompression
                 const size = getSize({

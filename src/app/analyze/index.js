@@ -1,7 +1,7 @@
 import bytes from 'bytes'
 import analyzeFiles, { STATUSES } from './analyzeFiles'
 
-const getOverallStatus = fileResults => {
+const getOverallStatus = (fileResults) => {
     return fileResults.reduce((status, fileResult) => {
         if (status === STATUSES.FAIL || fileResult.status === STATUSES.FAIL) {
             return STATUSES.FAIL
@@ -13,12 +13,12 @@ const getOverallStatus = fileResults => {
     }, STATUSES.PASS)
 }
 
-export const getOverallDifference = fullResults => {
+export const getOverallDifference = (fullResults) => {
     let totalBaseBranchSize = 0
     let totalFileResultSize = 0
     let totalAdded = 0
     let totalRemoved = 0
-    fullResults.forEach(fileResult => {
+    fullResults.forEach((fileResult) => {
         totalBaseBranchSize += fileResult.baseBranchSize
         totalFileResultSize += fileResult.size
         if (fileResult.size < fileResult.baseBranchSize) {
@@ -39,7 +39,7 @@ export const getOverallDifference = fullResults => {
     }
 }
 
-export const getPercentageChangeString = percentageChange => {
+export const getPercentageChangeString = (percentageChange) => {
     if (percentageChange === null) {
         return ''
     }
