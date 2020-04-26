@@ -86,10 +86,15 @@ const bundlewatchApi = async customConfig => {
             )
         } else {
             // TODO: add warn
-            await githubService.pass({
-                message: results.summary,
-                url: results.url,
-            })
+            await Promise.all([
+                githubService.pass({
+                    message: results.summary,
+                    url: results.url,
+                }),
+                githubService.createIssueComment({
+                    body: 'test issue comment',
+                }),
+            ])
         }
         return results
     } catch (e) {
