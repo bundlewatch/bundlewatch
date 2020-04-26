@@ -10,7 +10,7 @@ const getCIVars = env => {
     if (env.TRAVIS) {
         repo = env.TRAVIS_REPO_SLUG
         commitSha = env.TRAVIS_PULL_REQUEST_SHA || env.TRAVIS_COMMIT
-        repoCurrentBranch = env.TRAVIS_PULL_REQUEST_BRANCH
+        repoCurrentBranch = env.TRAVIS_PULL_REQUEST_BRANCH || env.TRAVIS_BRANCH
         repoBranchBase = env.TRAVIS_BRANCH
     } else if (env.CIRCLECI) {
         repoOwner = env.CIRCLE_PROJECT_USERNAME
