@@ -69,11 +69,21 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "aleksejleonov",
+      "name": "Oleksii Leonov",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/241582?v=4",
+      "profile": "http://oleksiileonov.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
   "projectName": "bundlewatch",
   "projectOwner": "bundlewatch",
   "repoType": "github",
-  "repoHost": "https://github.com"
+  "repoHost": "https://github.com",
+  "skipCi": true
 }
