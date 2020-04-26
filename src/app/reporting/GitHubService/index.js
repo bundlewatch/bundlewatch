@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import logger from '../../../logger'
 
-const getContextForFilePath = filePath => {
+const getContextForFilePath = (filePath) => {
     let context = 'bundlewatch'
     if (filePath) {
         const TRUNCATE_TO_LENGTH = 35
@@ -75,7 +75,7 @@ class GitHubService {
             headers: {
                 Authorization: `token ${this.githubAccessToken}`,
             },
-        }).catch(error => {
+        }).catch((error) => {
             if (error.response) {
                 logger.error(
                     `GitHubService HTTP_${error.response.status} :: ${

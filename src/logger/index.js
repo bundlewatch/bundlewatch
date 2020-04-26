@@ -3,7 +3,7 @@ import chalk from 'chalk'
 const stdout = console.log // eslint-disable-line no-console
 const stderr = console.error // eslint-disable-line no-console
 
-const debug = error => {
+const debug = (error) => {
     if (process.env.DEBUG) {
         const debugObject = error.response
             ? error.response.data
@@ -18,15 +18,15 @@ const debug = error => {
     }
 }
 
-const log = message => {
+const log = (message) => {
     stdout(message)
 }
 
-const info = message => {
+const info = (message) => {
     stdout(chalk.cyan(`[INFO] ${message}`))
 }
 
-const warn = message => {
+const warn = (message) => {
     stdout(chalk.yellow(`[WARNING] ${message}`))
 }
 

@@ -5,7 +5,7 @@ import readPkgUp from 'read-pkg-up'
 import ValidationError from '../app/errors/ValidationError'
 import logger from '../logger'
 
-const readConfigFile = configFilePath => {
+const readConfigFile = (configFilePath) => {
     try {
         return fs.readFileSync(configFilePath, 'utf8')
     } catch (error) {
@@ -14,7 +14,7 @@ const readConfigFile = configFilePath => {
     }
 }
 
-const getConfigFileJson = configFilePath => {
+const getConfigFileJson = (configFilePath) => {
     const configFileContents = readConfigFile(configFilePath)
     if (!configFileContents) {
         throw new ValidationError(
@@ -31,7 +31,7 @@ const getConfigFileJson = configFilePath => {
     }
 }
 
-const getConfigFileJS = configFilePath => {
+const getConfigFileJS = (configFilePath) => {
     const projectDir = path.resolve(fs.realpathSync(process.cwd()))
     const fullPath = `${projectDir}/${configFilePath}`
     try {
@@ -44,14 +44,14 @@ const getConfigFileJS = configFilePath => {
     }
 }
 
-const getConfigFileContents = configFilePath => {
+const getConfigFileContents = (configFilePath) => {
     if (configFilePath.endsWith('.js')) {
         return getConfigFileJS(configFilePath)
     }
     return getConfigFileJson(configFilePath)
 }
 
-const determineConfig = cliOptions => {
+const determineConfig = (cliOptions) => {
     const pkgJson = (readPkgUp.sync() || {}).packageJson
     let pkgJsonbundlewatch = pkgJson.bundlewatch
 
@@ -67,7 +67,7 @@ const determineConfig = cliOptions => {
             )
         }
 
-        const files = cliOptions.args.map(filePathGlob => {
+        const files = cliOptions.args.map((filePathGlob) => {
             return {
                 path: filePathGlob,
                 maxSize: cliOptions.maxSize,

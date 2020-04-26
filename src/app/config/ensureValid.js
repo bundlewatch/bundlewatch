@@ -4,7 +4,7 @@ import logger from '../../logger'
 
 const COMPRESSION_TYPES = ['gzip', 'brotli', 'none']
 
-const ensureValid = config => {
+const ensureValid = (config) => {
     if (!Array.isArray(config.files)) {
         throw new ValidationError('config.files must be an Array')
     }

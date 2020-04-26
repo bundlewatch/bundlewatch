@@ -55,7 +55,7 @@ const main = async ({
     }
 }
 
-const bundlewatchApi = async customConfig => {
+const bundlewatchApi = async (customConfig) => {
     const config = getConfig(customConfig)
     const githubService = new GitHubService({
         repoOwner: config.ci.repoOwner,
@@ -74,7 +74,7 @@ const bundlewatchApi = async customConfig => {
             })
 
             await Promise.all(
-                results.fullResults.map(result => {
+                results.fullResults.map((result) => {
                     if (result.status === STATUSES.FAIL) {
                         return githubService.fail({
                             message: result.message,

@@ -58,17 +58,17 @@ class bundlewatchService {
                     timeout: 10000,
                 },
             )
-            .then(response => {
+            .then((response) => {
                 return response.data.fileDetailsByPath
             })
-            .catch(error => {
+            .catch((error) => {
                 logger.debug(error)
                 logger.error(
                     `Unable to fetch fileDetails for baseBranch=${
                         this.repoBranchBase
-                    } from ${
-                        this.bundlewatchServiceStoreUrl
-                    } code=${error.code || error.message}`,
+                    } from ${this.bundlewatchServiceStoreUrl} code=${
+                        error.code || error.message
+                    }`,
                 )
                 return {}
             })
@@ -112,7 +112,7 @@ class bundlewatchService {
                     timeout: 10000,
                 },
             )
-            .catch(error => {
+            .catch((error) => {
                 logger.debug(error)
                 logger.error(
                     `Unable to save fileDetails for currentBranch=${

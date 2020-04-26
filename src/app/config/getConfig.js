@@ -20,7 +20,7 @@ const defaultConfig = {
     defaultCompression: 'gzip',
 }
 
-const getConfig = customConfig => {
+const getConfig = (customConfig) => {
     const config = lodashMerge({}, defaultConfig, customConfig)
     ensureValid(config)
     return config
