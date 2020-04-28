@@ -155,7 +155,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ## Want to Help? Become a Contributor
-Contributions of any kind are welcome! [See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlewatch/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) and start contributing.
+Contributions of any kind are welcome! [See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlewatch/shared_invite/zt-dtm41j6u-x4OTIvv033aT0rSCuIB~1w) and start contributing.
 
 [npm]: https://img.shields.io/npm/v/bundlewatch.svg
 [npm-url]: https://npmjs.com/package/bundlewatch
