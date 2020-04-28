@@ -37,6 +37,7 @@
         "bytes": "^3.0.0",
         "chalk": "^4.0.0",
         "commander": "^5.0.0",
+        "env-ci": "^5.0.2",
         "glob": "^7.1.2",
         "gzip-size": "^5.1.1",
         "jsonpack": "^1.1.5",

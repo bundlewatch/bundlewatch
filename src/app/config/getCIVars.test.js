@@ -37,6 +37,7 @@ describe(`getCIVars`, () => {
 
     it(`GitHub Actions is detected`, () => {
         const ciVars = getCIVars({
+            GITHUB_ACTION: 'action-id',
             GITHUB_ACTIONS: true,
             GITHUB_REPOSITORY: mockRepo,
             GITHUB_SHA: mockCommitSha,
