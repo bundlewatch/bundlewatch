@@ -8,6 +8,8 @@ describe(`getCIVars`, () => {
     const mockRef = `refs/heads/mock_branch_base`
     const mockCommitSha = `ffac537e6cbbf934b08745a378932722df287a53`
 
+    beforeEach(jest.resetModules)
+
     it(`Extracts GIT_URL (ssh) correct`, () => {
         const ciVars = getCIVars({
             GIT_URL: `git@github.com:${mockRepo}.git`,

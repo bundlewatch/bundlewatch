@@ -1,21 +1,14 @@
-import envCi from 'env-ci'
-
 const getCIVars = (env) => {
-    const { branch, commit, isPr, prBranch, slug } = envCi({ env })
-    let repo = slug
-    let repoOwner
-    let repoName
-    let repoCurrentBranch = isPr ? prBranch : branch
-    let repoBranchBase = branch
-    let commitSha = commit
-
+    Object.assign(process.env, env)
+    // eslint-disable-next-line global-require
+    const ci = require('ci-env')
     // Take CI preffered vars over everything
-    repoOwner = env.CI_REPO_OWNER || repoOwner
-    repoName = env.CI_REPO_NAME || repoName
-    commitSha = env.CI_COMMIT_SHA || env.GIT_COMMIT || commitSha
-    repoCurrentBranch = env.CI_BRANCH || env.GIT_BRANCH || repoCurrentBranch
-    repoBranchBase = env.CI_BRANCH_BASE || repoBranchBase
-    repo = env.CI_REPO_SLUG || repo
+    let repoOwner = env.CI_REPO_OWNER
+    let repoName = env.CI_REPO_NAME
+    let commitSha = env.CI_COMMIT_SHA || env.GIT_COMMIT || ci.sha
+    let repoCurrentBranch = env.CI_BRANCH || env.GIT_BRANCH || ci.branch
+    let repoBranchBase = env.CI_BRANCH_BASE || ci.pull_request_target_branch
+    let repo = env.CI_REPO_SLUG || ci.repo
 
     if (!repo) {
         const gitUrl = env.GIT_URL
