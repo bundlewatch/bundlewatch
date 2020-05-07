@@ -16,35 +16,34 @@
 [![test][test]][test-url]
 
   <br>
-	<a href="https://npmcharts.com/compare/bundlewatch?minimal=true">
-		<img src="https://img.shields.io/npm/dm/bundlewatch.svg">
-	</a>
-	<a href="https://github.com/bundlewatch/bundlewatch/graphs/contributors">
-		<img src="https://img.shields.io/github/contributors/bundlewatch/bundlewatch.svg">
-	</a>
-    <a href="https://github.com/bundlewatch/bundlewatch/blob/master/LICENSE">
-		<img src="https://img.shields.io/npm/l/bundlewatch.svg">
-	</a>
+
+[![npm-chart][npm-chart]][npm-chart-url]
+[![contributors][contrib]][contrib-url]
+[![license][license]][license-url]
+
   <h1>BundleWatch</h1>
   <p>
-    BundleWatch checks file sizes, ensuring bundled browser assets don't jump in file size. <br />
+    BundleWatch checks file sizes, ensuring bundled browser assets don't jump in file size.<br />
     Sharp increases in BundleWatch can signal that something is wrong - adding a package that bloats the slug, a wrong import, or forgetting to minify.
   </p>
 </div>
 
-Inspired by [Siddharth Kshetrapal bundlesize](https://github.com/siddharthkp/bundlesize)
+Inspired by [Siddharth Kshetrapal bundlesize][bundlesize]
 
-# Getting Started:
+# Getting Started
+
 Install the BundleWatch package:
+
 - NPM: `npm install bundlewatch --save-dev`
 - Yarn: `yarn add bundlewatch --dev`
 
 Add some basic configuration to your `package.json`
+
 ```json
 {
     "name": "my package name",
     "version": "0.0.1",
-    "bundlewatch" : {
+    "bundlewatch": {
         "files": [
             {
                 "path": "myfolder/*.js",
@@ -56,68 +55,67 @@ Add some basic configuration to your `package.json`
 ```
 
 Usage:
+
 - NPM: `npm run bundlewatch`
 - Yarn: `yarn run bundlewatch`
 
 This will give you command line output. If you want BundleWatch to report build status on your pull requests, see below.
 
+# Adding Build Status
 
-# Adding Build Status:
 BundleWatch can report its status on your GitHub Pull Requests.
 
 <div align="center">
     <img alt="build status preview" src="https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-status-preview.png" width="700px">
 </div>
 
-## CI Auth Variables Needed by BundleWatch:
+## CI Auth Variables Needed by BundleWatch
+
 - `BUNDLEWATCH_GITHUB_TOKEN`
 
 You will need to give BundleWatch access to your GitHub Statuses, which can be done by heading to:
-https://service.bundlewatch.io/setup-github
+[https://service.bundlewatch.io/setup-github][setup-github-url]
 
 This will give you your `BUNDLEWATCH_GITHUB_TOKEN`. You will need to set this as an environment variable in CI.
 
+## CI Variables Needed by BundleWatch
 
-## CI Variables Needed by BundleWatch:
 The most efficient way to get this running is to ensure that some environment variables are available for BundleWatch to find.
+
 - `CI_REPO_OWNER` github.com/**facebook**/react
-- `CI_REPO_NAME`  github.com/facebook/**react**
+- `CI_REPO_NAME` github.com/facebook/**react**
 - `CI_COMMIT_SHA`
 - `CI_BRANCH`
 
 If you're using, _Travis_, _CircleCI_, _Wrecker_, _Drone_ or _GitHub Actions_ these should all work out of the box.
 
-> Have a look at the source code to see which variables are automatically found: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/getCIVars.js
-
-
-
-
+> Have a look at the source code to see which variables are automatically found: [`getCIVars`][get-ci-vars-source]
 
 ## Viewing the results breakdown
+
 After setting up the above you will have BuildStatus on your Pull Requests. Clicking the _details_ link on the reported status will show you a results file breakdown.
+
 <div align="center">
     <img alt="build results preview" src="https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-results-preview.png" width="700px">
 </div>
 
+---
 
-<hr>
+# Additional Documentation
 
+Full [documentation available on bundlewatch.io][bundlewatch-docs-url]
 
+## I use bundlesize, why should I switch to BundleWatch
 
-# Additional Documentation:
-Full [documentation available on bundlewatch.io](https://bundlewatch.io/)
-
-
-
-# I use bundlesize, why should I switch to BundleWatch?
 - Bundlesize has entered maintenance mode and pull requests are left hanging, so we wanted to reboot the community through creating BundleWatch
-- New [BundleWatch service](https://github.com/bundlewatch/service) with infrastructure as code
-- Launched [bundlewatch.io documentation website](https://bundlewatch.io)
+- New [BundleWatch service][bundlewatch-service] with infrastructure as code
+- Launched [bundlewatch.io documentation website][bundlewatch-docs-url]
 - Enough test coverage to support CD
 - Node API Support
 - Lower barrier to contributing (automated testing and publishing), build a trusted community of contributors to have continuous improvement
 
-### Additional Features:
+## Additional Features
+
 - [x] Config validation to stop users from guessing why BundleWatch won't work
 - [x] Support for config file path
 - [x] Better results breakdown page
@@ -128,7 +126,7 @@ Full [documentation available on bundlewatch.io](https://bundlewatch.io/)
 
 ## Contributors
 
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+Thanks goes to these wonderful people ([emoji key][all-contrib-emoji-key]):
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -152,29 +150,40 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+This project follows the [all-contributors][all-contrib-url] specification.
+Contributions of any kind welcome!
 
 ## Want to Help? Become a Contributor
-Contributions of any kind are welcome! [See the Contributing docs](CONTRIBUTING.md) or [Join us on Slack](https://join.slack.com/t/bundlewatch/shared_invite/zt-dtm41j6u-x4OTIvv033aT0rSCuIB~1w) and start contributing.
 
-[npm]: https://img.shields.io/npm/v/bundlewatch.svg
-[npm-url]: https://npmjs.com/package/bundlewatch
+Contributions of any kind are welcome!
+[See the Contributing docs][contrib-docs-url] or [Join us on Slack][slack-invite-url].
 
-[node]: https://img.shields.io/node/v/bundlewatch.svg
-[node-url]: https://nodejs.org
-
-[bundlewatch]: https://img.shields.io/badge/bundle-watched-blue.svg
-[bundlewatch-url]: https://bundlewatch.io
-
-[deps]: https://david-dm.org/bundlewatch/bundlewatch/status.svg
-[deps-url]: https://david-dm.org/bundlewatch/bundlewatch
-
-[dev-deps]: https://david-dm.org/bundlewatch/bundlewatch/dev-status.svg
-[dev-deps-url]: https://david-dm.org/bundlewatch/bundlewatch?type=dev
-
-[test]: https://coveralls.io/repos/github/bundlewatch/bundlewatch/badge.svg?branch=master
-[test-url]: https://coveralls.io/github/bundlewatch/bundlewatch?branch=master
-
+[all-contrib-emoji-key]: https://allcontributors.org/docs/en/emoji-key
+[all-contrib-url]: https://github.com/all-contributors/all-contributors
 [builds]: https://img.shields.io/circleci/project/github/bundlewatch/bundlewatch/master.svg
 [builds-url]: https://circleci.com/gh/bundlewatch/bundlewatch
-
+[bundlesize]: https://github.com/siddharthkp/bundlesize
+[bundlewatch]: https://img.shields.io/badge/bundle-watched-blue.svg
+[bundlewatch-url]: https://bundlewatch.io
+[bundlewatch-docs-url]: https://bundlewatch.io/
+[bundlewatch-service]: https://github.com/bundlewatch/service
+[contrib]: https://img.shields.io/github/contributors/bundlewatch/bundlewatch.svg
+[contrib-docs-url]: https://github.com/bundlewatch/bundlewatch/blob/master/CONTRIBUTING.md
+[contrib-url]: https://github.com/bundlewatch/bundlewatch/graphs/contributors
+[deps]: https://david-dm.org/bundlewatch/bundlewatch/status.svg
+[deps-url]: https://david-dm.org/bundlewatch/bundlewatch
+[dev-deps]: https://david-dm.org/bundlewatch/bundlewatch/dev-status.svg
+[dev-deps-url]: https://david-dm.org/bundlewatch/bundlewatch?type=dev
+[get-ci-vars-source]: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/getCIVars.js
+[node]: https://img.shields.io/node/v/bundlewatch.svg
+[node-url]: https://nodejs.org
+[npm]: https://img.shields.io/npm/v/bundlewatch.svg
+[npm-chart]: https://img.shields.io/npm/dm/bundlewatch.svg
+[npm-chart-url]: https://npmcharts.com/compare/bundlewatch?minimal=true
+[npm-url]: https://npmjs.com/package/bundlewatch
+[license]: https://img.shields.io/npm/l/bundlewatch.svg
+[license-url]: https://github.com/bundlewatch/bundlewatch/blob/master/LICENSE
+[setup-github-url]: https://service.bundlewatch.io/setup-github
+[slack-invite-url]: https://join.slack.com/t/bundlewatch/shared_invite/zt-dtm41j6u-x4OTIvv033aT0rSCuIB~1w
+[test]: https://coveralls.io/repos/github/bundlewatch/bundlewatch/badge.svg?branch=master
+[test-url]: https://coveralls.io/github/bundlewatch/bundlewatch?branch=master
