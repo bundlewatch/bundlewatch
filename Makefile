@@ -43,7 +43,7 @@ ifndef CI
 endif
 package: check-versions node_modules ${ARTIFACT_DIR}
 	rm -rf lib
-	babel src --out-dir=lib --copy-files --ignore .test.js
+	babel src --out-dir=lib --copy-files --no-copy-ignored --ignore **/*.test.js
 	npm pack
 	mv *.tgz artifacts/
 
