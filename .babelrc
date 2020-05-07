@@ -1,5 +1,4 @@
 {
-    "ignore": ["**/*.test.js","**/*.mockdata.js","**/*.js.snap"],
     "presets": [
         [
             "@babel/preset-env",
