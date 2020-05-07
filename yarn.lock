@@ -1637,6 +1637,11 @@ chokidar@^2.1.8:
   optionalDependencies:
     fsevents "^1.2.7"
 
+ci-env@^1.14.0:
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/ci-env/-/ci-env-1.14.0.tgz#917867ed4d3580a1ea2776b235a70bcb9b8e0791"
+  integrity sha512-rSoyr8Fvlr3BBlCrIFmeTiIL1ORU3QRJamirxCOot0DpRO7i8ityqoKfoOXa1NVrrSNCdaPmt9al/2ebD2v3cg==
+
 ci-info@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-2.0.0.tgz#67a9e964be31a51e15e5010d58e6f12834002f46"
