@@ -1694,9 +1694,9 @@ chokidar@^2.1.8:
     fsevents "^1.2.7"
 
 ci-env@^1.14.0:
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/ci-env/-/ci-env-1.15.0.tgz#68fec4fcd6eaa89ddcd4e9ac8d0766b7495c4ac6"
-  integrity sha512-pXv9CQo9ORLqY6tshecGkj3cRkbHKcHU8RnPf269knEL9ggvpg954Qi+Ow0DpTOk1/Bo5hySxyLHdt44CImMJw==
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/ci-env/-/ci-env-1.16.0.tgz#e97f3b5001a8daf7da6e46f418bc6892a238704d"
+  integrity sha512-ucF9caQEX5wQlY449KZBIJPx91+kRg9tJ3tWSc4+KzrvC5KNiPm/3g1noP8VhdI3046+Vw3jLmKAD0fjCRJTmw==
 
 ci-info@^2.0.0:
   version "2.0.0"
