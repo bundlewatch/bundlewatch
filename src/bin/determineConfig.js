@@ -52,8 +52,8 @@ const getConfigFileContents = (configFilePath) => {
 }
 
 const determineConfig = (cliOptions) => {
-    const pkgJson = (readPkgUp.sync() || {}).packageJson
-    let pkgJsonbundlewatch = pkgJson.bundlewatch
+    const pkgJson = (readPkgUp.sync() || { packageJson: {} }).packageJson
+    const pkgJsonbundlewatch = pkgJson.bundlewatch
 
     if (cliOptions.args && cliOptions.args.length > 0) {
         if (pkgJsonbundlewatch) {
