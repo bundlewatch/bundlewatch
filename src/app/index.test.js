@@ -102,4 +102,23 @@ describe(`bundlewatch Node API`, () => {
         }
         expect(error).toMatchSnapshot()
     })
+
+    it('Normalizes hash when given a filenameNormalizationPattern and filenameNoramlizationReplacement', async () => {
+        const result = await bundlewatchApi({
+            files: [
+                {
+                    path: './__testdata__/*.js',
+                    maxSize: '100kB',
+                },
+            ],
+            defaultCompression: 'none',
+            pathNormalizationPattern: '^([.][^\\.]+[.])([^\\.]+)([.].+)',
+            pathNoramlizationReplacement: '$1[hash]$3',
+        })
+
+        delete result.url
+        expect(result.fullResults[0].filePath).toMatchInlineSnapshot(
+            `"./__testdata__/test.[hash].bundle.js"`,
+        )
+    })
 })
