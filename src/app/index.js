@@ -11,10 +11,14 @@ const main = async ({
     bundlewatchServiceHost,
     ci,
     defaultCompression,
+    pathNormalizationPattern,
+    pathNoramlizationReplacement,
 }) => {
     const currentBranchFileDetails = getLocalFileDetails({
         files,
         defaultCompression: defaultCompression,
+        pathNormalizationPattern,
+        pathNoramlizationReplacement,
     })
 
     const bundlewatchService = new BundleWatchService({

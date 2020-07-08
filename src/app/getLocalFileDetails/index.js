@@ -3,8 +3,15 @@ import glob from 'glob'
 import getSize from './getSize'
 import logger from '../../logger'
 
-const getLocalFileDetails = ({ files, defaultCompression }) => {
+const getLocalFileDetails = ({
+    files,
+    defaultCompression,
+    pathNormalizationPattern,
+    pathNoramlizationReplacement,
+}) => {
     const fileDetails = {}
+    const pathNormalizationPatternRegExp =
+        pathNormalizationPattern && new RegExp(pathNormalizationPattern)
 
     files.forEach((file) => {
         const paths = glob.sync(file.path)
@@ -22,9 +29,15 @@ const getLocalFileDetails = ({ files, defaultCompression }) => {
                     filePath,
                     compression,
                 })
+                const normalizedFilePath = pathNormalizationPatternRegExp
+                    ? filePath.replace(
+                          pathNormalizationPatternRegExp,
+                          pathNoramlizationReplacement,
+                      )
+                    : filePath
 
                 if (size) {
-                    fileDetails[filePath] = {
+                    fileDetails[normalizedFilePath] = {
                         maxSize,
                         size,
                         compression,
