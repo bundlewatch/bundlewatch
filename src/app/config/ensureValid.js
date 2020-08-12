@@ -31,10 +31,18 @@ const ensureNormalizeFilenamesValid = (config) => {
     if (input == null) return config
 
     if (typeof input === 'string') {
-        // eslint-disable-next-line no-param-reassign
-        config.normalizeFilenames = new RegExp(input)
+        try {
+            // eslint-disable-next-line no-param-reassign
+            config.normalizeFilenames = new RegExp(input)
+        } catch (e) {
+            throw new Error(
+                `config.normalizeFilenames (${input}) is not a valid RegExp.`,
+            )
+        }
     } else if (!(input instanceof RegExp)) {
-        throw new Error('config.normalizeFilenames is not a valid RegExp.')
+        throw new Error(
+            `config.normalizeFilenames (${input}) is not a valid RegExp.`,
+        )
     }
 
     return config
