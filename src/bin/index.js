@@ -104,6 +104,10 @@ program
         '--compression [compression]',
         'specify which compression algorithm to use',
     )
+    .option(
+        '--normalize [regex]',
+        'normalize filenames via regex, any match will be removed',
+    )
 
 program.on('--help', () => {
     logger.log('')

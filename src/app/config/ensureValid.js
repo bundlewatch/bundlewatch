@@ -26,6 +26,23 @@ const ensureDefaultCompressionValid = (config) => {
     return config
 }
 
+/* eslint-disable no-param-reassign */
+const ensureNormalizeFilenamesValid = (config) => {
+    const input = config.normalizeFilenames
+    if (input == null) return config
+
+    if (typeof input === 'string') {
+        config.normalizeFilenames = new RegExp(input)
+    } else if (!(input instanceof RegExp)) {
+        throw new Error('config.normalizeFilenames is not a valid RegExp.')
+    }
+
+    config.normalizeFilenames = new RegExp(input, 'g')
+
+    return config
+}
+/* eslint-enable */
+
 const ensureCiValid = (config) => {
     if (!Array.isArray(config.ci.trackBranches)) {
         throw new ValidationError('config.ci.trackBranches must be an Array')
@@ -83,6 +100,7 @@ const validators = [
     ensureCiValid,
 ]
 
+// Runs and returns the result of each validator
 const ensureValid = (config) =>
     validators.reduce((c, validator) => validator(c), config)
 
