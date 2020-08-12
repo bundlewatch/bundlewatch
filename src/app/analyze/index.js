@@ -83,7 +83,7 @@ const getSummary = ({ overallStatus, fullResults, baseBranchName }) => {
     return `Everything is in check ${differenceSummary}`
 }
 
-const normalize = (normalizeFilenames) => (result) => {
+export const normalizeFilename = (normalizeFilenames) => (result) => {
     let filename = basename(result.filePath)
     const [, ...matches] = filename.match(normalizeFilenames) ?? []
 
@@ -111,7 +111,7 @@ const analyze = ({
     })
 
     if (normalizeFilenames != null) {
-        fileResults = fileResults.map(normalize(normalizeFilenames))
+        fileResults = fileResults.map(normalizeFilename(normalizeFilenames))
     }
 
     const overallStatus = getOverallStatus(fileResults)
