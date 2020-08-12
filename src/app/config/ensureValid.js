@@ -4,7 +4,7 @@ import logger from '../../logger'
 
 const COMPRESSION_TYPES = ['gzip', 'brotli', 'none']
 
-const ensureValid = (config) => {
+const ensureFilesValid = (config) => {
     if (!Array.isArray(config.files)) {
         throw new ValidationError('config.files must be an Array')
     }
@@ -14,11 +14,15 @@ const ensureValid = (config) => {
     //     maxSize, // basically required (defaults to Infinity)
     //     compression, // optional
     // }
+}
 
+const ensureDefaultCompressionValid = (config) => {
     if (!COMPRESSION_TYPES.includes(config.defaultCompression)) {
         throw new ValidationError('config.compression must be a valid type')
     }
+}
 
+const ensureCiValid = (config) => {
     if (!Array.isArray(config.ci.trackBranches)) {
         throw new ValidationError('config.ci.trackBranches must be an Array')
     }
@@ -64,6 +68,12 @@ const ensureValid = (config) => {
     Learn more at: https://bundlewatch.io/
         `)
     }
+}
+
+const ensureValid = (config) => {
+    ensureFilesValid(config)
+    ensureDefaultCompressionValid(config)
+    ensureCiValid(config)
 }
 
 export default ensureValid
