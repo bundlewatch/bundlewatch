@@ -14,12 +14,16 @@ const ensureFilesValid = (config) => {
     //     maxSize, // basically required (defaults to Infinity)
     //     compression, // optional
     // }
+
+    return config
 }
 
 const ensureDefaultCompressionValid = (config) => {
     if (!COMPRESSION_TYPES.includes(config.defaultCompression)) {
         throw new ValidationError('config.compression must be a valid type')
     }
+
+    return config
 }
 
 const ensureCiValid = (config) => {
@@ -68,12 +72,18 @@ const ensureCiValid = (config) => {
     Learn more at: https://bundlewatch.io/
         `)
     }
+
+    return config
 }
 
-const ensureValid = (config) => {
-    ensureFilesValid(config)
-    ensureDefaultCompressionValid(config)
-    ensureCiValid(config)
-}
+const validators = [
+    ensureFilesValid,
+    ensureDefaultCompressionValid,
+    ensureNormalizeFilenamesValid,
+    ensureCiValid,
+]
+
+const ensureValid = (config) =>
+    validators.reduce((c, validator) => validator(c), config)
 
 export default ensureValid

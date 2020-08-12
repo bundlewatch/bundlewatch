@@ -22,8 +22,8 @@ const defaultConfig = {
 
 const getConfig = (customConfig) => {
     const config = lodashMerge({}, defaultConfig, customConfig)
-    ensureValid(config)
-    return config
+
+    return ensureValid(config)
 }
 
 export default getConfig
