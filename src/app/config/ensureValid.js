@@ -26,22 +26,19 @@ const ensureDefaultCompressionValid = (config) => {
     return config
 }
 
-/* eslint-disable no-param-reassign */
 const ensureNormalizeFilenamesValid = (config) => {
     const input = config.normalizeFilenames
     if (input == null) return config
 
     if (typeof input === 'string') {
+        // eslint-disable-next-line no-param-reassign
         config.normalizeFilenames = new RegExp(input)
     } else if (!(input instanceof RegExp)) {
         throw new Error('config.normalizeFilenames is not a valid RegExp.')
     }
 
-    config.normalizeFilenames = new RegExp(input, 'g')
-
     return config
 }
-/* eslint-enable */
 
 const ensureCiValid = (config) => {
     if (!Array.isArray(config.ci.trackBranches)) {
