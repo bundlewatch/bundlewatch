@@ -1,4 +1,5 @@
 import bytes from 'bytes'
+import { basename } from 'path'
 import analyzeFiles, { STATUSES } from './analyzeFiles'
 
 const getOverallStatus = (fileResults) => {
@@ -82,16 +83,36 @@ const getSummary = ({ overallStatus, fullResults, baseBranchName }) => {
     return `Everything is in check ${differenceSummary}`
 }
 
+export const normalizeFilename = (normalizeFilenames) => (result) => {
+    let filename = basename(result.filePath)
+    const [, ...matches] = filename.match(normalizeFilenames) ?? []
+
+    let normalized = filename
+    matches.forEach((match) => {
+        normalized = normalized.replace(match, '')
+    })
+
+    return {
+        ...result,
+        filePath: result.filePath.slice(0, -filename.length) + normalized,
+    }
+}
+
 const analyze = ({
     currentBranchFileDetails,
     baseBranchFileDetails,
     baseBranchName,
+    normalizeFilenames,
 }) => {
-    const fileResults = analyzeFiles({
+    let fileResults = analyzeFiles({
         currentBranchFileDetails,
         baseBranchFileDetails,
         baseBranchName,
     })
+
+    if (normalizeFilenames != null) {
+        fileResults = fileResults.map(normalizeFilename(normalizeFilenames))
+    }
 
     const overallStatus = getOverallStatus(fileResults)
     const summary = getSummary({

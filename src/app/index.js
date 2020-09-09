@@ -11,6 +11,7 @@ const main = async ({
     bundlewatchServiceHost,
     ci,
     defaultCompression,
+    normalizeFilenames,
 }) => {
     const currentBranchFileDetails = getLocalFileDetails({
         files,
@@ -37,6 +38,7 @@ const main = async ({
         currentBranchFileDetails,
         baseBranchFileDetails,
         baseBranchName: ci.repoBranchBase,
+        normalizeFilenames,
     })
 
     const url = await createURLToResultPage({

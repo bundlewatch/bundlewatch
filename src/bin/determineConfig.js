@@ -77,6 +77,7 @@ const determineConfig = (cliOptions) => {
         return {
             files,
             defaultCompression: cliOptions.compression || 'gzip',
+            normalizeFilenames: cliOptions.normalize,
         }
     }
 

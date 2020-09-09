@@ -6,6 +6,7 @@ import ensureValid from './ensureValid'
 const ciVars = getCIVars(process.env)
 
 const defaultConfig = {
+    normalizeFilenames: null,
     files: [],
     bundlewatchServiceHost: 'https://service.bundlewatch.io', // Can be a custom service, or set to NUll
     ci: {
@@ -22,8 +23,8 @@ const defaultConfig = {
 
 const getConfig = (customConfig) => {
     const config = lodashMerge({}, defaultConfig, customConfig)
-    ensureValid(config)
-    return config
+
+    return ensureValid(config)
 }
 
 export default getConfig
