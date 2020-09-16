@@ -38,7 +38,6 @@ const main = async ({
         currentBranchFileDetails,
         baseBranchFileDetails,
         baseBranchName: ci.repoBranchBase,
-        normalizeFilenames,
     })
 
     const url = await createURLToResultPage({
