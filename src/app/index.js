@@ -16,6 +16,7 @@ const main = async ({
     const currentBranchFileDetails = getLocalFileDetails({
         files,
         defaultCompression: defaultCompression,
+        normalizeFilenames,
     })
 
     const bundlewatchService = new BundleWatchService({
