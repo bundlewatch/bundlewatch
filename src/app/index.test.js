@@ -102,4 +102,22 @@ describe(`bundlewatch Node API`, () => {
         }
         expect(error).toMatchSnapshot()
     })
+
+    it('Normalizes hash when given a normalizeFilenames option', async () => {
+        const result = await bundlewatchApi({
+            files: [
+                {
+                    path: './__testdata__/*.js',
+                    maxSize: '100kB',
+                },
+            ],
+            defaultCompression: 'none',
+            normalizeFilenames: '^.+?(\\.\\w+)\\.(?:js|css)$',
+        })
+
+        delete result.url
+        expect(result.fullResults[0].filePath).toMatchInlineSnapshot(
+            `"./__testdata__/test.bundle.js"`,
+        )
+    })
 })

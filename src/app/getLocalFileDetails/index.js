@@ -3,7 +3,11 @@ import glob from 'glob'
 import getSize from './getSize'
 import logger from '../../logger'
 
-const getLocalFileDetails = ({ files, defaultCompression }) => {
+const getLocalFileDetails = ({
+    files,
+    defaultCompression,
+    normalizeFilenames,
+}) => {
     const fileDetails = {}
 
     files.forEach((file) => {
@@ -22,9 +26,24 @@ const getLocalFileDetails = ({ files, defaultCompression }) => {
                     filePath,
                     compression,
                 })
+                const normalizedFilePath = normalizeFilenames
+                    ? // remove matched capture groups
+                      filePath
+                          // find all matching segments
+                          .split(normalizeFilenames)
+                          .reduce(
+                              (partiallyNormalizedPath, matchingSegment) =>
+                                  // remove matching segment from normalized path
+                                  partiallyNormalizedPath.replace(
+                                      matchingSegment,
+                                      '',
+                                  ),
+                              filePath,
+                          )
+                    : filePath
 
                 if (size) {
-                    fileDetails[filePath] = {
+                    fileDetails[normalizedFilePath] = {
                         maxSize,
                         size,
                         compression,

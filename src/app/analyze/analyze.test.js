@@ -1,8 +1,4 @@
-import {
-    getOverallDifference,
-    getPercentageChangeString,
-    normalizeFilename,
-} from '.'
+import { getOverallDifference, getPercentageChangeString } from '.'
 import { mockFileResults } from './analyze.test.mockdata'
 
 describe('getOverallDifference', () => {
@@ -76,33 +72,5 @@ describe('getPercentageChangeString', () => {
 
     it('Fixes to one decimal place', () => {
         expect(getPercentageChangeString(1.2345)).toEqual('+1.2%')
-    })
-})
-
-describe('normalizeFilename', () => {
-    const toResult = (name) => ({ filePath: name })
-
-    // anything(.hash).js
-    const removeHashRegex = /^.+?(\.\w+)\.js$/
-    // anything(test)anything(test).js
-    const testRegex = /^.+?(test).+?(test)\.js$/
-
-    // prettier-ignore
-    const cases = [
-        // filename,                regex,              result
-        ['file.js',                 removeHashRegex,    'file.js'],
-        ['something.js',            removeHashRegex,    'something.js'],
-        ['wow.js',                  removeHashRegex,    'wow.js'],
-        ['main.6c70c5d5.js',        removeHashRegex,    'main.js'],
-        ['debugger.7bad0121.js',    removeHashRegex,    'debugger.js'],
-        ['finished.74119b14.js',    removeHashRegex,    'finished.js'],
-        ['file.js',                 testRegex,          'file.js'],
-        ['lalatestlalatest.js',     testRegex,          'lalalala.js'],
-    ]
-
-    it.each(cases)('%s + %p -> %s', (filename, regex, result) => {
-        expect(normalizeFilename(regex)(toResult(filename)).filePath).toBe(
-            result,
-        )
     })
 })
