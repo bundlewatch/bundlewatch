@@ -1,5 +1,6 @@
 import bytes from 'bytes'
 import glob from 'glob'
+import fs from 'fs'
 import getSize from './getSize'
 import logger from '../../logger'
 
@@ -20,6 +21,7 @@ const getLocalFileDetails = ({
             }
         } else {
             paths.forEach((filePath) => {
+                if (fs.lstatSync(filePath).isDirectory()) { return }
                 const maxSize = bytes(file.maxSize) || Infinity
                 const compression = file.compression || defaultCompression
                 const size = getSize({
