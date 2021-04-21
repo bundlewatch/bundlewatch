@@ -11,7 +11,7 @@ const getLocalFileDetails = ({
     const fileDetails = {}
 
     files.forEach((file) => {
-        const paths = glob.sync(file.path)
+        const paths = glob.sync(file.path, { nodir: true })
         if (!paths.length) {
             const errorMessage = `There is no matching file for ${file.path}`
             logger.error(errorMessage)
