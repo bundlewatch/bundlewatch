@@ -40,8 +40,8 @@
         "commander": "^5.0.0",
         "glob": "^7.1.2",
         "gzip-size": "^5.1.1",
-        "jsonpack": "^1.1.5",
         "lodash.merge": "^4.6.1",
+        "lz-string": "^1.4.4",
         "read-pkg-up": "^7.0.1"
     },
     "devDependencies": {
