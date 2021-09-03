@@ -18,16 +18,18 @@ const createURL = async ({
         return strippedResult
     })
 
-    const urlResultData = lzString.compressToEncodedURIComponent(JSON.stringify({
-        details: {
-            repoOwner,
-            repoName,
-            repoCurrentBranch,
-            repoBranchBase,
-            commitSha,
-        },
-        results: strippedResultsForURL,
-    }))
+    const urlResultData = lzString.compressToEncodedURIComponent(
+        JSON.stringify({
+            details: {
+                repoOwner,
+                repoName,
+                repoCurrentBranch,
+                repoBranchBase,
+                commitSha,
+            },
+            results: strippedResultsForURL,
+        }),
+    )
     const longURL = `${bundlewatchServiceHost}/results?d=${urlResultData}`
     const shortURL = await shortenURL(longURL)
     return shortURL
