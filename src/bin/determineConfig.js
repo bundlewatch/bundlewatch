@@ -52,6 +52,19 @@ const getConfigFileContents = (configFilePath) => {
 }
 
 const determineConfig = (cliOptions) => {
+    if (cliOptions.config) {
+        logger.warn(
+            `configFilePath supplied, config in package.json will be ignored`,
+        )
+        const config = getConfigFileContents(cliOptions.config)
+
+        if (!config || !config.bundlewatch) {
+            throw new ValidationError("bundlewatch is not defined in config")
+        }
+
+        return config.bundlewatch
+    }
+
     const pkgJson = (readPkgUp.sync() || {}).packageJson
     let pkgJsonbundlewatch = pkgJson.bundlewatch
 
@@ -81,14 +94,6 @@ const determineConfig = (cliOptions) => {
         }
     }
 
-    if (cliOptions.config) {
-        if (pkgJsonbundlewatch) {
-            logger.warn(
-                `configFilePath supplied, config in package.json will be ignored`,
-            )
-        }
-        return getConfigFileContents(cliOptions.config)
-    }
 
     if (pkgJsonbundlewatch) {
         if (Array.isArray(pkgJsonbundlewatch)) {
