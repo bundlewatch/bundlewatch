@@ -1,10 +1,5 @@
 import getCIVars from './getCIVars'
 
-// jest.mock('ci-env', () => ({
-//     branch: 'master',
-//     pull_request_target_branch: 'master',
-// }))
-
 describe(`getCIVars`, () => {
     const mockRepoOwner = 'repoowner_mock'
     const mockRepoName = 'reponame_mock'
@@ -12,29 +7,8 @@ describe(`getCIVars`, () => {
     const mockBranchBase = `mock_branch_base`
     const mockRef = `refs/heads/mock_branch_base`
     const mockCommitSha = `ffac537e6cbbf934b08745a378932722df287a53`
-    let originalEnv
 
-    beforeEach(() => {
-        jest.resetModules()
-        originalEnv = process.env
-        process.env = {
-            ...originalEnv,
-            CI_REPO_OWNER: undefined,
-            CI_REPO_NAME: undefined,
-            CI_COMMIT_SHA: undefined,
-            CI_BRANCH: undefined,
-            CI_BRANCH_BASE: undefined,
-            CI_REPO_SLUG: undefined,
-            GIT_COMMIT: undefined,
-            GIT_BRANCH: undefined,
-            CIRCLE_PROJECT_USERNAME: undefined,
-            CIRCLE_PROJECT_REPONAME: undefined,
-        }
-    })
-
-    afterEach(() => {
-        process.env = originalEnv
-    })
+    beforeEach(jest.resetModules)
 
     it(`Extracts GIT_URL (ssh) correct`, () => {
         const ciVars = getCIVars({
@@ -42,6 +16,9 @@ describe(`getCIVars`, () => {
         })
         expect(ciVars.repoOwner).toBe(mockRepoOwner)
         expect(ciVars.repoName).toBe(mockRepoName)
+
+        // eslint-disable-next-line no-console
+        console.log('HERE', ciVars)
     })
 
     it(`Extracts GIT_URL (https) correct`, () => {
