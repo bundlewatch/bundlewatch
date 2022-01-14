@@ -1,86 +1,79 @@
-version: 2
+version: 2.1
+
+working_directory: &working_directory ~/bundlewatch
+
+executor:
+    node:
+        docker:
+            - image: cimg/node:16.13.2
+        working_directory: *working_directory
+
 jobs:
-  build:
-    docker:
-      - image: circleci/node:12.14.1
-    working_directory: ~/workspace
-    steps:
-      - checkout
-
-      - restore_cache:
-          keys:
-            - deps-v1-{{ checksum "yarn.lock" }}
-            - deps-v1-
-
-      - run:
-          name: Install Dependencies
-          command: yarn install
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: deps-v1-{{ checksum "yarn.lock" }}
-
-      - run:
-          name: Lint
-          command: make lint
-          when: always
-
-      - run:
-          name: Tests
-          command: make test
-          environment:
-            COVERALLS_SERVICE_NAME: circleci
-            COVERALLS_REPO_TOKEN: 0m2NB6D3Rt25IkwpnQXhDF5TZoh3qyJwk
-          when: always
-
-      - run:
-          name: Package functions
-          command: make package
-          when: always
-
-      - run:
-          name: Run bundlewatch in our CI for testing
-          command: make bundlewatch
-
-      - store_artifacts:
-          path: artifacts
-
-      - store_test_results:
-          path: artifacts/test_results
-
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - artifacts/
-            - lib/
-            - node_modules/
-  deploy:
-    docker:
-      - image: circleci/node:12.14.1
-    working_directory: ~/workspace
-    steps:
-      - checkout
-
-      - attach_workspace:
-          at: ~/workspace
-
-      - run:
-          name: Deploy Package
-          command: make deploy
+    build:
+        executor: node
+        steps:
+            - checkout
+            - restore_cache:
+                  name: Restore Yarn Package Cache
+                  keys:
+                      - yarn-packages-{{ checksum "yarn.lock" }}
+            - run:
+                  name: Yarn Install
+                  command: |
+                      yarn install --frozen-lockfile --no-progress --non-interactive --cache-folder ~/.cache/yarn
+            - save_cache:
+                  key: yarn-packages-{{ checksum "yarn.lock" }}
+                  paths:
+                      - ~/.cache/yarn
+            - run:
+                  name: Lint
+                  command: make lint
+                  when: always
+            - run:
+                  name: Tests
+                  command: make test
+                  environment:
+                      COVERALLS_SERVICE_NAME: circleci
+                      COVERALLS_REPO_TOKEN: 0m2NB6D3Rt25IkwpnQXhDF5TZoh3qyJwk
+                  when: always
+            - run:
+                  name: Package functions
+                  command: make package
+                  when: always
+            - run:
+                  name: Run bundlewatch in our CI for testing
+                  command: make bundlewatch
+            - store_artifacts:
+                  path: artifacts
+            - store_test_results:
+                  path: artifacts/test_results
+            - persist_to_workspace:
+                  root: ./
+                  paths:
+                      - artifacts/
+                      - lib/
+                      - node_modules/
+    deploy:
+        executor: node
+        steps:
+            - checkout
+            - attach_workspace:
+                  at: *working_directory
+            - run:
+                  name: Deploy Package
+                  command: make deploy
 workflows:
-  version: 2
-  build-n-deploy:
-    jobs:
-      - build:
-          filters:
-            tags:
-              only: /.*/
-      - deploy:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
+    build-n-deploy:
+        jobs:
+            - build:
+                  filters:
+                      tags:
+                          only: /.*/
+            - deploy:
+                  requires:
+                      - build
+                  filters:
+                      tags:
+                          only: /^v.*/
+                      branches:
+                          ignore: /.*/
