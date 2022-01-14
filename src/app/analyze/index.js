@@ -60,14 +60,10 @@ const getSummary = ({ overallStatus, fullResults, baseBranchName }) => {
 
     let differenceSummary = ''
     if (baseBranchName) {
-        const {
-            totalAdded,
-            totalRemoved,
-            percentageChange,
-        } = getOverallDifference(fullResults)
-        const percentageChangeString = getPercentageChangeString(
-            percentageChange,
-        )
+        const { totalAdded, totalRemoved, percentageChange } =
+            getOverallDifference(fullResults)
+        const percentageChangeString =
+            getPercentageChangeString(percentageChange)
         const percentageChangeStringWithComma = percentageChangeString
             ? `, ${percentageChangeString}`
             : ''
