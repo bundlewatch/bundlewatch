@@ -2,7 +2,7 @@ const getCIVars = (env) => {
     Object.assign(process.env, env)
     // eslint-disable-next-line global-require
     const ci = require('ci-env')
-    // Take CI preffered vars over everything
+    // Take CI preferred vars over everything
     let repoOwner = env.CI_REPO_OWNER
     let repoName = env.CI_REPO_NAME
     let commitSha = env.CI_COMMIT_SHA || env.GIT_COMMIT || ci.sha
