@@ -1,6 +1,6 @@
 ARTIFACT_DIR = artifacts
 
-SHELL := /bin/bash
+SHELL := /bin/bash -eo pipefail
 export PATH := $(shell yarn bin):$(PATH)
 
 ifdef CI
