@@ -78,6 +78,17 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "charpeni",
+      "name": "Nicolas Charpentier",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7189823?v=4",
+      "profile": "https://charpeni.com",
+      "contributions": [
+        "code",
+        "maintenance",
+        "security"
+      ]
     }
   ],
   "contributorsPerLine": 7,
