@@ -28,13 +28,13 @@
     "author": "bundlewatch",
     "license": "MIT",
     "dependencies": {
-        "axios": "^0.21.1",
-        "bytes": "^3.0.0",
+        "axios": "^0.24.0",
+        "bytes": "^3.1.1",
         "chalk": "^4.0.0",
-        "ci-env": "^1.14.0",
+        "ci-env": "^1.17.0",
         "commander": "^5.0.0",
         "glob": "^7.1.2",
-        "gzip-size": "^5.1.1",
+        "gzip-size": "^6.0.0",
         "jsonpack": "^1.1.5",
         "lodash.merge": "^4.6.1",
         "read-pkg-up": "^7.0.1"
