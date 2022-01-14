@@ -10,8 +10,7 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors)
 
 [![node][node]][node-url]
-[![deps][deps]][deps-url]
-[![dev-deps][dev-deps]][dev-deps-url]
+![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/bundlewatch)
 [![builds][builds]][builds-url]
 [![test][test]][test-url]
 
