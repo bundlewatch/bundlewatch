@@ -1,7 +1,7 @@
 <!-- Please don't delete this template or we'll close your issue -->
 <!-- Before creating an issue please make sure you are using the latest version of webpack. -->
 
-**Do you want to request a *feature* or report a *bug*?**
+**Do you want to request a _feature_ or report a _bug_?**
 
 <!-- Please ask questions [on Slack](https://join.slack.com/t/bundlewatch-bundlewatch/shared_invite/enQtMzUwNjYxNTMwMzcyLWE5NGI4MzZjMjM4MTRlYzllOTMwYzIzZWNjM2MyMjBmMzNjNGM0ZGVhODc2YjFkNzIwMzNkYjk3NzE0MjZkOTc) -->
 

@@ -4,6 +4,7 @@ import { mockFileResults } from './analyze.test.mockdata'
 describe('getOverallDifference', () => {
     describe('Results match snapshot for the same input', () => {
         Object.keys(mockFileResults).forEach((mockFileResult) => {
+            // eslint-disable-next-line jest/valid-title
             it(mockFileResult, () => {
                 expect(
                     getOverallDifference(

@@ -29,7 +29,8 @@ const main = async ({
         githubAccessToken: ci.githubAccessToken,
     })
 
-    const baseBranchFileDetails = await bundlewatchService.getFileDetailsForBaseBranch()
+    const baseBranchFileDetails =
+        await bundlewatchService.getFileDetailsForBaseBranch()
     await bundlewatchService.saveFileDetailsForCurrentBranch({
         fileDetailsByPath: currentBranchFileDetails,
         trackBranches: ci.trackBranches,

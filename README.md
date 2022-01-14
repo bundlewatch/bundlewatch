@@ -34,8 +34,8 @@ Inspired by [Siddharth Kshetrapal bundlesize][bundlesize]
 
 Install the BundleWatch package:
 
-- NPM: `npm install bundlewatch --save-dev`
-- Yarn: `yarn add bundlewatch --dev`
+-   NPM: `npm install bundlewatch --save-dev`
+-   Yarn: `yarn add bundlewatch --dev`
 
 Add some basic configuration to your `package.json`
 
@@ -56,8 +56,8 @@ Add some basic configuration to your `package.json`
 
 Usage:
 
-- NPM: `npm run bundlewatch`
-- Yarn: `yarn run bundlewatch`
+-   NPM: `npm run bundlewatch`
+-   Yarn: `yarn run bundlewatch`
 
 This will give you command line output. If you want BundleWatch to report build status on your pull requests, see below.
 
@@ -71,7 +71,7 @@ BundleWatch can report its status on your GitHub Pull Requests.
 
 ## CI Auth Variables Needed by BundleWatch
 
-- `BUNDLEWATCH_GITHUB_TOKEN`
+-   `BUNDLEWATCH_GITHUB_TOKEN`
 
 You will need to give BundleWatch access to your GitHub Statuses, which can be done by heading to:
 [https://service.bundlewatch.io/setup-github][setup-github-url]
@@ -82,10 +82,10 @@ This will give you your `BUNDLEWATCH_GITHUB_TOKEN`. You will need to set this as
 
 The most efficient way to get this running is to ensure that some environment variables are available for BundleWatch to find.
 
-- `CI_REPO_OWNER` github.com/**facebook**/react
-- `CI_REPO_NAME` github.com/facebook/**react**
-- `CI_COMMIT_SHA`
-- `CI_BRANCH`
+-   `CI_REPO_OWNER` github.com/**facebook**/react
+-   `CI_REPO_NAME` github.com/facebook/**react**
+-   `CI_COMMIT_SHA`
+-   `CI_BRANCH`
 
 If you're using, _Travis_, _CircleCI_, _Wrecker_, _Drone_ or _GitHub Actions_ these should all work out of the box.
 
@@ -107,22 +107,22 @@ Full [documentation available on bundlewatch.io][bundlewatch-docs-url]
 
 ## I use bundlesize, why should I switch to BundleWatch
 
-- Bundlesize has entered maintenance mode and pull requests are left hanging, so we wanted to reboot the community through creating BundleWatch
-- New [BundleWatch service][bundlewatch-service] with infrastructure as code
-- Launched [bundlewatch.io documentation website][bundlewatch-docs-url]
-- Enough test coverage to support CD
-- Node API Support
-- Lower barrier to contributing (automated testing and publishing), build a trusted community of contributors to have continuous improvement
+-   Bundlesize has entered maintenance mode and pull requests are left hanging, so we wanted to reboot the community through creating BundleWatch
+-   New [BundleWatch service][bundlewatch-service] with infrastructure as code
+-   Launched [bundlewatch.io documentation website][bundlewatch-docs-url]
+-   Enough test coverage to support CD
+-   Node API Support
+-   Lower barrier to contributing (automated testing and publishing), build a trusted community of contributors to have continuous improvement
 
 ## Additional Features
 
-- [x] Config validation to stop users from guessing why BundleWatch won't work
-- [x] Support for config file path
-- [x] Better results breakdown page
-- [x] Better comparisons between branches, support branches other than master
-- [x] Support for your own server for storing data
-- [x] New and improved CI behaviour
-- [ ] Show history of BundleWatchs over time (coming soon)
+-   [x] Config validation to stop users from guessing why BundleWatch won't work
+-   [x] Support for config file path
+-   [x] Better results breakdown page
+-   [x] Better comparisons between branches, support branches other than master
+-   [x] Support for your own server for storing data
+-   [x] New and improved CI behaviour
+-   [ ] Show history of BundleWatchs over time (coming soon)
 
 ## Contributors
 
@@ -148,6 +148,7 @@ Thanks goes to these wonderful people ([emoji key][all-contrib-emoji-key]):
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors][all-contrib-url] specification.
