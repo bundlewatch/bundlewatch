@@ -7,8 +7,27 @@ describe(`getCIVars`, () => {
     const mockBranchBase = `mock_branch_base`
     const mockRef = `refs/heads/mock_branch_base`
     const mockCommitSha = `ffac537e6cbbf934b08745a378932722df287a53`
+    let originalEnv
 
-    beforeEach(jest.resetModules)
+    beforeEach(() => {
+        jest.resetModules()
+        originalEnv = process.env
+        process.env = {
+            ...originalEnv,
+            CI_REPO_OWNER: undefined,
+            CI_REPO_NAME: undefined,
+            CI_COMMIT_SHA: undefined,
+            CI_BRANCH: undefined,
+            CI_BRANCH_BASE: undefined,
+            CI_REPO_SLUG: undefined,
+            GIT_COMMIT: undefined,
+            GIT_BRANCH: undefined,
+        }
+    })
+
+    afterEach(() => {
+        process.env = originalEnv
+    })
 
     it(`Extracts GIT_URL (ssh) correct`, () => {
         const ciVars = getCIVars({
