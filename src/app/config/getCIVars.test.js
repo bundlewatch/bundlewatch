@@ -1,5 +1,10 @@
 import getCIVars from './getCIVars'
 
+// jest.mock('ci-env', () => ({
+//     branch: 'master',
+//     pull_request_target_branch: 'master',
+// }))
+
 describe(`getCIVars`, () => {
     const mockRepoOwner = 'repoowner_mock'
     const mockRepoName = 'reponame_mock'
@@ -22,6 +27,8 @@ describe(`getCIVars`, () => {
             CI_REPO_SLUG: undefined,
             GIT_COMMIT: undefined,
             GIT_BRANCH: undefined,
+            CIRCLE_PROJECT_USERNAME: undefined,
+            CIRCLE_PROJECT_REPONAME: undefined,
         }
     })
 
