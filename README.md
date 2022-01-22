@@ -171,10 +171,6 @@ Contributions of any kind are welcome!
 [contrib]: https://img.shields.io/github/contributors/bundlewatch/bundlewatch.svg
 [contrib-docs-url]: https://github.com/bundlewatch/bundlewatch/blob/master/CONTRIBUTING.md
 [contrib-url]: https://github.com/bundlewatch/bundlewatch/graphs/contributors
-[deps]: https://david-dm.org/bundlewatch/bundlewatch/status.svg
-[deps-url]: https://david-dm.org/bundlewatch/bundlewatch
-[dev-deps]: https://david-dm.org/bundlewatch/bundlewatch/dev-status.svg
-[dev-deps-url]: https://david-dm.org/bundlewatch/bundlewatch?type=dev
 [get-ci-vars-source]: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/getCIVars.js
 [node]: https://img.shields.io/node/v/bundlewatch.svg
 [node-url]: https://nodejs.org
