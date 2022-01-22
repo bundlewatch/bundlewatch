@@ -121,7 +121,7 @@ Full [documentation available on bundlewatch.io][bundlewatch-docs-url]
 -   [x] Better comparisons between branches, support branches other than master
 -   [x] Support for your own server for storing data
 -   [x] New and improved CI behaviour
--   [ ] Show history of BundleWatchs over time (coming soon)
+-   [ ] Show history of BundleWatchs over time
 
 ## Contributors
 
