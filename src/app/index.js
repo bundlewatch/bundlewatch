@@ -13,7 +13,6 @@ const main = async ({
     ci,
     defaultCompression,
     normalizeFilenames,
-    shortenURLServiceHost,
 }) => {
     const currentBranchFileDetails = getLocalFileDetails({
         files,

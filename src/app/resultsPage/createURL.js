@@ -12,8 +12,6 @@ const createURL = async ({
     repoBranchBase,
     commitSha,
 }) => {
-    if (bundlewatchServiceHost === false) return;
-
     const strippedResultsForURL = lodashMerge({}, results)
     strippedResultsForURL.fullResults.map((result) => {
         const strippedResult = result
@@ -33,8 +31,8 @@ const createURL = async ({
     })
     const urlResultData = encodeURIComponent(packedJSON)
     const longURL = `${bundlewatchServiceHost}/results?d=${urlResultData}`
-    const shortURL = await shortenURL(longURL, shortenURLServiceHost)
-    return shortURL || longURL;
+    const shortURL = await shortenURL(longURL)
+    return shortenURLServiceHost === false ? longURL : shortURL
 }
 
 export default createURL
