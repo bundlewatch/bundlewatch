@@ -4,7 +4,8 @@ import logger from '../../logger'
 const API_KEY = 'AIzaSyBhfxTjDFr98q7w7Us9x0Uxk34PgdkW2WI'
 const DOMAIN_BASE = 'ja2r7.app.goo.gl'
 
-const shortenURL = (url) => {
+const shortenURL = (url, shortenURLServiceHost) => {
+    if (shortenURLServiceHost === false) return;
     return axios
         .post(
             `https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${API_KEY}`,
