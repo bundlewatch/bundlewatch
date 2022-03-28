@@ -117,6 +117,9 @@ describe(`bundlewatch Node API`, () => {
 
         delete result.url
         expect(result.fullResults[0].filePath).toMatchInlineSnapshot(
+            `"./__testdata__/test-stable-path.js"`,
+        )
+        expect(result.fullResults[1].filePath).toMatchInlineSnapshot(
             `"./__testdata__/test.bundle.js"`,
         )
     })
