@@ -28,7 +28,7 @@
     "author": "bundlewatch",
     "license": "MIT",
     "dependencies": {
-        "axios": "^0.24.0",
+        "axios": "^1.6.2",
         "bytes": "^3.1.1",
         "chalk": "^4.0.0",
         "ci-env": "^1.17.0",
@@ -46,7 +46,7 @@
         "@babel/plugin-proposal-object-rest-spread": "^7.16.7",
         "@babel/plugin-transform-modules-commonjs": "^7.16.8",
         "@babel/preset-env": "^7.16.8",
-        "axios-mock-adapter": "^1.20.0",
+        "axios-mock-adapter": "^1.22.0",
         "coveralls": "^3.1.1",
         "eslint": "^8.6.0",
         "eslint-config-airbnb-base": "^15.0.0",
