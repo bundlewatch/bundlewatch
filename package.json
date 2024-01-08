@@ -28,7 +28,7 @@
     "author": "bundlewatch",
     "license": "MIT",
     "dependencies": {
-        "axios": "^1.6.2",
+        "axios": "^1.6.5",
         "bytes": "^3.1.1",
         "chalk": "^4.0.0",
         "ci-env": "^1.17.0",
