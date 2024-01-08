@@ -6,6 +6,8 @@ import chalk from 'chalk'
 import determineConfig from './determineConfig'
 import logger from '../logger'
 import bundlewatchApi, { STATUSES } from '../app'
+import getConfig from '../app/config/getConfig'
+import GitHubService from '../app/reporting/GitHubService'
 
 const prettyPrintResults = (fullResults) => {
     logger.log('')
@@ -36,11 +38,9 @@ const prettyPrintResults = (fullResults) => {
     logger.log('')
 }
 
-const main = async () => {
-    const config = determineConfig(program)
-
+const main = async (config, githubService) => {
     if (config.files && config.files.length > 0) {
-        const results = await bundlewatchApi(config)
+        const results = await bundlewatchApi(config, githubService)
 
         if (results.url) {
             logger.log('')
@@ -79,8 +79,23 @@ const main = async () => {
 }
 
 const mainSafe = async () => {
+    const config = determineConfig(program)
+    const githubConfig = getConfig()
+    const githubService = new GitHubService({
+        repoOwner: githubConfig.ci.repoOwner,
+        repoName: githubConfig.ci.repoName,
+        commitSha: githubConfig.ci.commitSha,
+        githubAccessToken: githubConfig.ci.githubAccessToken,
+    })
     try {
-        const errorCode = await main()
+        await githubService.start({ message: 'Checking bundlewatch...' })
+    } catch (e) {
+        githubService.fail({
+            message: 'Uncaught exception when running bundlewatch',
+        })
+    }
+    try {
+        const errorCode = await main(config, githubService)
         return errorCode
     } catch (error) {
         if (error.type === 'ValidationError') {
@@ -89,6 +104,9 @@ const mainSafe = async () => {
         }
 
         logger.fatal(`Uncaught exception`, error)
+        githubService.fail({
+            message: 'Uncaught exception when running bundlewatch',
+        })
         return 1
     }
 }
