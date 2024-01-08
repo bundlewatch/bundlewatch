@@ -79,21 +79,30 @@ const main = async (config, githubService) => {
 }
 
 const mainSafe = async () => {
-    const config = determineConfig(program)
-    const githubConfig = getConfig()
+    const config = getConfig(determineConfig(program))
     const githubService = new GitHubService({
-        repoOwner: githubConfig.ci.repoOwner,
-        repoName: githubConfig.ci.repoName,
-        commitSha: githubConfig.ci.commitSha,
-        githubAccessToken: githubConfig.ci.githubAccessToken,
+        repoOwner: config.ci.repoOwner,
+        repoName: config.ci.repoName,
+        commitSha: config.ci.commitSha,
+        githubAccessToken: config.ci.githubAccessToken,
     })
     try {
         await githubService.start({ message: 'Checking bundlewatch...' })
     } catch (e) {
-        githubService.fail({
+        await githubService.error({
             message: 'Uncaught exception when running bundlewatch',
         })
     }
+    process.on('unhandledRejection', async () => {
+        await githubService.error({
+            message: 'Uncaught exception when running bundlewatch',
+        })
+    })
+    process.on('uncaughtException', async () => {
+        await githubService.error({
+            message: 'Uncaught exception when running bundlewatch',
+        })
+    })
     try {
         const errorCode = await main(config, githubService)
         return errorCode
@@ -104,10 +113,13 @@ const mainSafe = async () => {
         }
 
         logger.fatal(`Uncaught exception`, error)
-        githubService.fail({
-            message: 'Uncaught exception when running bundlewatch',
-        })
         return 1
+    } finally {
+        if (!githubService.hasReported) {
+            await githubService.error({
+                message: 'Uncaught exception when running bundlewatch',
+            })
+        }
     }
 }
 
