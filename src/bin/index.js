@@ -38,7 +38,8 @@ const prettyPrintResults = (fullResults) => {
     logger.log('')
 }
 
-const main = async (config, githubService) => {
+const main = async (githubService) => {
+    const config = determineConfig(program)
     if (config.files && config.files.length > 0) {
         const results = await bundlewatchApi(config, githubService)
 
@@ -104,7 +105,18 @@ const mainSafe = async () => {
         })
     })
     try {
-        const errorCode = await main(config, githubService)
+        const errorCode = await Promise.race([
+            main(githubService),
+            (async () => {
+                await new Promise((resolve) => {
+                    if (config.maxTimeout != null) {
+                        setTimeout(resolve, config.maxTimeout)
+                    }
+                    // hang forever if maxTimeout is set to null
+                })
+                throw new Error('Max timeout exceeded')
+            })(),
+        ])
         return errorCode
     } catch (error) {
         if (error.type === 'ValidationError') {
