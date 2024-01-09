@@ -107,15 +107,14 @@ const mainSafe = async () => {
     try {
         const errorCode = await Promise.race([
             main(githubService),
-            (async () => {
-                await new Promise((resolve) => {
-                    if (config.maxTimeout != null) {
-                        setTimeout(resolve, config.maxTimeout)
-                    }
-                    // hang forever if maxTimeout is set to null
-                })
+            new Promise((resolve) => {
+                if (config.maxTimeout != null) {
+                    setTimeout(resolve, config.maxTimeout)
+                }
+                // hang forever if maxTimeout is set to null
+            }).then(() => {
                 throw new Error('Max timeout exceeded')
-            })(),
+            }),
         ])
         return errorCode
     } catch (error) {
