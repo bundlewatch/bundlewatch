@@ -78,6 +78,7 @@ const determineConfig = (cliOptions) => {
             files,
             defaultCompression: cliOptions.compression || 'gzip',
             normalizeFilenames: cliOptions.normalize,
+            maxTimeout: cliOptions.maxTimeout || 1000 * 60 * 15, // default of 15 minutes
         }
     }
 
