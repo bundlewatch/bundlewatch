@@ -40,14 +40,13 @@
         "read-pkg-up": "^7.0.1"
     },
     "devDependencies": {
-        "@babel/cli": "^7.16.8",
-        "@babel/core": "^7.16.7",
-        "@babel/eslint-parser": "^7.16.5",
-        "@babel/plugin-proposal-object-rest-spread": "^7.16.7",
-        "@babel/plugin-transform-modules-commonjs": "^7.16.8",
-        "@babel/preset-env": "^7.16.8",
+        "@babel/cli": "^7.24.8",
+        "@babel/core": "^7.24.9",
+        "@babel/eslint-parser": "^7.24.8",
+        "@babel/preset-env": "^7.24.8",
         "axios-mock-adapter": "^1.20.0",
         "coveralls": "^3.1.1",
+        "del-cli": "^5.1.0",
         "eslint": "^8.6.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-config-prettier": "^8.3.0",
@@ -66,7 +65,7 @@
         "coverageDirectory": "artifacts/test_results/jest/coverage"
     },
     "engines": {
-        "node": ">=10"
+        "node": ">=16"
     },
     "bundlewatch": {
         "files": [
