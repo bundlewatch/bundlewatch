@@ -36,8 +36,8 @@ Object {
       "baseBranchSize": 0,
       "filePath": "./__testdata__/test-file-2.jpg",
       "maxSize": 1048576,
-      "message": "248.5KB < 1MB (gzip)",
-      "size": 254466,
+      "message": "248.46KB < 1MB (gzip)",
+      "size": 254427,
       "status": "pass",
     },
     Object {
@@ -50,7 +50,7 @@ Object {
     },
   ],
   "status": "pass",
-  "summary": "Everything is in check (+262.17KB, -9.77KB, +738.5%)",
+  "summary": "Everything is in check (+262.13KB, -9.77KB, +738.3%)",
 }
 `;
 

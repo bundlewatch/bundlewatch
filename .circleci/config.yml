@@ -5,7 +5,7 @@ working_directory: &working_directory ~/bundlewatch
 executors:
     node:
         docker:
-            - image: cimg/node:16.13.2
+            - image: cimg/node:20.15.1
         working_directory: *working_directory
 
 jobs:
