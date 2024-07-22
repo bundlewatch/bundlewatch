@@ -45,7 +45,11 @@ const getConfigFileJS = (configFilePath) => {
 }
 
 const getConfigFileContents = (configFilePath) => {
-    if (configFilePath.endsWith('.js') || configFilePath.endsWith('.cjs') || configFilePath.endsWith('.mjs')) {
+    if (
+        configFilePath.endsWith('.js') ||
+        configFilePath.endsWith('.cjs') ||
+        configFilePath.endsWith('.mjs')
+    ) {
         return getConfigFileJS(configFilePath)
     }
     return getConfigFileJson(configFilePath)
