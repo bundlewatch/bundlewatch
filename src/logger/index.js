@@ -30,18 +30,18 @@ const warn = (message) => {
     stdout(chalk.yellow(`[WARNING] ${message}`))
 }
 
-const error = (messsage, errorStack) => {
+const error = (message, errorStack) => {
     if (errorStack) {
         stdout(errorStack)
     }
-    stderr(chalk.red(`[ERROR] ${messsage}`))
+    stderr(chalk.red(`[ERROR] ${message}`))
 }
 
-const fatal = (messsage, errorStack) => {
+const fatal = (message, errorStack) => {
     if (errorStack) {
         stdout(errorStack)
     }
-    stderr(chalk.black.bgRed(`[FATAL] ${messsage}`))
+    stderr(chalk.black.bgRed(`[FATAL] ${message}`))
 }
 
 export default {
