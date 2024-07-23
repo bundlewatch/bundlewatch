@@ -97,7 +97,7 @@ const bundlewatchApi = async (customConfig) => {
         return results
     } catch (e) {
         await githubService.error({
-            message: `Unable to analyze, check logs. ${e ? e.messsage : ''}`,
+            message: `Unable to analyze, check logs. ${e ? e.message : ''}`,
         })
         throw e
     }
