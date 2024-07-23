@@ -157,7 +157,7 @@ Contributions of any kind welcome!
 ## Want to Help? Become a Contributor
 
 Contributions of any kind are welcome!
-[See the Contributing docs][contrib-docs-url] or [Join us on Slack][slack-invite-url].
+[See the Contributing docs][contrib-docs-url].
 
 [all-contrib-emoji-key]: https://allcontributors.org/docs/en/emoji-key
 [all-contrib-url]: https://github.com/all-contributors/all-contributors
