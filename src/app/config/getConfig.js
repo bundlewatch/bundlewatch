@@ -9,6 +9,7 @@ const defaultConfig = {
     normalizeFilenames: null,
     files: [],
     bundlewatchServiceHost: 'https://service.bundlewatch.io', // Can be a custom service, or set to NUll
+    shortenURLServiceHost: true, // Can be disabled, set to FALSE
     ci: {
         githubAccessToken: ciVars.githubAccessToken,
         repoOwner: ciVars.repoOwner,
