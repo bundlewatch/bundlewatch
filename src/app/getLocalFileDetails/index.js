@@ -1,5 +1,5 @@
 import bytes from 'bytes'
-import glob from 'glob'
+import { globSync } from 'glob'
 import getSize from './getSize'
 import logger from '../../logger'
 
@@ -11,7 +11,7 @@ const getLocalFileDetails = ({
     const fileDetails = {}
 
     files.forEach((file) => {
-        const paths = glob.sync(file.path)
+        const paths = globSync(file.path) || [].sort()
         if (!paths.length) {
             const errorMessage = `There is no matching file for ${file.path}`
             logger.error(errorMessage)
