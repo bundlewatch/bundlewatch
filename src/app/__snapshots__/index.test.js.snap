@@ -25,20 +25,28 @@ exports[`bundlewatch Node API Works with CI environment 1`] = `
 Object {
   "fullResults": Array [
     Object {
-      "baseBranchSize": 25000,
-      "filePath": "./__testdata__/test-file-1.jpg",
-      "maxSize": 1048576,
-      "message": "38.08KB < 1MB (13.67KB larger than mockBranchBase) (gzip)",
-      "size": 38995,
-      "status": "pass",
-    },
-    Object {
       "baseBranchSize": 0,
-      "filePath": "./__testdata__/test-file-2.jpg",
+      "filePath": "__testdata__/test-file-2.jpg",
       "maxSize": 1048576,
       "message": "248.46KB < 1MB (gzip)",
       "size": 254427,
       "status": "pass",
+    },
+    Object {
+      "baseBranchSize": 0,
+      "filePath": "__testdata__/test-file-1.jpg",
+      "maxSize": 1048576,
+      "message": "38.08KB < 1MB (gzip)",
+      "size": 38995,
+      "status": "pass",
+    },
+    Object {
+      "baseBranchSize": 25000,
+      "filePath": "./__testdata__/test-file-1.jpg",
+      "maxSize": 0,
+      "message": "./__testdata__/test-file-1.jpg: File removed (24.41KB smaller than mockBranchBase) (gzip)",
+      "size": 0,
+      "status": "removed",
     },
     Object {
       "baseBranchSize": 10000,
@@ -50,7 +58,7 @@ Object {
     },
   ],
   "status": "pass",
-  "summary": "Everything is in check (+262.13KB, -9.77KB, +738.3%)",
+  "summary": "Everything is in check (+286.54KB, -34.18KB, +738.3%)",
 }
 `;
 
@@ -59,19 +67,19 @@ Object {
   "fullResults": Array [
     Object {
       "baseBranchSize": 0,
-      "filePath": "./__testdata__/test-file-1.jpg",
-      "maxSize": 102400,
-      "message": "38.05KB < 100KB (no compression)",
-      "size": 38962,
-      "status": "pass",
-    },
-    Object {
-      "baseBranchSize": 0,
-      "filePath": "./__testdata__/test-file-2.jpg",
+      "filePath": "__testdata__/test-file-2.jpg",
       "maxSize": 102400,
       "message": "248.79KB > 100KB (no compression)",
       "size": 254765,
       "status": "fail",
+    },
+    Object {
+      "baseBranchSize": 0,
+      "filePath": "__testdata__/test-file-1.jpg",
+      "maxSize": 102400,
+      "message": "38.05KB < 100KB (no compression)",
+      "size": 38962,
+      "status": "pass",
     },
   ],
   "status": "fail",
