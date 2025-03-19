@@ -28,7 +28,7 @@
     "author": "bundlewatch",
     "license": "MIT",
     "dependencies": {
-        "axios": "^0.28.0",
+        "axios": "^1.8.4",
         "bytes": "^3.1.1",
         "chalk": "^4.0.0",
         "ci-env": "^1.17.0",
@@ -44,7 +44,7 @@
         "@babel/core": "^7.24.9",
         "@babel/eslint-parser": "^7.24.8",
         "@babel/preset-env": "^7.24.8",
-        "axios-mock-adapter": "^1.20.0",
+        "axios-mock-adapter": "^2.1.0",
         "coveralls": "^3.1.1",
         "del-cli": "^5.1.0",
         "eslint": "^8.6.0",
@@ -62,7 +62,13 @@
     "jest": {
         "testEnvironment": "node",
         "collectCoverage": true,
-        "coverageDirectory": "artifacts/test_results/jest/coverage"
+        "coverageDirectory": "artifacts/test_results/jest/coverage",
+        "transform": {
+            "^.+\\.js$": "babel-jest"
+        },
+        "transformIgnorePatterns": [
+            "node_modules/(?!(axios)/)"
+        ]
     },
     "engines": {
         "node": ">=16"

@@ -1,9 +1,8 @@
+import bundlewatchApi from '.'
 import axios from 'axios'
 import MockAdapter from 'axios-mock-adapter'
 
 const networkMock = new MockAdapter(axios)
-
-import bundlewatchApi from '.'
 
 describe(`bundlewatch Node API`, () => {
     it('Works with basic options', async () => {
