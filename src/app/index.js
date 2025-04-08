@@ -9,6 +9,7 @@ import createURLToResultPage from './resultsPage/createURL'
 const main = async ({
     files,
     bundlewatchServiceHost,
+    shortenURLServiceHost,
     ci,
     defaultCompression,
     normalizeFilenames,
@@ -45,6 +46,7 @@ const main = async ({
     const url = await createURLToResultPage({
         results,
         bundlewatchServiceHost,
+        shortenURLServiceHost,
         repoOwner: ci.repoOwner,
         repoName: ci.repoName,
         repoCurrentBranch: ci.repoCurrentBranch,
