@@ -9,7 +9,7 @@ Keep watch of your bundle size.
 
 [![Version](https://badge.fury.io/js/bundlewatch.svg)](https://www.npmjs.org/package/bundlewatch)
 [![Monthly Downloads](https://img.shields.io/npm/dm/bundlewatch)](https://www.npmjs.org/package/bundlewatch)
-[![CodeCov](https://coveralls.io/repos/github/bundlewatch/bundlewatch/badge.svg?branch=master)](<[https://codecov.io/gh/charpeni/one-of](https://coveralls.io/github/bundlewatch/bundlewatch?branch=master)>)
+[![CodeCov](https://coveralls.io/repos/github/bundlewatch/bundlewatch/badge.svg?branch=master)](https://coveralls.io/github/bundlewatch/bundlewatch?branch=master)
 [![GitHub License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/bundlewatch/bundlewatch/blob/master/LICENSE)
 
 </div>
