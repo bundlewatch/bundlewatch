@@ -20,7 +20,7 @@ BundleWatch checks file sizes, ensuring bundled browser assets don't jump in fil
 
 Sharp increases in BundleWatch can signal that something is wrong, such as adding a package that bloats the slug, an incorrect import, or forgetting to minify.
 
-Inspired by [Siddharth Kshetrapal's bundlesize][bundlesize]
+Inspired by [Siddharth Kshetrapal's `bundlesize`][bundlesize]
 
 ## Getting Started
 
