@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://bundlewatch.io">
-    <img src="https://cdn.rawgit.com/bundlewatch/bundlewatch.io/master/docs/_assets/logo-large.svg" height="100px">
+    <img src="https://cdn.rawgit.com/bundlewatch/bundlewatch.io/master/docs/_assets/logo-large.svg" width="600px">
   </a>
   <br>
   <br>
