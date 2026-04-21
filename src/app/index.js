@@ -1,6 +1,5 @@
 import getLocalFileDetails from './getLocalFileDetails'
 import BundleWatchService from './reporting/BundleWatchService'
-import GitHubService from './reporting/GitHubService'
 import analyze from './analyze'
 import { STATUSES } from './analyze/analyzeFiles'
 import getConfig from './config/getConfig'
@@ -58,16 +57,8 @@ const main = async ({
     }
 }
 
-const bundlewatchApi = async (customConfig) => {
+const bundlewatchApi = async (customConfig, githubService) => {
     const config = getConfig(customConfig)
-    const githubService = new GitHubService({
-        repoOwner: config.ci.repoOwner,
-        repoName: config.ci.repoName,
-        commitSha: config.ci.commitSha,
-        githubAccessToken: config.ci.githubAccessToken,
-    })
-    await githubService.start({ message: 'Checking bundlewatch...' })
-
     try {
         const results = await main(config)
         if (results.status === STATUSES.FAIL) {

@@ -7,15 +7,22 @@ import bundlewatchApi from '.'
 
 describe(`bundlewatch Node API`, () => {
     it('Works with basic options', async () => {
-        const result = await bundlewatchApi({
-            files: [
-                {
-                    path: './__testdata__/*.jpg',
-                    maxSize: '100kB',
-                },
-            ],
-            defaultCompression: 'none',
-        })
+        const result = await bundlewatchApi(
+            {
+                files: [
+                    {
+                        path: './__testdata__/*.jpg',
+                        maxSize: '100kB',
+                    },
+                ],
+                defaultCompression: 'none',
+            },
+            {
+                error: () => {},
+                pass: () => {},
+                fail: () => {},
+            },
+        )
 
         // TODO: assert logger.warn called
 
@@ -24,14 +31,21 @@ describe(`bundlewatch Node API`, () => {
     })
 
     it(`Works when files dont exist, shows warning`, async () => {
-        const result = await bundlewatchApi({
-            files: [
-                {
-                    path: './__testdata__/test-file-doesnt-exist.jpg',
-                    maxSize: '100kB',
-                },
-            ],
-        })
+        const result = await bundlewatchApi(
+            {
+                files: [
+                    {
+                        path: './__testdata__/test-file-doesnt-exist.jpg',
+                        maxSize: '100kB',
+                    },
+                ],
+            },
+            {
+                error: () => {},
+                pass: () => {},
+                fail: () => {},
+            },
+        )
 
         delete result.url
         expect(result).toMatchSnapshot()
@@ -64,22 +78,30 @@ describe(`bundlewatch Node API`, () => {
 
         // TODO: assert save was called
 
-        const result = await bundlewatchApi({
-            files: [
-                {
-                    path: './__testdata__/*.jpg',
-                    maxSize: '1MB',
+        const result = await bundlewatchApi(
+            {
+                files: [
+                    {
+                        path: './__testdata__/*.jpg',
+                        maxSize: '1MB',
+                    },
+                ],
+                ci: {
+                    githubAccessToken: MOCK_AUTH_TOKEN,
+                    repoOwner: MOCK_REPO.owner,
+                    repoName: MOCK_REPO.name,
+                    repoCurrentBranch: MOCK_REPO.currentBranch,
+                    repoBranchBase: MOCK_REPO.branchBase,
+                    commitSha: MOCK_REPO.branchBase,
                 },
-            ],
-            ci: {
-                githubAccessToken: MOCK_AUTH_TOKEN,
-                repoOwner: MOCK_REPO.owner,
-                repoName: MOCK_REPO.name,
-                repoCurrentBranch: MOCK_REPO.currentBranch,
-                repoBranchBase: MOCK_REPO.branchBase,
-                commitSha: MOCK_REPO.branchBase,
             },
-        })
+
+            {
+                error: () => {},
+                pass: () => {},
+                fail: () => {},
+            },
+        )
 
         delete result.url
         expect(result).toMatchSnapshot()
@@ -88,15 +110,23 @@ describe(`bundlewatch Node API`, () => {
     it('Throws validations error when using brotli compression without the package', async () => {
         let error
         try {
-            await bundlewatchApi({
-                files: [
-                    {
-                        path: './__testdata__/*.jpg',
-                        maxSize: '100kB',
-                    },
-                ],
-                defaultCompression: 'brotli',
-            })
+            await bundlewatchApi(
+                {
+                    files: [
+                        {
+                            path: './__testdata__/*.jpg',
+                            maxSize: '100kB',
+                        },
+                    ],
+                    defaultCompression: 'brotli',
+                },
+
+                {
+                    error: () => {},
+                    pass: () => {},
+                    fail: () => {},
+                },
+            )
         } catch (e) {
             error = e
         }
@@ -104,16 +134,23 @@ describe(`bundlewatch Node API`, () => {
     })
 
     it('Normalizes hash when given a normalizeFilenames option', async () => {
-        const result = await bundlewatchApi({
-            files: [
-                {
-                    path: './__testdata__/*.js',
-                    maxSize: '100kB',
-                },
-            ],
-            defaultCompression: 'none',
-            normalizeFilenames: '^.+?(\\.\\w+)\\.(?:js|css)$',
-        })
+        const result = await bundlewatchApi(
+            {
+                files: [
+                    {
+                        path: './__testdata__/*.js',
+                        maxSize: '100kB',
+                    },
+                ],
+                defaultCompression: 'none',
+                normalizeFilenames: '^.+?(\\.\\w+)\\.(?:js|css)$',
+            },
+            {
+                error: () => {},
+                pass: () => {},
+                fail: () => {},
+            },
+        )
 
         delete result.url
         expect(result.fullResults[0].filePath).toMatchInlineSnapshot(

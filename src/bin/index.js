@@ -6,6 +6,8 @@ import chalk from 'chalk'
 import determineConfig from './determineConfig'
 import logger from '../logger'
 import bundlewatchApi, { STATUSES } from '../app'
+import getConfig from '../app/config/getConfig'
+import GitHubService from '../app/reporting/GitHubService'
 
 const prettyPrintResults = (fullResults) => {
     logger.log('')
@@ -36,11 +38,10 @@ const prettyPrintResults = (fullResults) => {
     logger.log('')
 }
 
-const main = async () => {
+const main = async (githubService) => {
     const config = determineConfig(program)
-
     if (config.files && config.files.length > 0) {
-        const results = await bundlewatchApi(config)
+        const results = await bundlewatchApi(config, githubService)
 
         if (results.url) {
             logger.log('')
@@ -79,8 +80,42 @@ const main = async () => {
 }
 
 const mainSafe = async () => {
+    const config = getConfig(determineConfig(program))
+    const githubService = new GitHubService({
+        repoOwner: config.ci.repoOwner,
+        repoName: config.ci.repoName,
+        commitSha: config.ci.commitSha,
+        githubAccessToken: config.ci.githubAccessToken,
+    })
     try {
-        const errorCode = await main()
+        await githubService.start({ message: 'Checking bundlewatch...' })
+    } catch (e) {
+        await githubService.error({
+            message: 'Uncaught exception when running bundlewatch',
+        })
+    }
+    process.on('unhandledRejection', async () => {
+        await githubService.error({
+            message: 'Uncaught exception when running bundlewatch',
+        })
+    })
+    process.on('uncaughtException', async () => {
+        await githubService.error({
+            message: 'Uncaught exception when running bundlewatch',
+        })
+    })
+    try {
+        const errorCode = await Promise.race([
+            main(githubService),
+            new Promise((resolve) => {
+                if (config.maxTimeout != null) {
+                    setTimeout(resolve, config.maxTimeout)
+                }
+                // hang forever if maxTimeout is set to null
+            }).then(() => {
+                throw new Error('Max timeout exceeded')
+            }),
+        ])
         return errorCode
     } catch (error) {
         if (error.type === 'ValidationError') {
@@ -90,6 +125,12 @@ const mainSafe = async () => {
 
         logger.fatal(`Uncaught exception`, error)
         return 1
+    } finally {
+        if (!githubService.hasReported) {
+            await githubService.error({
+                message: 'Uncaught exception when running bundlewatch',
+            })
+        }
     }
 }
 

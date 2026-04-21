@@ -21,6 +21,8 @@ const getContextForFilePath = (filePath) => {
 }
 
 class GitHubService {
+    hasReported = false
+
     constructor({ repoOwner, repoName, commitSha, githubAccessToken }) {
         this.repoOwner = repoOwner
         this.repoName = repoName
@@ -93,14 +95,17 @@ class GitHubService {
     }
 
     pass({ message, url }) {
+        this.hasReported = true
         return this.update(message, url, 'success')
     }
 
     fail({ message, url, filePath }) {
+        this.hasReported = true
         return this.update(message, url, 'failure', filePath)
     }
 
     error({ message }) {
+        this.hasReported = true
         return this.update(message, undefined, 'error')
     }
 }
