@@ -90,7 +90,7 @@ A file whose path, after `normalizeFilenames`, is exactly `__proto__` is now mea
 
 ### Proxy variables
 
-bundlewatch no longer reads `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY` or similar variables. 0.x used them only as a side effect of its HTTP library, and never documented them. Behind a proxy that blocks direct connections, comparisons, saving baselines and GitHub statuses fail, and each failure is logged; the size check itself still runs and sets the exit code.
+bundlewatch no longer reads `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY` or similar variables. 0.x used them only as a side effect of its HTTP library, and never documented them. Behind a proxy that blocks direct connections, comparisons and saving baselines fail and are logged. With a GitHub token set, the run itself fails with exit code 1, because it can't post its GitHub status: like 0.x, Bundlewatch stops when GitHub is unreachable. Allow direct connections to `api.github.com` and the Bundlewatch service, or unset the token there to run only the size check.
 
 ### Brotli
 

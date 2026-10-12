@@ -1,3 +1,8 @@
+---
+title: Node.js API
+description: Run Bundlewatch from Node.js, with its result format, TypeScript types and errors.
+---
+
 # Node.js API
 
 The API can be used as below, for detail information on the different params, [see configuration](/reference/configuration.md). It requires Node.js 22.17 or later. The package ships ES module and CommonJS builds, with [TypeScript types](#typescript).
@@ -30,7 +35,7 @@ if (results.status === STATUSES.FAIL) {
 }
 ```
 
-Like the CLI, the API posts GitHub statuses and compares with and saves baselines when the `ci` details are available.
+Like the CLI, the API posts GitHub statuses and compares with and saves baselines when the `ci` details are available. It also logs the same `[INFO]`, `[WARNING]` and `[ERROR]` lines to the console, but doesn't print the results or set the exit code: that's up to you.
 
 ## CommonJS
 
@@ -75,22 +80,22 @@ const { STATUSES } = require('bundlewatch')
 
 | Field         | Description                                                                                                                                                                                             |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status`      | `'pass'`, `'warn'` or `'fail'`, also available as `STATUSES.PASS`, `STATUSES.WARN` and `STATUSES.FAIL`                                                                                                  |
+| `status`      | `'pass'` or `'fail'`, also available as `STATUSES.PASS` and `STATUSES.FAIL`. `'warn'` (`STATUSES.WARN`) is reserved: no check produces it.                                                              |
 | `summary`     | A one-line summary, e.g. `'maxSize check failed'`                                                                                                                                                       |
 | `url`         | The [results page](../guide/using-bundlewatch.md#results-links): a short link when the service accepts the token for writing, a long one otherwise. `undefined` when `bundlewatchServiceHost` is `null` |
 | `fullResults` | One entry per file                                                                                                                                                                                      |
 
 Each entry in `fullResults` has:
 
-| Field            | Description                                                                                          |
-| ---------------- | ---------------------------------------------------------------------------------------------------- |
-| `filePath`       | The file path, after `normalizeFilenames`                                                            |
-| `status`         | `'pass'`, `'warn'`, `'fail'`, or `'removed'` for a file that is in the baseline but no longer exists |
-| `message`        | The result as text. Missing on error entries.                                                        |
-| `error`          | Only on error entries, e.g. when a path matches no files. Their `status` is `'fail'`.                |
-| `size`           | Size in bytes, after compression                                                                     |
-| `baseBranchSize` | Size in the baseline, in bytes. `0` when there is no baseline.                                       |
-| `maxSize`        | Limit in bytes. `Infinity` when not set; `0` for removed files.                                      |
+| Field            | Description                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| `filePath`       | The file path, after `normalizeFilenames`                                                                     |
+| `status`         | `'pass'`, `'fail'`, or `'removed'` for a file that is in the baseline but no longer exists                    |
+| `message`        | The result as text. Missing on error entries.                                                                 |
+| `error`          | Only on error entries, e.g. when a path matches no files. They have no sizes, and their `status` is `'fail'`. |
+| `size`           | Size in bytes, after compression. `0` for removed files.                                                      |
+| `baseBranchSize` | Size in the baseline, in bytes. `0` when there is no baseline.                                                |
+| `maxSize`        | Limit in bytes. `Infinity` when not set; `0` for removed files.                                               |
 
 ## TypeScript
 

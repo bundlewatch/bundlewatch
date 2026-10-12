@@ -17,6 +17,10 @@ export const shared = defineConfig({
   cleanUrls: true,
   metaChunk: true,
 
+  sitemap: {
+    hostname: "https://bundlewatch.io",
+  },
+
   markdown: {
     image: {
       lazyLoading: true,

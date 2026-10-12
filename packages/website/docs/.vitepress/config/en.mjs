@@ -2,6 +2,12 @@ import { defineConfig } from "vitepress";
 
 import { version } from "./shared.mjs";
 
+// Also the page order of llms.txt and llms-full.txt.
+export const sidebar = {
+  "/guide/": { base: "/guide/", items: sidebarGuide() },
+  "/reference/": { base: "/reference/", items: sidebarReference() },
+};
+
 export const en = defineConfig({
   lang: "en-US",
   description: "Keep watch of your bundle size",
@@ -9,13 +15,7 @@ export const en = defineConfig({
   themeConfig: {
     nav: nav(),
 
-    sidebar: {
-      "/guide/": { base: "/guide/", items: sidebarGuide() },
-      "/reference/": {
-        base: "/reference/",
-        items: sidebarReference(),
-      },
-    },
+    sidebar,
 
     editLink: {
       pattern: "https://github.com/bundlewatch/bundlewatch/edit/main/packages/website/docs/:path",
@@ -76,7 +76,7 @@ function sidebarGuide() {
     {
       text: "How to use",
       items: [
-        { text: "Using BundleWatch", link: "using-bundlewatch" },
+        { text: "Using Bundlewatch", link: "using-bundlewatch" },
         { text: "Using a config file", link: "using-a-config-file" },
         {
           text: "Base and tracked branches",
@@ -100,7 +100,7 @@ function sidebarReference() {
       items: [
         { text: "Configuration", link: "configuration" },
         { text: "Node.js API", link: "nodejs" },
-        { text: "CLI Params", link: "cli" },
+        { text: "Command Line", link: "cli" },
       ],
     },
   ];

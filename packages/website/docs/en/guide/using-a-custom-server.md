@@ -18,6 +18,8 @@ Then deploy the application template, overriding these parameters:
 - `ResultsTableName`: your short-link table name, matching bootstrap. The application template creates it.
 - `StoreTableName`: your baseline table. The template doesn't create it: reuse the table of your 0.x deployment, or create one with hash key `repo` (S) and range key `repoBranch` (S).
 - `GitHubApiUrl`: for GitHub Enterprise, your API URL, such as `https://github.example.com/api/v3`. See [GitHub Enterprise](./migrating-to-v1.md#github-enterprise).
+- `WriteAuthorization`: `enforce` to apply the stricter check for saving baselines and creating short links from the start. The default, `report`, authorizes like 0.x and only logs where the stricter check would decide differently. See [Service changes](./migrating-to-v1.md#service-changes).
+- `ResultsRetentionDays`: how many days to keep short links. The default, `0`, keeps them forever.
 
 See [Running your own service](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/README.md#running-your-own-service) in the service's README for details.
 

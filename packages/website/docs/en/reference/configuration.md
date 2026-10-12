@@ -1,3 +1,8 @@
+---
+title: Configuration Reference
+description: Every Bundlewatch option, its default, and the environment variables Bundlewatch reads.
+---
+
 # Configuration Reference
 
 The only required config is the `files` array, with at least one `path`.
@@ -45,7 +50,7 @@ Each `file` in the array is as follows
 }
 ```
 
-- `path` is a glob for a single file, or a set of files.
+- `path` is a glob for a single file, or a set of files, relative to the directory Bundlewatch runs in. A path that matches no files fails the run.
 - `maxSize` is optional. It is either a string with a unit, such as `'100kB'`, or a number of bytes, such as `102400`.
   - Units are `B`, `KB`, `MB`, `GB`, `TB` and `PB`. They are case-insensitive and use multiples of 1024, so `'100kB'` is 102400 bytes.
   - A string with any other unit is read as a number of bytes: `'100k'` and `'100KiB'` both mean 100 bytes.
@@ -101,9 +106,12 @@ Bundlewatch reads these environment variables. The `CI_*` and `GIT_*` variables 
 | `CI_BRANCH`, then `GIT_BRANCH`                         | `ci.repoCurrentBranch`                                                                                                                                                                                                                                    |
 | `CI_BRANCH_BASE`                                       | `ci.repoBranchBase`                                                                                                                                                                                                                                       |
 | `GITHUB_API_URL`                                       | The GitHub API URL that commit statuses are posted to. Defaults to `https://api.github.com`; GitHub Actions sets it automatically. GitHub Enterprise also needs your own service, see [GitHub Enterprise](../guide/migrating-to-v1.md#github-enterprise). |
+| `CI_EVENT`                                             | `pull_request` marks a [pull request build](../guide/diffing-against-branches-other-than-master.md#pull-request-builds) when no supported CI provider is detected                                                                                         |
+| `GIT_URL`                                              | `ci.repoOwner` and `ci.repoName`, from a github.com URL, if nothing else sets them                                                                                                                                                                        |
 | `DEBUG` (any value)                                    | Enables debug logging                                                                                                                                                                                                                                     |
+| `NO_COLOR`, `FORCE_COLOR`                              | Output is colored only in a terminal. `NO_COLOR` turns colors off, `FORCE_COLOR` turns them on, for example in a CI log viewer that supports them                                                                                                         |
 
-Bundlewatch detects the other values on GitHub Actions, CircleCI, Travis, GitLab, Drone and several other CI providers. See the [CLI source](https://github.com/bundlewatch/bundlewatch/blob/main/packages/bundlewatch/src/ci.ts) for the full list.
+Bundlewatch detects the other values on GitHub Actions, GitLab CI, Travis CI, Drone, CircleCI and several other CI providers. See [Supported CI providers](../guide/using-bundlewatch.md#supported-ci-providers).
 
 ## `bundlewatchServiceHost`
 

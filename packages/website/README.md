@@ -1,4 +1,4 @@
-# docs
+# website
 
 The [bundlewatch.io](https://bundlewatch.io) documentation site, built with [VitePress](https://vitepress.dev/).
 
@@ -24,6 +24,7 @@ docs/
       shared.mjs   # site-wide settings: rewrites, clean URLs, search, markdown plugins
       en.mjs       # English nav, sidebar and "Edit this page" link
       zh.mjs       # Chinese nav, sidebar and "Edit this page" link
+    llms.mjs       # writes llms.txt, llms-full.txt and a Markdown copy of each page
     theme/
       index.mjs    # default theme, plus tabs and medium-zoom
       custom.css   # theme overrides (plain CSS with native nesting)
@@ -33,9 +34,23 @@ docs/
   _assets/         # old images, not used by the site (see below)
 ```
 
-The version in the nav is the latest release. The Website workflow reads it from the newest `vX.Y.Z` tag, skipping prereleases, and runs after every successful release. Local builds show the version in `packages/bundlewatch/package.json` instead.
-
 `_assets/` is a copy of `docs/_assets/` from the old `bundlewatch/bundlewatch.io` repository. External pages, such as the 0.x npm README, still load images from that repository. Some of the files (`logo.svg`, `logo-square-transparent-highquality.png` and this version of `logo-large.svg`) exist nowhere else. The site itself only uses `public/`.
+
+## Documentation for LLMs and agents
+
+Every build also writes, from the English pages and following [llmstxt.org](https://llmstxt.org):
+
+- `llms.txt`: the pages, grouped and ordered like the English sidebar, with the `description` from their frontmatter.
+- `llms-full.txt`: every page in one file.
+- `<page>.md`: each page as plain Markdown, so `https://bundlewatch.io/guide/getting-started.md` works next to `/guide/getting-started`.
+
+VitePress-only syntax (containers, code groups, heading anchors, HTML images) becomes plain Markdown, and links become absolute. A page appears in these files once it is in the English sidebar, so give every page a `title` and `description`. These files only exist in builds, not with the dev server: check them in `docs/.vitepress/dist` after a build.
+
+The [getting started guide](docs/en/guide/getting-started.md#set-up-with-an-ai-agent) and the [migration guide](docs/en/guide/migrating-to-v1.md#upgrade-with-an-ai-agent) have prompts for coding agents, which point at these files. Keep the prompts in step with the pages they describe.
+
+## Version in the nav
+
+The version in the nav is the latest release. The Website workflow reads it from the newest `vX.Y.Z` tag, skipping prereleases, and runs after every successful release. Local builds show the version in `packages/bundlewatch/package.json` instead.
 
 ## Translation
 

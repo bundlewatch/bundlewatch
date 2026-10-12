@@ -22,6 +22,8 @@ Bundlewatch uses the first of these that is available:
 
 On GitHub Actions this means pull requests are compared with the branch they target, and other builds with your default branch, without any configuration.
 
+On other providers, builds that aren't pull requests are compared with `master`, and on CircleCI, which doesn't provide the target branch, pull requests are too. If your main branch has another name, set `CI_BRANCH_BASE` to it, for example `main`. It applies to every build, so on GitLab, Travis and Drone, pull requests that target another branch are then compared with it too.
+
 To diff against another branch (e.g. `develop`), set the `CI_BRANCH_BASE` environment variable. Note that this applies to every build, including pull requests that target a different branch.
 
 ::: info Info

@@ -22,6 +22,8 @@ Bundlewatch 会使用以下第一个可用的值：
 
 这意味着在 GitHub Actions 中无需任何配置：Pull Request 会与其目标分支对比，其他构建会与默认分支对比。
 
+在其他 CI 服务上，非 Pull Request 的构建会与 `master` 对比；CircleCI 不提供目标分支，因此其 Pull Request 也会与 `master` 对比。如果你的主分支使用其他名称，请将 `CI_BRANCH_BASE` 设为该名称，例如 `main`。它会作用于每一次构建，因此在 GitLab、Travis 和 Drone 上，目标为其他分支的 Pull Request 也会与它对比。
+
 如果你想对比其他分支（例如 `develop`），请设置 `CI_BRANCH_BASE` 环境变量。注意它会作用于每一次构建，包括目标分支不同的 Pull Request。
 
 ::: info 信息

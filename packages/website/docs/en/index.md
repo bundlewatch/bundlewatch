@@ -18,8 +18,8 @@ hero:
       text: Quickstart
       link: /guide/getting-started
     - theme: alt
-      text: GitHub
-      link: https://github.com/bundlewatch/bundlewatch
+      text: Set up with an AI agent
+      link: /guide/getting-started#set-up-with-an-ai-agent
 
 features:
   - icon: 🚫
@@ -31,17 +31,17 @@ features:
     link: /guide/using-bundlewatch#viewing-the-results-breakdown
     linkText: Learn about results breakdown
   - icon: ✨
-    details: Easily specify a custom path for your configuration file, making setup flexible for any project structure.
-    link: /guide/using-a-config-file
-    linkText: Learn about configuration file
+    details: Works on GitHub Actions without a token to manage, and on GitLab CI, CircleCI, Travis CI, Drone and other providers.
+    link: /guide/using-bundlewatch#github-actions
+    linkText: Learn about CI setup
   - icon: 🔀
     details: Compare bundle sizes across any branches, not just main, to keep all your development flows in check.
     link: /guide/diffing-against-branches-other-than-master
     linkText: Learn about comparing branches
   - icon: 🚨
-    details: Seamlessly integrates with GitHub for automated checks and status updates on your pull requests.
-    link: /guide/using-bundlewatch#adding-build-status-to-github-prs
-    linkText: Learn about GitHub integration
+    details: Reports a status on every pull request, and blocks merges when a file gets too big.
+    link: /guide/using-bundlewatch#github-statuses
+    linkText: Learn about GitHub statuses
   - icon: 🗄️
     details: Optionally use your own server for storing and retrieving bundle data, giving you full control over your data.
     link: /guide/using-a-custom-server

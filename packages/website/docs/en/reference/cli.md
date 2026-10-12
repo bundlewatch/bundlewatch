@@ -1,3 +1,8 @@
+---
+title: Command Line
+description: Bundlewatch's command-line options, where it reads configuration from, and its exit codes.
+---
+
 # Command Line
 
 ```
@@ -53,7 +58,7 @@ If more than one is present, Bundlewatch logs a warning and ignores the others. 
 
 | Code | When                                                                                                                                       |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `0`  | Every file passes (`bundlewatch PASS`), or the result is a warning (`bundlewatch WARN`).                                                   |
+| `0`  | Every file passes (`bundlewatch PASS`).                                                                                                    |
 | `1`  | A file fails its check (`bundlewatch FAIL`), the configuration is invalid or missing, an option is unknown, or an unexpected error occurs. |
 
-A file fails when it is over its `maxSize`, or when a path matches no files.
+A file fails when it is over its `maxSize`, or when a path matches no files. Errors from the Bundlewatch service, and error responses from GitHub, are logged without changing the exit code. If GitHub can't be reached at all while a token is set, the run fails with code 1, as in 0.x.

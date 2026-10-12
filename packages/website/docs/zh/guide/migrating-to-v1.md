@@ -9,6 +9,22 @@ description: 从 Bundlewatch 0.x 升级到 1.0 时有哪些变化。
 
 1.0 是一个新的主版本，`^0.x` 和 `~0.x` 版本范围不会升级到它：在你主动升级之前，一切都不会改变。如果你是从 0.3.x 升级，下文的大部分内容同样适用。
 
+## 使用 AI 编程助手升级 {#upgrade-with-an-ai-agent}
+
+将下面的提示词复制到你的 AI 编程助手中，以升级项目：
+
+```text:no-line-numbers
+在这个仓库中将 bundlewatch 升级到 1.0。
+
+阅读 https://bundlewatch.io/guide/migrating-to-v1.md 了解有哪些变化，并阅读 https://bundlewatch.io/llms-full.txt 获取完整的文档。然后：
+
+1. 使用这个项目所用的包管理器，将 bundlewatch 更新到最新的 1.x 版本。它需要 Node.js 22.17 或更高版本：如果 CI 中使用的 Node.js 版本更旧，请更新它。
+2. 对照迁移指南中“需要检查的地方”（Things to check）一节检查配置。数字形式的 "maxSize" 现在会生效：如果某个文件未通过一个以前从未检查过的限制，不要提高该限制，而是告诉我。
+3. 在 GitHub Actions 上，按照指南中的说明改用工作流的 GITHUB_TOKEN，并移除 1.0 已不再需要的变通做法，例如只是为了避免与 master 对比而设置的 CI_BRANCH_BASE，或设置为 Pull Request 最新提交的 CI_COMMIT_SHA。
+4. 如果没有其他地方使用 brotli-size 依赖，请将其移除。
+5. 构建，运行 `npx bundlewatch`，并总结你修改了什么、哪些行为现在有所不同，以及还剩下哪些需要我来做的事，例如删除不再使用的 token secret。
+```
+
 ## 环境要求 {#requirements}
 
 - **Node.js 22.17 或更高版本。** Node.js 16、18 和 20 已停止维护。
@@ -94,7 +110,7 @@ Pull Request 构建会与基准对比，但不再保存基准。以前，如果 
 
 使用 `compression: 'none'` 时，空文件会被计为 0 B。在 1.0 之前，它们会被报告为 "Could not read file"，导致运行失败。使用 gzip 和 brotli 时，空文件以前就会被测量（分别为 20 B 和 1 B）。
 
-### 与 JavaScript 对象属性同名的文件 {#object-property-filenames}
+### 与 JavaScript 对象属性同名的文件 {#files-named-after-javascript-object-properties}
 
 基准中名为 `constructor`、`toString` 或其他 `Object.prototype` 属性的文件被删除后，现在会正确显示为已删除。此前它们会被错误地显示为没有大小的通过项。同名的新文件也会正确地以 0 字节作为基准，而不是未定义的大小。大小变化总数会相应修正。
 
@@ -102,7 +118,7 @@ Pull Request 构建会与基准对比，但不再保存基准。以前，如果 
 
 ### 代理变量 {#proxy-variables}
 
-bundlewatch 不再读取 `HTTP_PROXY`、`HTTPS_PROXY`、`NO_PROXY` 或类似的变量。0.x 只是借由其 HTTP 库顺带使用了它们，从未在文档中说明。如果代理会阻止直接连接，与基准对比、保存基准和 GitHub 状态都会失败，并分别记录日志；体积检查本身仍会运行，并决定退出码。
+bundlewatch 不再读取 `HTTP_PROXY`、`HTTPS_PROXY`、`NO_PROXY` 或类似的变量。0.x 只是借由其 HTTP 库顺带使用了它们，从未在文档中说明。如果代理会阻止直接连接，与基准对比和保存基准会失败并记录日志。如果设置了 GitHub token，运行本身会以退出码 1 失败，因为它无法发布 GitHub 状态：与 0.x 一样，GitHub 不可达时 Bundlewatch 会停止运行。请允许直接连接到 `api.github.com` 和 Bundlewatch 服务，或者在该环境中取消设置 token，只运行体积检查。
 
 ### Brotli {#brotli}
 
@@ -154,8 +170,8 @@ bundlewatch 不再读取 `HTTP_PROXY`、`HTTPS_PROXY`、`NO_PROXY` 或类似的�
   - 要保存基准，公开仓库上的 token 必须属于拥有推送权限的用户，或者是该仓库的安装 token，例如该仓库自己工作流中的 `GITHUB_TOKEN`。
   - 以前，任何 GitHub token 都可以覆盖公开仓库的基准。
   - 一开始，服务只会记录新规则将会拒绝的请求。在强制执行之前，应替换没有推送权限的用户的 token，例如由已离开项目的人创建的 token：以拥有推送权限的用户身份在 [`/setup-github`](https://service.bundlewatch.io/setup-github) 创建新的 token，或在 GitHub Actions 中[使用 `GITHUB_TOKEN`](#using-the-github-actions-token)。
+  - 在报告模式下，更严格的检查从不改变决定，即使它失败或超时也是如此。
   - 读取基准与之前一致。
-  - 在报告模式下，更严格的检查失败或超时只会记录无法确定结果的日志，仍由独立的 0.x 检查决定。安装仓库列表检查会在六秒总预算中保留最后两秒，用于回退到提交状态检查。
 - **错误码：**
   - 格式错误的结果链接返回 `400`，而不是 `500`。
   - 与 GitHub 通信失败时返回 `503`，而不是 `401` 或 `500`。

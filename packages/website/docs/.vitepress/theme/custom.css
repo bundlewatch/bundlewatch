@@ -100,3 +100,14 @@ html[lang="en-US"] {
 .medium-zoom-image--opened {
   z-index: 31;
 }
+
+/* Agent prompts (```text blocks) wrap instead of scrolling sideways. */
+.vp-doc div.language-text pre,
+.vp-doc div.language-text code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.vp-doc div.language-text code {
+  width: auto;
+}

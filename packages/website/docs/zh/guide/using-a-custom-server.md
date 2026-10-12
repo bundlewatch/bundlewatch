@@ -18,6 +18,8 @@ Bundlewatch 服务负责保存构建对比所用的基准、创建结果短链�
 - `ResultsTableName`：短链接表名称，必须与 bootstrap 一致。应用模板会创建该表。
 - `StoreTableName`：你的基准表。模板不会创建它：可以复用 0.x 部署中的表，或创建一个哈希键为 `repo`（S）、范围键为 `repoBranch`（S）的表。
 - `GitHubApiUrl`：用于 GitHub Enterprise，填写你的 API 地址，例如 `https://github.example.com/api/v3`。参见 [GitHub Enterprise](./migrating-to-v1.md#github-enterprise)。
+- `WriteAuthorization`：设为 `enforce` 时，从一开始就对保存基准和创建短链接应用更严格的检查。默认值 `report` 会像 0.x 一样进行授权，只在更严格的检查会做出不同决定时记录日志。参见 [服务的变化](./migrating-to-v1.md#service-changes)。
+- `ResultsRetentionDays`：短链接的保留天数。默认值 `0` 表示永久保留。
 
 详情请参阅该服务 README 中的 [Running your own service](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/README.md#running-your-own-service)。
 

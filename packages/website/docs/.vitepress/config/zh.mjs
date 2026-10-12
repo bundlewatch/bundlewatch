@@ -76,7 +76,7 @@ function sidebarGuide() {
     {
       text: "如何使用",
       items: [
-        { text: "使用 BundleWatch", link: "using-bundlewatch" },
+        { text: "使用 Bundlewatch", link: "using-bundlewatch" },
         { text: "使用配置文件", link: "using-a-config-file" },
         {
           text: "基准分支与跟踪分支",
@@ -100,7 +100,7 @@ function sidebarReference() {
       items: [
         { text: "配置项", link: "configuration" },
         { text: "Node.js API", link: "nodejs" },
-        { text: "CLI 参数", link: "cli" },
+        { text: "命令行", link: "cli" },
       ],
     },
   ];

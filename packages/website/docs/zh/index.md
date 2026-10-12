@@ -18,8 +18,8 @@ hero:
       text: 快速开始
       link: /zh/guide/getting-started
     - theme: alt
-      text: GitHub
-      link: https://github.com/bundlewatch/bundlewatch
+      text: 使用 AI 编程助手设置
+      link: /zh/guide/getting-started#set-up-with-an-ai-agent
 
 features:
   - icon: 🚫
@@ -31,17 +31,17 @@ features:
     link: /zh/guide/using-bundlewatch#viewing-the-results-breakdown
     linkText: 了解结果拆解
   - icon: ✨
-    details: 可以轻松指定配置文件的自定义路径，使项目结构的配置更灵活。
-    link: /zh/guide/using-a-config-file
-    linkText: 了解配置文件
+    details: 在 GitHub Actions 上无需管理 token 即可使用，也支持 GitLab CI、CircleCI、Travis CI、Drone 等其他 CI 服务。
+    link: /zh/guide/using-bundlewatch#github-actions
+    linkText: 了解 CI 设置
   - icon: 🔀
     details: 可对比任意分支的打包大小，而不仅限于主分支，全面掌控开发流程。
     link: /zh/guide/diffing-against-branches-other-than-master
     linkText: 了解分支对比
   - icon: 🚨
-    details: 无缝集成 GitHub，可自动检查并更新拉取请求的构建状态。
-    link: /zh/guide/using-bundlewatch#adding-build-status-to-github-prs
-    linkText: 了解 GitHub 集成
+    details: 在每个 Pull Request 上报告状态，并在文件过大时阻止合并。
+    link: /zh/guide/using-bundlewatch#github-statuses
+    linkText: 了解 GitHub 状态
   - icon: 🗄️
     details: 可选使用你自己的服务器来存储和获取打包数据，完全掌控你的数据。
     link: /zh/guide/using-a-custom-server

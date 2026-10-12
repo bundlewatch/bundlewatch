@@ -9,6 +9,22 @@ Most setups need no changes. Your configuration, CLI flags, environment variable
 
 1.0 is a new major version, so `^0.x` and `~0.x` ranges don't pick it up: nothing changes until you upgrade. Most of what follows applies equally if you're coming from 0.3.x.
 
+## Upgrade with an AI agent
+
+Copy this prompt into your coding agent to upgrade a project:
+
+```text:no-line-numbers
+Upgrade bundlewatch to 1.0 in this repository.
+
+Read https://bundlewatch.io/guide/migrating-to-v1.md for what changed, and https://bundlewatch.io/llms-full.txt for the whole documentation. Then:
+
+1. Update bundlewatch to the latest 1.x version, with the package manager this project uses. It needs Node.js 22.17 or later: update the Node.js version used in CI if it's older.
+2. Check the configuration against "Things to check" in the migration guide. A numeric "maxSize" is now enforced: if a file now fails a limit that was never checked before, don't raise the limit, tell me.
+3. On GitHub Actions, switch to the workflow's GITHUB_TOKEN as described in the guide, and remove workarounds that 1.0 makes unnecessary, such as CI_BRANCH_BASE set only to avoid comparing with master, or CI_COMMIT_SHA set to the pull request's head commit.
+4. Remove the brotli-size dependency if nothing else uses it.
+5. Build, run `npx bundlewatch`, and summarize what you changed, what now behaves differently, and what is left for me to do, such as deleting a token secret that is no longer used.
+```
+
 ## Requirements
 
 - **Node.js 22.17 or later.** Node.js 16, 18 and 20 are end-of-life.
@@ -102,7 +118,7 @@ A file whose path, after `normalizeFilenames`, is exactly `__proto__` is now mea
 
 ### Proxy variables
 
-bundlewatch no longer reads `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY` or similar variables. 0.x used them only as a side effect of its HTTP library, and never documented them. Behind a proxy that blocks direct connections, comparisons, saving baselines and GitHub statuses fail, and each failure is logged; the size check itself still runs and sets the exit code.
+bundlewatch no longer reads `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY` or similar variables. 0.x used them only as a side effect of its HTTP library, and never documented them. Behind a proxy that blocks direct connections, comparisons and saving baselines fail and are logged. With a GitHub token set, the run itself fails with exit code 1, because it can't post its GitHub status: like 0.x, Bundlewatch stops when GitHub is unreachable. Allow direct connections to `api.github.com` and the Bundlewatch service, or unset the token there to run only the size check.
 
 ### Brotli
 
@@ -154,7 +170,7 @@ These apply to every CLI version, 0.x included.
   - To save, a token on a public repository must belong to a user with push access, or be an installation token for that repository, such as the `GITHUB_TOKEN` of its own workflows.
   - Previously, any GitHub token could overwrite a public repository's baseline.
   - At first the service only logs requests the new rule would refuse. Before it's enforced, tokens of users without push access, such as one created by someone who has since left the project, should be replaced: create a new token at [`/setup-github`](https://service.bundlewatch.io/setup-github) as a user with push access, or [use `GITHUB_TOKEN`](#using-the-github-actions-token) on GitHub Actions.
-  - A failed or timed-out stricter check only logs an inconclusive result in report mode; the independent 0.x check still decides. Installation listing reserves the last two seconds of its six-second budget for the statuses fallback.
+  - In report mode, the stricter check never changes a decision, even when it fails or times out.
   - Reading a baseline works as before.
 - **Error codes:**
   - Malformed results links return `400` instead of `500`.
