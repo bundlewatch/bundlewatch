@@ -1,5 +1,8 @@
-.DS_STORE
 node_modules
-artifacts
-lib
-yarn-error.log
+dist
+coverage
+.aws-sam
+packages/website/docs/.vitepress/cache
+packages/website/docs/.vitepress/dist
+*.tgz
+.DS_Store

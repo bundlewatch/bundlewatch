@@ -1,0 +1,37 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      aws-sdk:
+        patterns: ['@aws-sdk/*']
+      dev-dependencies:
+        dependency-type: development
+    ignore:
+      # Reference versions the tests compare the new code against. They must
+      # stay exactly what bundlewatch 0.x used.
+      - dependency-name: bundlewatch-legacy
+      - dependency-name: bundlewatch-0.*
+      - dependency-name: jsonpack-v1
+      - dependency-name: ci-env
+      - dependency-name: glob
+      - dependency-name: gzip-size
+      - dependency-name: brotli-size
+      - dependency-name: bytes
+      # Keep the types at the oldest supported Node.js version.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ['*']

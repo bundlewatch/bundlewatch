@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: bundlewatch service (service.bundlewatch.io)
+
+Parameters:
+  StoreTableName:
+    Type: String
+    Default: bundlewatch-service-store-table-prod
+    Description: >-
+      Existing baseline table, created by the 0.x Serverless stack. This stack
+      only references it, so deleting the stack can never delete baselines.
+  ResultsTableName:
+    Type: String
+    Default: bundlewatch-service-results
+    Description: Table for short results links, created by this stack.
+  ResultsRetentionDays:
+    Type: Number
+    Default: 0
+    MinValue: 0
+    Description: Days to keep short links; 0 keeps them forever.
+  PublicUrl:
+    Type: String
+    Default: https://service.bundlewatch.io
+    Description: Base URL used to build short links.
+  GitHubClientId:
+    Type: String
+    Default: 04fcf325dd26ca2a159f
+  GitHubClientSecret:
+    Type: String
+    NoEcho: true
+  GitSha:
+    Type: String
+    Default: unknown
+    Description: Deployed commit, shown in the results page footer.
+  WriteAuthorization:
+    Type: String
+    Default: report
+    AllowedValues: [report, enforce]
+    Description: >-
+      `report` authorizes saving baselines and short links like 0.x and logs
+      where the stricter 1.0 check would decide differently. Switch to
+      `enforce` once those logs are reviewed (see README.md).
+  GitHubApiUrl:
+    Type: String
+    Default: https://api.github.com
+    Description: >-
+      GitHub API used to check tokens and for OAuth. Self-hosted services for
+      GitHub Enterprise set their API URL, e.g. https://github.example.com/api/v3.
+
+Resources:
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 200
+        ThrottlingRateLimit: 100
+
+  ServiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/
+      Handler: lambda.handler
+      # The newest Node.js LTS that Lambda supports for production. Move to
+      # nodejs26.x once it leaves preview (AWS targets November 2026), along
+      # with .nvmrc and the build target in tsdown.config.ts.
+      Runtime: nodejs24.x
+      Architectures: [arm64]
+      MemorySize: 512
+      Timeout: 29
+      LoggingConfig:
+        LogGroup: !Ref ServiceLogGroup
+      Environment:
+        Variables:
+          STORE_TABLE: !Ref StoreTableName
+          RESULTS_TABLE: !Ref ResultsTable
+          RESULTS_RETENTION_DAYS: !Ref ResultsRetentionDays
+          PUBLIC_URL: !Ref PublicUrl
+          GITHUB_CLIENT_ID: !Ref GitHubClientId
+          GITHUB_CLIENT_SECRET: !Ref GitHubClientSecret
+          GIT_SHA1: !Ref GitSha
+          WRITE_AUTHORIZATION: !Ref WriteAuthorization
+          GITHUB_API_URL: !Ref GitHubApiUrl
+      # Created by infra/bootstrap.yaml, with exactly the access it needs.
+      Role: !ImportValue bundlewatch-service-function-role-arn
+      Events:
+        # No path or method: the $default route sends every request to the
+        # function, which does its own routing.
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+
+  ServiceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /bundlewatch/service
+      RetentionInDays: 30
+
+  ResultsTable:
+    Type: AWS::DynamoDB::Table
+    # Kept when the stack is deleted, but removed when the deploy that
+    # created it fails, so a retry can create it again.
+    DeletionPolicy: RetainExceptOnCreate
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Ref ResultsTableName
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+Outputs:
+  ApiUrl:
+    Description: The API's own endpoint, usable before the custom domain moves.
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}
+  FunctionName:
+    Value: !Ref ServiceFunction
+  ResultsTableName:
+    Value: !Ref ResultsTable

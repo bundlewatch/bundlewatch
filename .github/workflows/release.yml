@@ -1,0 +1,52 @@
+name: Release
+
+# Publishes packages/bundlewatch to npm when a vX.Y.Z tag is pushed, e.g.
+# `git tag v1.0.0 && git push origin v1.0.0`. Uses npm trusted publishing
+# (OIDC): no npm token is stored anywhere.
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - name: Check that the tag matches the package version
+        run: |
+          version=$(node -p "require('./packages/bundlewatch/package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package version $version" >&2
+            exit 1
+          fi
+      - run: pnpm check
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm test
+      - run: pnpm test:contract
+      # pnpm pack replaces workspace: references in package.json; npm
+      # publish handles trusted publishing and provenance.
+      - run: pnpm --filter bundlewatch pack --pack-destination "$RUNNER_TEMP"
+      - name: Publish
+        run: |
+          version=$(node -p "require('./packages/bundlewatch/package.json').version")
+          case "$version" in *-*) tag=next ;; *) tag=latest ;; esac
+          npm publish "$RUNNER_TEMP"/bundlewatch-"$version".tgz --provenance --access public --tag "$tag"

@@ -1,0 +1,22 @@
+{
+    "name": "@bundlewatch/contract-tests",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Runs bundlewatch 0.4.2 and the new CLI side by side, and both against the new service.",
+    "type": "module",
+    "scripts": {
+        "typecheck": "tsc",
+        "test": "node --test \"src/**/*.test.ts\""
+    },
+    "devDependencies": {
+        "@bundlewatch/core": "workspace:*",
+        "@bundlewatch/service": "workspace:*",
+        "brotli-size": "4.0.0",
+        "bundlewatch": "workspace:*",
+        "bundlewatch-0.2.7": "npm:bundlewatch@0.2.7",
+        "bundlewatch-0.3.1": "npm:bundlewatch@0.3.1",
+        "bundlewatch-0.3.3": "npm:bundlewatch@0.3.3",
+        "bundlewatch-legacy": "npm:bundlewatch@0.4.2",
+        "jsonpack": "2.0.0"
+    }
+}

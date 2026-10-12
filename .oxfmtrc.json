@@ -1,0 +1,33 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "printWidth": 80,
+    "tabWidth": 4,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "sortImports": true,
+    "sortPackageJson": false,
+    "embeddedLanguageFormatting": "off",
+    "ignorePatterns": [
+        "pnpm-lock.yaml",
+        "**/dist/**",
+        "**/__fixtures__/**",
+        "packages/website/docs/.vitepress/cache/**"
+    ],
+    "overrides": [
+        {
+            "files": ["**/*.{md,yaml,yml,css}"],
+            "options": {
+                "tabWidth": 2
+            }
+        },
+        {
+            "files": ["packages/website/**/*.{mjs,js,ts,vue,css}"],
+            "options": {
+                "tabWidth": 2,
+                "semi": true,
+                "singleQuote": false
+            }
+        }
+    ]
+}

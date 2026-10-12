@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Superseded pull request runs only; runs on main save the size baseline.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Lint, types, tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          cache: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
+      - name: Only bundlewatch is publishable
+        run: |
+          pnpm ls --recursive --depth -1 --json | node -e '
+            const published = new Set(["bundlewatch"])
+            const packages = JSON.parse(require("node:fs").readFileSync(0, "utf8"))
+            const wrong = packages.filter((p) => published.has(p.name) === p.private)
+            for (const p of wrong) {
+              console.error(`${p.name} (${p.path}): "private" must be ${!published.has(p.name)}`)
+            }
+            process.exitCode = wrong.length > 0 ? 1 : 0
+          '
+      - run: pnpm check
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm test
+      - name: Contract tests (compares with bundlewatch 0.4.2)
+        run: pnpm test:contract
+      - name: Validate the AWS templates
+        run: pipx run cfn-lint==1.57.2 packages/service/template.yaml packages/service/infra/bootstrap.yaml
+      - run: pnpm --filter @bundlewatch/website build
+
+  node:
+    name: CLI on Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 22.17.0 is the oldest supported version. It can't run TypeScript
+        # directly, so it only runs the built CLI.
+        node: ['22.17.0', '22', '24', '26']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          cache: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter bundlewatch build
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Run the built CLI
+        working-directory: packages/bundlewatch/src/__fixtures__
+        run: |
+          node ../../dist/cli.js --max-size 1MB './*.jpg'
+          node --input-type=module -e "import b from 'bundlewatch'; if (typeof b !== 'function') process.exit(1)"
+          node -e "if (typeof require('bundlewatch').default !== 'function') process.exit(1)"
+      - name: Unit tests
+        if: matrix.node != '22.17.0'
+        run: pnpm --filter bundlewatch --filter @bundlewatch/core test
+
+  size:
+    name: Bundle size
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          cache: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter bundlewatch build
+      - name: Check the CLI's own size with the CLI
+        working-directory: packages/bundlewatch
+        run: node dist/cli.js
+        env:
+          BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

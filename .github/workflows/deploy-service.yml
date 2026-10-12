@@ -1,0 +1,80 @@
+name: Deploy service
+
+# Deploys packages/service to AWS with SAM. Authenticates with GitHub's OIDC token
+# against the role created by packages/service/infra/bootstrap.yaml: no AWS keys
+# are stored anywhere. Configure the `production` environment as described
+# in packages/service/README.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - packages/service/**
+      - packages/core/**
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - package.json
+      - .nvmrc
+      - .github/workflows/deploy-service.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-service
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          cache: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @bundlewatch/service test
+      - run: pnpm --filter @bundlewatch/service build
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: aws-actions/setup-sam@89ddb14d60e682855e3fea4be85b3c56485de310 # v3
+        with:
+          use-installer: true
+          version: 1.168.0
+      - name: Deploy
+        working-directory: packages/service
+        env:
+          SAM_ARTIFACT_BUCKET: ${{ vars.SAM_ARTIFACT_BUCKET }}
+          CFN_EXECUTION_ROLE_ARN: ${{ vars.CFN_EXECUTION_ROLE_ARN }}
+          WRITE_AUTHORIZATION: ${{ vars.WRITE_AUTHORIZATION || 'report' }}
+          OAUTH_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+        run: >-
+          sam deploy
+          --stack-name bundlewatch-service
+          --s3-bucket "$SAM_ARTIFACT_BUCKET"
+          --s3-prefix bundlewatch-service
+          --role-arn "$CFN_EXECUTION_ROLE_ARN"
+          --capabilities CAPABILITY_IAM
+          --no-confirm-changeset
+          --no-fail-on-empty-changeset
+          --parameter-overrides
+          "GitSha=$GITHUB_SHA"
+          "GitHubClientSecret=$OAUTH_CLIENT_SECRET"
+          "WriteAuthorization=$WRITE_AUTHORIZATION"
+      - name: Smoke test
+        run: |
+          url=$(aws cloudformation describe-stacks --stack-name bundlewatch-service \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)
+          curl --fail --silent --show-error "$url/" | grep -q 'hello world'
