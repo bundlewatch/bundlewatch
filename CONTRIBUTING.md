@@ -44,9 +44,9 @@ One-time setup, done by an npm owner of `bundlewatch`:
    - GitHub Actions
    - repository `bundlewatch/bundlewatch`
    - workflow `release.yml`
-   - environment `npm`
+   - environment `npm-production`
 2. Then disallow publishing with tokens.
-3. Create the `npm` environment in the repository settings, restricted to tags matching `v*.*.*`, with a required reviewer. Do this before `release.yml` reaches `main`: GitHub creates an unprotected environment the first time a workflow names one.
+3. Create the `npm-production` environment in the repository settings, restricted to tags matching `v*.*.*`, with a required reviewer. Do this before `release.yml` reaches `main`: GitHub creates an unprotected environment the first time a workflow names one.
 4. Add a tag ruleset so only maintainers can create `v*` tags. Otherwise anyone with push access could publish.
 5. Make the first release a prerelease, such as `1.0.0-rc.1`, to check the trusted publisher setup.
 

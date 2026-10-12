@@ -2,7 +2,7 @@ name: Deploy service
 
 # Deploys packages/service to AWS with SAM. Authenticates with GitHub's OIDC token
 # against the role created by packages/service/infra/bootstrap.yaml: no AWS keys
-# are stored anywhere. Configure the `production` environment as described
+# are stored anywhere. Configure the `service-production` environment as described
 # in packages/service/README.md.
 
 on:
@@ -28,7 +28,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: service-production
     permissions:
       contents: read
       id-token: write

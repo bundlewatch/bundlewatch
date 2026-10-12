@@ -271,7 +271,7 @@ Parameters that the workflow doesn't pass keep the value of the first deploy (`P
 
 You need administrator access to the AWS account. Do the GitHub steps before the workflows reach `main`: GitHub creates an unprotected environment the first time a workflow names one.
 
-1. In the repository settings, create the environment `production` and allow deployments from `main` only.
+1. In the repository settings, create the environment `service-production` and allow deployments from `main` only.
    - A required reviewer makes every deploy wait for approval, including during the cutover.
    - Under Actions settings, consider keeping the default `GITHUB_TOKEN` read-only and not letting Actions approve pull requests.
 
@@ -299,7 +299,7 @@ You need administrator access to the AWS account. Do the GitHub steps before the
      --query Environment.Variables.GITHUB_CLIENT_SECRET --output text
    ```
 
-5. Add to the `production` environment:
+5. Add to the `service-production` environment:
    - **Variables:**
      - `AWS_DEPLOY_ROLE_ARN`, `CFN_EXECUTION_ROLE_ARN` and `SAM_ARTIFACT_BUCKET`, from the bootstrap stack outputs (`aws cloudformation describe-stacks --stack-name bundlewatch-deploy-access`).
      - Optionally `WRITE_AUTHORIZATION`; leave it unset (`report`) for now. See [Enforcing the stricter write check](#enforcing-the-stricter-write-check).
@@ -388,7 +388,7 @@ The service starts with `WRITE_AUTHORIZATION=report`: saving baselines and creat
 
    Every row is a repository that `enforce` would stop saving baselines for. Expect tokens of users without push access. Investigate anything else, especially `installation` tokens, before switching.
 
-To switch, set the `production` variable `WRITE_AUTHORIZATION` to `enforce` and run the Deploy service workflow. To switch back, set it to `report` and deploy again.
+To switch, set the `service-production` variable `WRITE_AUTHORIZATION` to `enforce` and run the Deploy service workflow. To switch back, set it to `report` and deploy again.
 
 ### Cleaning up the 0.x stack
 

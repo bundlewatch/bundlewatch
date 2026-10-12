@@ -54,11 +54,12 @@ The site is served by GitHub Pages at `https://bundlewatch.io`. The [Website wor
 The site used to be deployed from `bundlewatch/bundlewatch.io`. Moving it here is a one-time change:
 
 1. Verify `bundlewatch.io` for the bundlewatch GitHub organization (organization Settings → Pages → Add a domain). Once it is verified, only the organization's repositories can publish to it, so nobody else can claim the domain while it moves. GitHub asks for a TXT record; that is the only DNS change.
-2. In `bundlewatch/bundlewatch` Settings → Pages, set Source to "GitHub Actions", then run the Website workflow (Actions → Website → Run workflow).
-3. In `bundlewatch/bundlewatch.io` Settings → Pages, remove the custom domain.
-4. In `bundlewatch/bundlewatch` Settings → Pages, add `bundlewatch.io` as the custom domain. The site is unavailable between steps 3 and 4, so do them back to back.
-5. Wait for GitHub to issue the certificate, then enable "Enforce HTTPS".
-6. Disable the Pages workflow of `bundlewatch/bundlewatch.io` (Actions → the workflow → Disable workflow), so it doesn't deploy the old site again.
+2. In `bundlewatch/bundlewatch` Settings → Environments, create `website-production` and allow deployments from `main` only. The workflow deploys through this environment rather than the `github-pages` one GitHub creates and protects automatically, so this rule is what stops other branches from publishing the site. Do this before the workflow reaches `main`: GitHub creates an unprotected environment the first time a workflow names one.
+3. In `bundlewatch/bundlewatch` Settings → Pages, set Source to "GitHub Actions", then run the Website workflow (Actions → Website → Run workflow).
+4. In `bundlewatch/bundlewatch.io` Settings → Pages, remove the custom domain.
+5. In `bundlewatch/bundlewatch` Settings → Pages, add `bundlewatch.io` as the custom domain. The site is unavailable between steps 4 and 5, so do them back to back.
+6. Wait for GitHub to issue the certificate, then enable "Enforce HTTPS".
+7. Disable the Pages workflow of `bundlewatch/bundlewatch.io` (Actions → the workflow → Disable workflow), so it doesn't deploy the old site again.
 
 The A and CNAME records stay as they are:
 

@@ -1,7 +1,8 @@
 name: Website
 
 # Builds packages/website (bundlewatch.io) and deploys it to GitHub Pages on
-# every change merged to main.
+# every change merged to main. Configure the `website-production` environment
+# as described in packages/website/README.md.
 
 on:
   push:
@@ -45,7 +46,7 @@ jobs:
       pages: write
       id-token: write
     environment:
-      name: github-pages
+      name: website-production
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment

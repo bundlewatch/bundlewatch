@@ -15,7 +15,7 @@ Parameters:
     Default: bundlewatch/bundlewatch
   GitHubEnvironment:
     Type: String
-    Default: production
+    Default: service-production
     Description: Only workflow jobs running in this GitHub environment can deploy.
   ExistingOidcProviderArn:
     Type: String
