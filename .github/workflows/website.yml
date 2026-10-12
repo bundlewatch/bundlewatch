@@ -1,16 +1,20 @@
 name: Website
 
 # Builds packages/website (bundlewatch.io) and deploys it to GitHub Pages on
-# every change merged to main. Configure the `website-production` environment
-# as described in packages/website/README.md.
+# every change merged to main, and after every release so the nav shows the
+# new version. Configure the `website-production` environment as described in
+# packages/website/README.md.
 
 on:
   push:
     branches: [main]
     paths:
       - packages/website/**
-      - packages/bundlewatch/package.json
       - .github/workflows/website.yml
+  # Runs on main, like a push: it checks out main, not the release tag.
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -22,11 +26,19 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-tags: true
+      # The nav shows the newest vX.Y.Z tag: release.yml only publishes tags
+      # that match the package version. Prereleases (vX.Y.Z-rc.N) are skipped.
+      - name: Find the latest release
+        run: |
+          version=$(git tag --list 'v*' --sort=-version:refname | grep -m 1 -E '^v[0-9]+\.[0-9]+\.[0-9]+$')
+          echo "BUNDLEWATCH_VERSION=${version#v}" >> "$GITHUB_ENV"
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true

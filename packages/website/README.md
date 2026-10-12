@@ -33,7 +33,7 @@ docs/
   _assets/         # old images, not used by the site (see below)
 ```
 
-The version in the nav comes from `packages/bundlewatch/package.json`.
+The version in the nav is the latest release. The Website workflow reads it from the newest `vX.Y.Z` tag, skipping prereleases, and runs after every successful release. Local builds show the version in `packages/bundlewatch/package.json` instead.
 
 `_assets/` is a copy of `docs/_assets/` from the old `bundlewatch/bundlewatch.io` repository. External pages, such as the 0.x npm README, still load images from that repository. Some of the files (`logo.svg`, `logo-square-transparent-highquality.png` and this version of `logo-large.svg`) exist nowhere else. The site itself only uses `public/`.
 

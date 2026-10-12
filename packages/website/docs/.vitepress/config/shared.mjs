@@ -1,6 +1,12 @@
 import { defineConfig } from "vitepress";
 import { tabsMarkdownPlugin } from "vitepress-plugin-tabs";
 
+import pkg from "../../../../../packages/bundlewatch/package.json" with { type: "json" };
+
+// The latest release, shown in the nav. The Website workflow reads it from the
+// repository's release tags; local builds show the version in package.json.
+export const version = process.env.BUNDLEWATCH_VERSION || pkg.version;
+
 export const shared = defineConfig({
   title: "BundleWatch",
 

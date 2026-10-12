@@ -55,9 +55,9 @@ For each release:
 1. Update `version` in `packages/bundlewatch/package.json` and merge the change.
 2. Tag the commit with that version, for example `git tag v1.0.1 && git push origin v1.0.1`.
 
-The [release workflow](.github/workflows/release.yml) runs every check, then publishes to npm with provenance through trusted publishing. A version with a prerelease suffix, such as `1.1.0-rc.1`, is published under the `next` tag.
+The [release workflow](.github/workflows/release.yml) runs every check, then publishes to npm with provenance through trusted publishing. A version with a prerelease suffix, such as `1.1.0-rc.1`, is published under the `next` tag. After a successful release, the website redeploys and shows the new version in its nav; prereleases don't change it.
 
 ## Deploying
 
 - **Service:** deploys on every change to `main` that touches it. Setup and runbook: [packages/service/README.md](packages/service/README.md).
-- **Website:** deploys `packages/website` to GitHub Pages on every change merged to `main`. Moving the bundlewatch.io domain to this repository is a one-time step, described in [packages/website/README.md](packages/website/README.md).
+- **Website:** deploys `packages/website` to GitHub Pages on every change merged to `main`, and after every release. Moving the bundlewatch.io domain to this repository is a one-time step, described in [packages/website/README.md](packages/website/README.md).

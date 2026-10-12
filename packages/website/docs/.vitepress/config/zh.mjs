@@ -1,6 +1,6 @@
 import { defineConfig } from "vitepress";
 
-import pkg from "../../../../../packages/bundlewatch/package.json" with { type: "json" };
+import { version } from "./shared.mjs";
 
 export const zh = defineConfig({
   lang: "zh-Hans",
@@ -46,7 +46,7 @@ function nav() {
       activeMatch: "/zh/reference/",
     },
     {
-      text: pkg.version,
+      text: version,
       items: [
         {
           text: "Release Notes",
