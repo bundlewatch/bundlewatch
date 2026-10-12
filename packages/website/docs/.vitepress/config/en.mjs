@@ -18,8 +18,7 @@ export const en = defineConfig({
     },
 
     editLink: {
-      pattern:
-        "https://github.com/bundlewatch/bundlewatch/edit/main/packages/website/docs/:path",
+      pattern: "https://github.com/bundlewatch/bundlewatch/edit/main/packages/website/docs/:path",
       text: "Edit this page on GitHub",
     },
 

@@ -6,11 +6,7 @@
   --vp-code-color: #c7254e;
 
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(
-    120deg,
-    var(--color-2) 30%,
-    var(--color-1)
-  );
+  --vp-home-hero-name-background: linear-gradient(120deg, var(--color-2) 30%, var(--color-1));
 
   --vp-home-hero-image-background-image: linear-gradient(
     135deg,
@@ -32,12 +28,8 @@
 }
 
 .VPLink.link.VPNavBarMenuLink {
-  background: linear-gradient(
-      to right,
-      var(--vp-c-brand-1),
-      var(--vp-c-brand-1)
-    )
-    no-repeat right bottom;
+  background: linear-gradient(to right, var(--vp-c-brand-1), var(--vp-c-brand-1)) no-repeat right
+    bottom;
   background-size: 0 2px;
   transition: background-size 0.3s;
 
@@ -47,8 +39,8 @@
   }
 
   &.active {
-    background: linear-gradient(to right, var(--vp-c-brand), var(--vp-c-brand))
-      no-repeat right bottom;
+    background: linear-gradient(to right, var(--vp-c-brand), var(--vp-c-brand)) no-repeat right
+      bottom;
     background-size: 100% 2px;
   }
 }

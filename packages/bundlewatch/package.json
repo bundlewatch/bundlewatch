@@ -1,86 +1,86 @@
 {
-    "name": "bundlewatch",
-    "version": "1.0.0",
-    "description": "Keep watch of your bundle size",
-    "keywords": [
-        "bundle",
-        "size",
-        "check",
-        "build",
-        "maxSize",
-        "ci",
-        "github"
-    ],
-    "homepage": "https://bundlewatch.io",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/bundlewatch/bundlewatch.git",
-        "directory": "packages/bundlewatch"
+  "name": "bundlewatch",
+  "version": "1.0.0",
+  "description": "Keep watch of your bundle size",
+  "keywords": [
+    "build",
+    "bundle",
+    "check",
+    "ci",
+    "github",
+    "maxSize",
+    "size"
+  ],
+  "homepage": "https://bundlewatch.io",
+  "bugs": "https://github.com/bundlewatch/bundlewatch/issues",
+  "license": "MIT",
+  "author": "bundlewatch",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bundlewatch/bundlewatch.git",
+    "directory": "packages/bundlewatch"
+  },
+  "bin": {
+    "bundlewatch": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "lib"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
-    "bugs": "https://github.com/bundlewatch/bundlewatch/issues",
-    "license": "MIT",
-    "author": "bundlewatch",
-    "type": "module",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.cts",
-    "exports": {
-        ".": {
-            "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
-            },
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            }
-        },
-        "./lib/app": {
-            "import": "./dist/index.js",
-            "require": "./dist/index.cjs"
-        },
-        "./lib/app/index.js": {
-            "import": "./dist/index.js",
-            "require": "./dist/index.cjs"
-        },
-        "./package.json": "./package.json"
+    "./lib/app": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
-    "bin": {
-        "bundlewatch": "./dist/cli.js"
+    "./lib/app/index.js": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc",
+    "test": "node --test \"src/**/*.test.ts\""
+  },
+  "dependencies": {
+    "glob": "7.2.3",
+    "jsonpack": "1.1.5"
+  },
+  "devDependencies": {
+    "@bundlewatch/core": "workspace:*",
+    "brotli-size": "4.0.0",
+    "ci-env": "1.17.0",
+    "gzip-size": "6.0.0",
+    "tsdown": "0.23.1"
+  },
+  "engines": {
+    "node": ">=22.17.0"
+  },
+  "bundlewatch": {
     "files": [
-        "dist",
-        "lib"
-    ],
-    "engines": {
-        "node": ">=22.17.0"
-    },
-    "scripts": {
-        "build": "tsdown",
-        "typecheck": "tsc",
-        "test": "node --test \"src/**/*.test.ts\""
-    },
-    "dependencies": {
-        "glob": "7.2.3",
-        "jsonpack": "1.1.5"
-    },
-    "devDependencies": {
-        "@bundlewatch/core": "workspace:*",
-        "brotli-size": "4.0.0",
-        "ci-env": "1.17.0",
-        "gzip-size": "6.0.0",
-        "tsdown": "0.23.1"
-    },
-    "bundlewatch": {
-        "files": [
-            {
-                "path": "./dist/*.js",
-                "maxSize": "15kB"
-            },
-            {
-                "path": "./dist/*.cjs",
-                "maxSize": "15kB"
-            }
-        ]
-    }
+      {
+        "path": "./dist/*.js",
+        "maxSize": "15kB"
+      },
+      {
+        "path": "./dist/*.cjs",
+        "maxSize": "15kB"
+      }
+    ]
+  }
 }

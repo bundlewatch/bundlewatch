@@ -18,8 +18,7 @@ export const zh = defineConfig({
     },
 
     editLink: {
-      pattern:
-        "https://github.com/bundlewatch/bundlewatch/edit/main/packages/website/docs/:path",
+      pattern: "https://github.com/bundlewatch/bundlewatch/edit/main/packages/website/docs/:path",
       text: "在GitHub上编辑此页面",
     },
 

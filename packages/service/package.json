@@ -1,24 +1,24 @@
 {
-    "name": "@bundlewatch/service",
-    "version": "0.0.0",
-    "private": true,
-    "description": "Stores bundlewatch baselines and renders results pages. Runs on AWS Lambda.",
-    "type": "module",
-    "exports": {
-        "./*": "./src/*"
-    },
-    "scripts": {
-        "build": "tsdown",
-        "dev": "node --watch src/dev-server.ts",
-        "typecheck": "tsc",
-        "test": "node --test \"src/**/*.test.ts\""
-    },
-    "dependencies": {
-        "@aws-sdk/client-dynamodb": "3.1149.0",
-        "@aws-sdk/util-dynamodb": "3.996.9",
-        "@bundlewatch/core": "workspace:*"
-    },
-    "devDependencies": {
-        "tsdown": "0.23.1"
-    }
+  "name": "@bundlewatch/service",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Stores bundlewatch baselines and renders results pages. Runs on AWS Lambda.",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "node --watch src/dev-server.ts",
+    "typecheck": "tsc",
+    "test": "node --test \"src/**/*.test.ts\""
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.1149.0",
+    "@aws-sdk/util-dynamodb": "3.996.9",
+    "@bundlewatch/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsdown": "0.23.1"
+  }
 }

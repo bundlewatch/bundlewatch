@@ -293,4 +293,4 @@ footer {
     fill: currentColor;
     vertical-align: middle;
 }
-`
+`;

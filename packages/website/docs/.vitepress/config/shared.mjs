@@ -21,16 +21,12 @@ export const shared = defineConfig({
     },
   },
 
-  head: [
-    ["link", { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" }],
-  ],
+  head: [["link", { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" }]],
 
   themeConfig: {
     logo: { src: "/logo-mini.svg", width: 24, height: 24 },
 
-    socialLinks: [
-      { icon: "github", link: "https://github.com/bundlewatch/bundlewatch" },
-    ],
+    socialLinks: [{ icon: "github", link: "https://github.com/bundlewatch/bundlewatch" }],
 
     search: {
       provider: "local",

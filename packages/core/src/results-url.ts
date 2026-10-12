@@ -1,10 +1,10 @@
 // oxlint-disable-next-line typescript/triple-slash-reference -- Source consumers need the ambient dependency declaration too.
 /// <reference path="./jsonpack.d.ts" />
-import jsonpack from 'jsonpack/main.js'
+import jsonpack from 'jsonpack/main.js';
 
-const { pack, unpack } = jsonpack
+const { pack, unpack } = jsonpack;
 
-import type { AnalyzeResult, ResultsDetails, ResultsPayload } from './types.ts'
+import type { AnalyzeResult, ResultsDetails, ResultsPayload } from './types.ts';
 
 // Every results link ever posted to a GitHub status encodes its data with
 // jsonpack in the `d` query parameter. Both directions must keep working:
@@ -18,33 +18,31 @@ import type { AnalyzeResult, ResultsDetails, ResultsPayload } from './types.ts'
  * 0.x services reject, so those results pages never rendered.
  */
 export const createResultsPayload = (
-    results: AnalyzeResult,
-    details: ResultsDetails,
+  results: AnalyzeResult,
+  details: ResultsDetails,
 ): ResultsPayload => ({
-    details,
-    results: {
-        ...results,
-        fullResults: results.fullResults.map(
-            ({ message: _message, ...rest }) =>
-                typeof rest.maxSize === 'number' &&
-                !Number.isFinite(rest.maxSize)
-                    ? { ...rest, maxSize: null }
-                    : rest,
-        ),
-    },
-})
+  details,
+  results: {
+    ...results,
+    fullResults: results.fullResults.map(({ message: _message, ...rest }) =>
+      typeof rest.maxSize === 'number' && !Number.isFinite(rest.maxSize)
+        ? { ...rest, maxSize: null }
+        : rest,
+    ),
+  },
+});
 
 /** Builds the long `<host>/results?d=…` link. */
 export const createResultsUrl = ({
-    host,
-    results,
-    details,
+  host,
+  results,
+  details,
 }: {
-    host: string
-    results: AnalyzeResult
-    details: ResultsDetails
+  host: string;
+  results: AnalyzeResult;
+  details: ResultsDetails;
 }): string =>
-    `${host}/results?d=${encodeURIComponent(pack(createResultsPayload(results, details)))}`
+  `${host}/results?d=${encodeURIComponent(pack(createResultsPayload(results, details)))}`;
 
 /** Decodes an already URL-decoded `d` parameter. Throws on malformed input. */
-export const decodeResultsData = (data: string): unknown => unpack(data)
+export const decodeResultsData = (data: string): unknown => unpack(data);

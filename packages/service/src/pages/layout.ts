@@ -1,19 +1,19 @@
-import { html, type SafeHtml } from '../html.ts'
+import { html, type SafeHtml } from '../html.ts';
 
 // Shared markup of the 0.x Mustache templates, with the dead
 // cdn.rawgit.com and raw.githubusercontent.com assets moved to
 // bundlewatch.io.
 
 export const page = ({
-    title,
-    stylesheet,
-    body,
+  title,
+  stylesheet,
+  body,
 }: {
-    title: string
-    stylesheet: string
-    body: SafeHtml
+  title: string;
+  stylesheet: string;
+  body: SafeHtml;
 }): string =>
-    html`<!doctype html>
+  html`<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -26,7 +26,7 @@ export const page = ({
 ${body}
 </body>
 </html>
-`.value
+`.value;
 
 export const logoHeader: SafeHtml = html`<header>
         <div class="logo">
@@ -34,10 +34,10 @@ export const logoHeader: SafeHtml = html`<header>
                 <img src="https://bundlewatch.io/logo-large.svg" alt="BundleWatch" height="100">
             </a>
         </div>
-    </header>`
+    </header>`;
 
 export const footerLinks: SafeHtml = html`<div class="footer">
         <a href="https://github.com/bundlewatch/bundlewatch/blob/main/CONTRIBUTING.md">Start Contributing</a> |
         <a href="https://bundlewatch.io">BundleWatch.io</a> |
         <a href="https://github.com/bundlewatch/bundlewatch/issues">Report an Issue</a>
-    </div>`
+    </div>`;

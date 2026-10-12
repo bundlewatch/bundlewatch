@@ -1,33 +1,33 @@
-import { html } from '../html.ts'
-import { footerLinks, logoHeader, page } from './layout.ts'
+import { html } from '../html.ts';
+import { footerLinks, logoHeader, page } from './layout.ts';
 
 // Port of setup-github.mustache.
 
 export const renderSetupGithubPage = ({
-    token,
-    clientId,
-    githubWebUrl,
-    state,
+  token,
+  clientId,
+  githubWebUrl,
+  state,
 }: {
-    token?: string | undefined
-    clientId?: string | undefined
-    githubWebUrl: string
-    /** Sent to GitHub and checked when it redirects back. */
-    state?: string | undefined
+  token?: string | undefined;
+  clientId?: string | undefined;
+  githubWebUrl: string;
+  /** Sent to GitHub and checked when it redirects back. */
+  state?: string | undefined;
 }): string => {
-    const authorizeUrl = `${githubWebUrl}/login/oauth/authorize?scope=repo%3Astatus&client_id=${encodeURIComponent(clientId ?? '')}${state ? `&state=${encodeURIComponent(state)}` : ''}`
-    const content = token
-        ? html`<h3>Your GitHub bundlewatch token</h3>
+  const authorizeUrl = `${githubWebUrl}/login/oauth/authorize?scope=repo%3Astatus&client_id=${encodeURIComponent(clientId ?? '')}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
+  const content = token
+    ? html`<h3>Your GitHub bundlewatch token</h3>
                 <code>${token}</code>
                 <p>Setup bundlewatch on your Pull Requests by adding the above token to CI as an environment variable</p>
                 <code>BUNDLEWATCH_GITHUB_TOKEN</code>`
-        : html`<p>Setup bundlewatch on your Pull Requests by Authorizing bundlewatch on Github</p>
-                <a class="btn" data-title="Authorize on Github" href="${authorizeUrl}"></a>`
+    : html`<p>Setup bundlewatch on your Pull Requests by Authorizing bundlewatch on Github</p>
+                <a class="btn" data-title="Authorize on Github" href="${authorizeUrl}"></a>`;
 
-    return page({
-        title: 'Setup GitHub | BundleWatch',
-        stylesheet: '/static/setup-github-styles.css',
-        body: html`<article class="container">
+  return page({
+    title: 'Setup GitHub | BundleWatch',
+    stylesheet: '/static/setup-github-styles.css',
+    body: html`<article class="container">
     ${logoHeader}
     <div class="card">
         <img alt="Build status image preview" src="https://bundlewatch.io/build-status-preview.png" width="800" />
@@ -82,5 +82,5 @@ export const renderSetupGithubPage = ({
         animation: octocat-wave 560ms ease-in-out
     }
 }</style>`,
-    })
-}
+  });
+};
