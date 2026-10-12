@@ -58,8 +58,8 @@
     "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
-    "glob": "7.2.3",
-    "jsonpack": "1.1.5"
+    "glob": "^7.2.3",
+    "jsonpack": "^1.1.5"
   },
   "devDependencies": {
     "@bundlewatch/core": "workspace:*",
