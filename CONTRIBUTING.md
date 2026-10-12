@@ -55,7 +55,7 @@ For each release:
 1. Update `version` in `packages/bundlewatch/package.json` and merge the change.
 2. Tag the commit with that version, for example `git tag v1.0.1 && git push origin v1.0.1`.
 
-The [release workflow](.github/workflows/release.yml) runs every check, then publishes to npm with provenance through trusted publishing. A version with a prerelease suffix, such as `1.1.0-rc.1`, is published under the `next` tag. After a successful release, the website redeploys and shows the new version in its nav; prereleases don't change it.
+The [release workflow](.github/workflows/release.yml) runs every check, then publishes to npm with provenance through trusted publishing. Only its publish job can request the token for npm, and it runs no code from the repository or its dependencies: it checks the tarball that the pack job built, by digest and version, and publishes it. A version with a prerelease suffix, such as `1.1.0-rc.1`, is published under the `next` tag. After a successful release, the website redeploys and shows the new version in its nav; prereleases don't change it.
 
 ## Deploying
 

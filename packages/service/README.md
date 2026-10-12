@@ -259,10 +259,10 @@ The [Deploy service workflow](../../.github/workflows/deploy-service.yml) runs o
 3. deploys with `sam deploy`;
 4. checks that `GET /` answers.
 
-It authenticates with GitHub's OIDC token, so no AWS keys are stored in GitHub. [`infra/bootstrap.yaml`](infra/bootstrap.yaml) defines three roles:
+It authenticates with GitHub's OIDC token, so no AWS keys are stored in GitHub. Tests and the build run in a job without AWS credentials or the OAuth secret; the deploy job only checks and deploys the bundle that job produced, so no dependency code runs where the credentials are. [`infra/bootstrap.yaml`](infra/bootstrap.yaml) defines three roles:
 
 - **The deploy role**, which GitHub Actions assumes. It can only start CloudFormation deployments of this stack.
-- **The execution role**, which CloudFormation uses. It can manage the stack's function, API, table and log group, and can't create IAM roles.
+- **The execution role**, which CloudFormation uses. It can manage the stack's function, API, table and log group, and can't create IAM roles. It can't touch the 0.x function, create a function URL, or let anything but API Gateway invoke the function.
 - **The function's own role**, with only `GetItem` and `PutItem` on the two tables and access to its log group.
 
 Parameters that the workflow doesn't pass keep the value of the first deploy (`PublicUrl`, `ResultsRetentionDays`, `GitHubApiUrl` and the table names). Changing their defaults in `template.yaml` doesn't change the running stack; pass them with `--parameter-overrides` instead.
@@ -291,19 +291,21 @@ You need administrator access to the AWS account. Do the GitHub steps before the
      --capabilities CAPABILITY_IAM
    ```
 
-4. Copy the GitHub OAuth app's client secret from the 0.x function. Its environment is the only place it can be read, and it disappears with the 0.x stack.
+4. Copy the GitHub OAuth app's client secret from the 0.x function into the `service-production` environment. Its environment is the only place it can be read, and it disappears with the 0.x stack. This pipes it straight into the GitHub secret, so it is never printed:
 
    ```sh
    aws lambda get-function-configuration --region us-east-1 \
      --function-name bundlewatch-service-prod-expressRouter \
-     --query Environment.Variables.GITHUB_CLIENT_SECRET --output text
+     --query Environment.Variables.GITHUB_CLIENT_SECRET --output text |
+     tr -d '\n' |
+     gh secret set OAUTH_CLIENT_SECRET --env service-production --repo bundlewatch/bundlewatch
    ```
 
 5. Add to the `service-production` environment:
    - **Variables:**
      - `AWS_DEPLOY_ROLE_ARN`, `CFN_EXECUTION_ROLE_ARN` and `SAM_ARTIFACT_BUCKET`, from the bootstrap stack outputs (`aws cloudformation describe-stacks --stack-name bundlewatch-deploy-access`).
      - Optionally `WRITE_AUTHORIZATION`; leave it unset (`report`) for now. See [Enforcing the stricter write check](#enforcing-the-stricter-write-check).
-   - **Secret:** `OAUTH_CLIENT_SECRET`, from step 4.
+   - **Secret:** `OAUTH_CLIENT_SECRET`, set in step 4.
 
 6. Create an AWS Budgets alert for the account, for example at twice the usual monthly cost. Short links are stored per request, and the API is throttled to 100 requests per second overall, so a misbehaving client shows up as cost and throttling first.
 

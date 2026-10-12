@@ -80,7 +80,11 @@ Everything that configures the site is in this repository:
 
 Amplify reads `amplify.yml` and `customHttp.yml` on each build. Changes to `infra/amplify.yaml` need an administrator to update the stack.
 
-The app has no IAM service role and no secrets. That is required for previews of a public repository, and it matters: a preview build runs the code of the pull request, which can come from anyone.
+The app has no IAM service role and no secrets. That is required for previews of a public repository, and it matters: a preview build runs the code of the pull request, which can come from anyone. Keep it that way, and:
+
+- Don't add environment variables with secrets: preview builds can read them.
+- Don't enable automatic subdomains for previews. A preview at `pr-1.bundlewatch.io` would be same-site with `service.bundlewatch.io` and could set cookies for it. On `amplifyapp.com`, a public suffix, previews are isolated.
+- The account's budget alert (see the service's one-time setup) also covers Amplify build minutes, which fork pull requests can spend.
 
 ## Setting up Amplify and moving the domain
 

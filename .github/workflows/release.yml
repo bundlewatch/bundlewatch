@@ -3,6 +3,11 @@ name: Release
 # Publishes packages/bundlewatch to npm when a vX.Y.Z tag is pushed, e.g.
 # `git tag v1.0.0 && git push origin v1.0.0`. Uses npm trusted publishing
 # (OIDC): no npm token is stored anywhere.
+#
+# Only the publish job can request an OIDC token, and it runs no code from the
+# repository or its dependencies. It checks and publishes the tarball built by
+# the pack job. Tests, which run old bundlewatch versions and their
+# dependencies, and the build run in jobs that can't publish.
 
 on:
   push:
@@ -14,12 +19,9 @@ permissions:
   contents: read
 
 jobs:
-  publish:
+  check:
+    name: Lint, types, tests
     runs-on: ubuntu-latest
-    environment: npm-production
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -28,25 +30,91 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-          registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
-      - name: Check that the tag matches the package version
-        run: |
-          version=$(node -p "require('./packages/bundlewatch/package.json').version")
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
-            echo "Tag $GITHUB_REF_NAME does not match package version $version" >&2
-            exit 1
-          fi
       - run: pnpm check
       - run: pnpm typecheck
       - run: pnpm build
       - run: pnpm test
       - run: pnpm test:contract
-      # pnpm pack replaces workspace: references in package.json; npm
-      # publish handles trusted publishing and provenance.
-      - run: pnpm --filter bundlewatch pack --pack-destination "$RUNNER_TEMP"
-      - name: Publish
+
+  pack:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      file: ${{ steps.pack.outputs.file }}
+      sha256: ${{ steps.pack.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      # Only what the package needs: the CLI, core and the build tool.
+      - run: pnpm install --frozen-lockfile --filter 'bundlewatch...'
+      - run: pnpm --filter bundlewatch build
+      # pnpm pack replaces workspace: references in package.json.
+      - name: Pack
+        id: pack
         run: |
-          version=$(node -p "require('./packages/bundlewatch/package.json').version")
-          case "$version" in *-*) tag=next ;; *) tag=latest ;; esac
-          npm publish "$RUNNER_TEMP"/bundlewatch-"$version".tgz --provenance --access public --tag "$tag"
+          pnpm --filter bundlewatch pack --pack-destination "$RUNNER_TEMP/package"
+          cd "$RUNNER_TEMP/package"
+          file=$(ls)
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(sha256sum "$file" | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+      - id: upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: package
+          path: ${{ runner.temp }}/package/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: [check, pack]
+    runs-on: ubuntu-latest
+    environment: npm-production
+    permissions:
+      id-token: write
+    steps:
+      # Only .nvmrc, to use the same Node.js version: no code is checked out.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .nvmrc
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+      # By id, so a replaced artifact can't be picked up, and checked against
+      # the digest the pack job computed.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.pack.outputs.artifact-id }}
+          path: ${{ runner.temp }}/package
+          merge-multiple: true
+          digest-mismatch: error
+      - name: Check the tarball
+        working-directory: ${{ runner.temp }}/package
+        env:
+          FILE: ${{ needs.pack.outputs.file }}
+          SHA256: ${{ needs.pack.outputs.sha256 }}
+        run: |
+          echo "$SHA256  $FILE" | sha256sum --check --strict
+          manifest=$(tar -xOzf "$FILE" package/package.json)
+          name=$(node -p 'JSON.parse(process.argv[1]).name' "$manifest")
+          version=$(node -p 'JSON.parse(process.argv[1]).version' "$manifest")
+          if [ "$name" != bundlewatch ] || [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "The tarball is $name@$version, the tag is $GITHUB_REF_NAME" >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+      - name: Publish
+        working-directory: ${{ runner.temp }}/package
+        env:
+          FILE: ${{ needs.pack.outputs.file }}
+        run: |
+          case "$VERSION" in *-*) tag=next ;; *) tag=latest ;; esac
+          npm publish "./$FILE" --provenance --access public --tag "$tag" --ignore-scripts

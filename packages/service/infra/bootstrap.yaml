@@ -175,9 +175,25 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
+              # SAM names the function <stack>-ServiceFunction-<suffix>. A
+              # wider pattern would also match the 0.x function,
+              # bundlewatch-service-prod-expressRouter.
               - Effect: Allow
                 Action: lambda:*
-                Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ServiceStackName}-*
+                Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ServiceStackName}-ServiceFunction-*
+              # Only API Gateway may invoke it: no public function URL, and no
+              # permission for any other principal.
+              - Effect: Deny
+                Action:
+                  - lambda:CreateFunctionUrlConfig
+                  - lambda:UpdateFunctionUrlConfig
+                Resource: '*'
+              - Effect: Deny
+                Action: lambda:AddPermission
+                Resource: '*'
+                Condition:
+                  StringNotEquals:
+                    lambda:Principal: apigateway.amazonaws.com
               # Lambda reads the code bundle with this role's credentials.
               - Effect: Allow
                 Action: s3:GetObject
