@@ -15,8 +15,25 @@ concurrency:
 
 jobs:
   check:
-    name: Lint, types, tests
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Lint
+            run: pnpm check
+          - name: Types
+            run: pnpm typecheck
+          - name: Unit tests
+            run: pnpm test
+          # Runs the built CLI next to bundlewatch 0.4.2.
+          - name: Contract tests
+            run: pnpm build && pnpm test:contract
+          - name: AWS templates
+            run: pipx run cfn-lint==1.57.2 packages/service/template.yaml packages/service/infra/bootstrap.yaml
+          - name: Website
+            run: pnpm --filter @bundlewatch/website build
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -29,6 +46,7 @@ jobs:
           node-version-file: .nvmrc
       - run: pnpm install --frozen-lockfile
       - name: Only bundlewatch is publishable
+        if: matrix.name == 'Lint'
         run: |
           pnpm ls --recursive --depth -1 --json | node -e '
             const published = new Set(["bundlewatch"])
@@ -39,15 +57,7 @@ jobs:
             }
             process.exitCode = wrong.length > 0 ? 1 : 0
           '
-      - run: pnpm check
-      - run: pnpm typecheck
-      - run: pnpm build
-      - run: pnpm test
-      - name: Contract tests (compares with bundlewatch 0.4.2)
-        run: pnpm test:contract
-      - name: Validate the AWS templates
-        run: pipx run cfn-lint==1.57.2 packages/service/template.yaml packages/service/infra/bootstrap.yaml
-      - run: pnpm --filter @bundlewatch/website build
+      - run: ${{ matrix.run }}
 
   node:
     name: CLI on Node ${{ matrix.node }}
