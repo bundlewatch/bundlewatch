@@ -175,7 +175,7 @@ Users see these strings in GitHub statuses, CI logs and the results page.
 
 ## 2. Service HTTP API (`bundlewatch-service`)
 
-`bundlewatchServiceHost` is a base URL. The CLI appends paths to it. URL userinfo is decoded and sent as Basic authorization; credentials are stripped from request URLs and error logs.
+`bundlewatchServiceHost` is a base URL. The CLI appends paths to it. URL userinfo is decoded and sent as Basic authorization; credentials are stripped from request URLs, error logs and results links (0.x leaked them through the long results link, into CI logs and GitHub statuses).
 
 0.x honored proxy variables (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`, `npm_config_*_proxy`, `all_proxy`) only as a side effect of axios, without documenting them. 1.0 doesn't read them; this is a deliberate break listed in MIGRATION.md and pinned by a contract test.
 

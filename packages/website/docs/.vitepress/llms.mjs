@@ -67,7 +67,24 @@ const toPlainMarkdown = (body, pagePath) => {
   const lines = [];
   let fence = false;
   let quote = false;
+  let comment = false;
   for (let line of body.split("\n")) {
+    // HTML comments don't render, so they don't belong in the text either,
+    // including ones that span several lines.
+    if (comment) {
+      const end = line.indexOf("-->");
+      if (end === -1) continue;
+      line = line.slice(end + 3);
+      comment = false;
+    }
+    if (!fence) {
+      line = line.replace(/<!--[\s\S]*?-->/g, "");
+      const start = line.indexOf("<!--");
+      if (start !== -1) {
+        line = line.slice(0, start);
+        comment = true;
+      }
+    }
     if (line.startsWith("```")) {
       if (!fence) {
         // ```js [bundlewatch.config.mjs] → a label, then ```js
@@ -92,7 +109,6 @@ const toPlainMarkdown = (body, pagePath) => {
       // Images are indented inside their <div>, which Markdown reads as code.
       if (/^\s*<img\b[^>]*>$/.test(line)) line = line.trim();
       line = line
-        .replace(/<!--[\s\S]*?-->/g, "")
         .replace(/^(#+ .*?) \{#[\w-]+\}$/, "$1")
         .replace(/<img\b[^>]*>/g, (img) => {
           const alt = /alt="([^"]*)"/.exec(img)?.[1] ?? "";

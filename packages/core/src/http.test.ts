@@ -54,6 +54,14 @@ test('network errors do not expose request credentials or bodies', async () => {
   );
 });
 
+test('invalid URLs are reported without the URL, which can hold credentials', async () => {
+  await assert.rejects(
+    postJson('https://user:secret@service.example:99999', {}, {}, 1000),
+    (error: Error) =>
+      error.message === 'ERR_INVALID_URL' && !String(error.stack).includes('secret'),
+  );
+});
+
 test('a timeout is reported as ECONNABORTED, like 0.x', async () => {
   const silent = createServer(() => {});
   await new Promise<void>((resolve) => silent.listen(0, '127.0.0.1', resolve));

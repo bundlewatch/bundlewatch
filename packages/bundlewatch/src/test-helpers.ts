@@ -66,6 +66,9 @@ export const withEnv = async <T>(
   for (const key of Object.keys(process.env)) {
     if (CI_VARIABLE.test(key)) delete process.env[key];
   }
+  // Tests that post statuses pass their fake server. Without one, a status
+  // fails to connect instead of reaching the real GitHub API.
+  process.env.GITHUB_API_URL = 'http://127.0.0.1:1';
   Object.assign(process.env, env);
   try {
     return await fn();

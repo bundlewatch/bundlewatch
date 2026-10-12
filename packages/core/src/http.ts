@@ -16,6 +16,10 @@ export const postJson = async (
   headers: Record<string, string>,
   timeout: number,
 ): Promise<{ status: number; data: string }> => {
+  // The TypeError for an invalid URL contains it, credentials included.
+  if (!URL.canParse(url)) {
+    throw new Error('ERR_INVALID_URL');
+  }
   const target = new URL(url);
   // 0.x's axios turned credentials in the URL into Basic auth; fetch
   // refuses URLs with credentials.

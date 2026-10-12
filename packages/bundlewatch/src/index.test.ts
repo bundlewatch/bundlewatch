@@ -190,7 +190,7 @@ describe('bundlewatch Node API', () => {
       );
       assert.equal(server.requests.length, 0, 'nothing is sent without a token');
 
-      await withEnv({}, () =>
+      await withEnv({ GITHUB_API_URL: server.url }, () =>
         bundlewatch({
           files: [{ path: './test-file-1.jpg' }],
           bundlewatchServiceHost: server.url,
@@ -230,7 +230,7 @@ describe('bundlewatch Node API', () => {
       'POST /store': () => ({ status: 200, body: {} }),
     });
     try {
-      await withEnv({}, () =>
+      await withEnv({ GITHUB_API_URL: server.url }, () =>
         bundlewatch({
           files: [{ path: './test-file-1.jpg' }],
           bundlewatchServiceHost: server.url,
@@ -258,7 +258,7 @@ describe('bundlewatch Node API', () => {
       }),
     });
     try {
-      const result = await withEnv({}, () =>
+      const result = await withEnv({ GITHUB_API_URL: server.url }, () =>
         bundlewatch({
           files: [{ path: './test-file-1.jpg' }],
           bundlewatchServiceHost: server.url,

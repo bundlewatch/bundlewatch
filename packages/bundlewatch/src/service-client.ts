@@ -20,6 +20,13 @@ type RepoAuth = {
   githubAccessToken: string | undefined;
 };
 
+/**
+ * The service host without Basic auth credentials. Links and log lines can
+ * be read by anyone who sees the CI log or the commit status.
+ */
+const withoutCredentials = (host: string): string =>
+  host.replace(/^([a-z][a-z\d+.-]*:\/\/)[^/?#]*@/i, '$1');
+
 class HttpError extends Error {
   readonly status: number;
 
@@ -83,7 +90,7 @@ export class ServiceClient {
     } catch (error) {
       logger.debug(error);
       logger.error(
-        `Unable to fetch fileDetails for baseBranch=${repoBranchBase} from ${this.#host?.replace(/\/\/[^/]*@/, '//')}/store code=${errorCode(error)}`,
+        `Unable to fetch fileDetails for baseBranch=${repoBranchBase} from ${withoutCredentials(this.#host ?? '')}/store code=${errorCode(error)}`,
       );
       return {};
     }
@@ -171,6 +178,6 @@ export class ServiceClient {
       }
     }
 
-    return createResultsUrl({ host: this.#host, results, details });
+    return createResultsUrl({ host: withoutCredentials(this.#host), results, details });
   }
 }

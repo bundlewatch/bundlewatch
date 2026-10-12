@@ -28,7 +28,7 @@ Read https://bundlewatch.io/guide/migrating-to-v1.md for what changed, and https
 ## Requirements
 
 - **Node.js 22.17 or later.** Node.js 16, 18 and 20 are end-of-life.
-- Basic Auth credentials in `bundlewatchServiceHost` URLs (`https://user:pass@…`) keep working.
+- Basic Auth credentials in `bundlewatchServiceHost` URLs (`https://user:pass@…`) keep working. They no longer appear in the results link: 0.x printed them in the CI log and posted them as the GitHub status's details link.
 - **How to load the package:**
   - `import bundlewatch, { STATUSES } from 'bundlewatch'` and `require('bundlewatch').default` / `.STATUSES` work as before.
   - The package ships both ES module and CommonJS builds, with TypeScript types.

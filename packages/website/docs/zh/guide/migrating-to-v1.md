@@ -28,7 +28,7 @@ description: 从 Bundlewatch 0.x 升级到 1.0 时有哪些变化。
 ## 环境要求 {#requirements}
 
 - **Node.js 22.17 或更高版本。** Node.js 16、18 和 20 已停止维护。
-- `bundlewatchServiceHost` URL 中的 Basic Auth 凭据（`https://user:pass@…`）仍然有效。
+- `bundlewatchServiceHost` URL 中的 Basic Auth 凭据（`https://user:pass@…`）仍然有效。它们不再出现在结果链接中：0.x 会把它们输出到 CI 日志中，并作为 GitHub 状态的 details 链接发布。
 - **如何加载该包：**
   - `import bundlewatch, { STATUSES } from 'bundlewatch'` 以及 `require('bundlewatch').default` / `.STATUSES` 与之前一样可用。
   - 该包同时提供 ES 模块和 CommonJS 构建，并带有 TypeScript 类型。

@@ -709,6 +709,18 @@ describe('GET /setup-github', () => {
     });
   });
 
+  test('500 without the raw response when GitHub sends neither a token nor a description', async () => {
+    accessToken({ unexpected: 'value' });
+    const response = await setup({ config }).call(
+      'GET',
+      `/setup-github?code=c&state=${STATE}`,
+      undefined,
+      withState,
+    );
+    assert.equal(response.status, 500);
+    assert.deepEqual(await response.json(), { error: 'GitHub did not return a token' });
+  });
+
   test('500 with the status when the exchange fails', async () => {
     github.reset({ 'POST /login/oauth/access_token': { status: 502 } });
     const response = await setup({ config }).call(

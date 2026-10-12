@@ -14,7 +14,16 @@ if (!URL.canParse(input)) {
 }
 const site = new URL(input);
 
-const get = (path) => fetch(new URL(path, site), { redirect: "manual" });
+// A preview's sitemap comes from the pull request: never follow it to
+// another host, e.g. with a <loc> of https://bundlewatch.io//example.com/.
+const onSite = (path) => new URL(path, site).origin === site.origin;
+
+const get = (path) => {
+  if (!onSite(path)) {
+    throw new Error(`${path} is not on ${site.origin}`);
+  }
+  return fetch(new URL(path, site), { redirect: "manual" });
+};
 
 /** Requests `path` and lists how the response differs from `expected`. */
 const check = async (path, expected) => {
@@ -36,7 +45,10 @@ const check = async (path, expected) => {
 };
 
 const sitemap = await (await get("/sitemap.xml")).text();
-const pages = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, loc]) => new URL(loc).pathname);
+const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+  ([, loc]) => new URL(loc).pathname,
+);
+const pages = locations.filter(onSite);
 
 const html = { status: 200, type: "text/html" };
 const results = await Promise.all([
@@ -57,6 +69,9 @@ if (asset) {
 }
 if (pages.length === 0) {
   results.push({ path: "/sitemap.xml", problems: ["no pages listed"] });
+}
+for (const path of locations.filter((location) => !onSite(location))) {
+  results.push({ path, problems: ["sitemap entry points to another host, not requested"] });
 }
 
 const failures = results.filter(({ problems }) => problems.length > 0);

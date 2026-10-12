@@ -63,6 +63,19 @@ test('Basic-authenticated services accept lookups, saves and short links', async
   );
 });
 
+test('long results links leave out Basic credentials', async (t) => {
+  // A service older than 1.0: no short links.
+  const server = await startFakeServer({});
+  t.after(() => server.close());
+  const client = new ServiceClient({
+    bundlewatchServiceHost: server.url.replace('://', '://user:password@') + '/svc',
+    ci,
+  });
+  const url = await client.getResultsUrl({ status: 'pass', summary: 'ok', fullResults: [] });
+  assert.ok(url?.startsWith(`${server.url}/svc/results?d=`), url);
+  assert.equal(server.requests[0]?.path, '/svc/results', 'the request still authenticates');
+});
+
 test('lookup failures redact Basic credentials from error and debug logs', async (t) => {
   const server = await startFakeServer({});
   t.after(() => server.close());

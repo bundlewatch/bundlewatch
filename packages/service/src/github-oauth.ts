@@ -52,5 +52,11 @@ export const exchangeOAuthCode = async ({
   if (typeof data.access_token === 'string' && data.access_token) {
     return { token: data.access_token };
   }
-  return { error: data.error_description ?? data };
+  // Only GitHub's description reaches the browser, never the raw response.
+  return {
+    error:
+      typeof data.error_description === 'string'
+        ? data.error_description
+        : 'GitHub did not return a token',
+  };
 };
