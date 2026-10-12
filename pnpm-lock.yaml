@@ -230,9 +230,6 @@ importers:
       bundlewatch-legacy:
         specifier: npm:bundlewatch@0.4.2
         version: bundlewatch@0.4.2(debug@3.1.0(supports-color@7.2.0))
-      jsonpack:
-        specifier: 2.0.0
-        version: 2.0.0
 
   packages/core:
     dependencies:
@@ -243,9 +240,6 @@ importers:
       bytes:
         specifier: 3.1.2
         version: 3.1.2
-      jsonpack-v1:
-        specifier: npm:jsonpack@1.1.5
-        version: jsonpack@1.1.5
 
   packages/service:
     dependencies:
@@ -1830,10 +1824,6 @@ packages:
 
   jsonpack@1.1.5:
     resolution: {integrity: sha512-d2vwomK605ks7Q+uCpbwGyoIF5j+UZuJjlYcugISBt3CxM+eBo/W6y63yVPIyIvbYON+pvJYsYZjCYbzqJj/xQ==}
-
-  jsonpack@2.0.0:
-    resolution: {integrity: sha512-71yTAiOnqHDrCQ3vifQuTmOxXagfrAbQ/SmMWE0yHz/vbP/JuZoMtohgQdwxpko3DmODd4M9gbe+oFgsybUn2g==}
-    engines: {node: '>=14'}
 
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
@@ -3684,8 +3674,6 @@ snapshots:
   json-parse-even-better-errors@2.3.1: {}
 
   jsonpack@1.1.5: {}
-
-  jsonpack@2.0.0: {}
 
   lines-and-columns@1.2.4: {}
 

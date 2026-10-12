@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import jsonpackV1 from 'jsonpack-v1/main.js';
-
-import { createResultsUrl, decodeResultsData } from './results-url.ts';
+import { createResultsPayload, createResultsUrl, decodeResultsData } from './results-url.ts';
 import type { AnalyzeResult, ResultsDetails } from './types.ts';
 
 const random = (n: number): number => Math.floor(Math.random() * n);
@@ -79,19 +77,19 @@ test('builds a /results URL without per-file messages', () => {
   });
 });
 
-test('links from 0.x CLIs (jsonpack 1.x) decode identically', () => {
-  for (let i = 0; i < 1000; i++) {
-    const payload = randomPayload();
-    const packed = jsonpackV1.pack(payload);
-    assert.deepEqual(decodeResultsData(packed), jsonpackV1.unpack(packed));
-  }
-});
+// 0.x CLIs and services use the same jsonpack version, so links work in both
+// directions as long as every payload survives the round trip. Compared as
+// JSON: jsonpack keeps keys whose value is undefined.
+const asJson = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
 
-test('self-hosted 0.x services (jsonpack 1.x) can decode new links', () => {
+test('results links round-trip', () => {
   for (let i = 0; i < 1000; i++) {
-    const payload = randomPayload();
-    const data = dataParam(createResultsUrl({ host: 'https://x.test', ...payload }));
-    assert.deepEqual(jsonpackV1.unpack(data), decodeResultsData(data));
+    const { details, results } = randomPayload();
+    const data = dataParam(createResultsUrl({ host: 'https://x.test', details, results }));
+    assert.deepEqual(
+      asJson(decodeResultsData(data)),
+      asJson(createResultsPayload(results, details)),
+    );
   }
 });
 
@@ -112,14 +110,14 @@ test('sends an unlimited maxSize as null, which 0.x services accept', () => {
       ],
     },
   });
-  const decoded = jsonpackV1.unpack(dataParam(url)) as {
+  const decoded = decodeResultsData(dataParam(url)) as {
     results: { fullResults: { maxSize: unknown }[] };
   };
   assert.equal(decoded.results.fullResults[0]?.maxSize, null);
 });
 
 for (const name of Object.getOwnPropertyNames(Object.prototype)) {
-  test(`reserved names round-trip in old and new links: ${name}`, () => {
+  test(`reserved names round-trip: ${name}`, () => {
     const payload = {
       details: {
         repoOwner: name,
@@ -134,8 +132,6 @@ for (const name of Object.getOwnPropertyNames(Object.prototype)) {
       },
     };
     const data = dataParam(createResultsUrl({ host: 'https://x.test', ...payload }));
-    assert.deepEqual(jsonpackV1.unpack(data), payload);
     assert.deepEqual(decodeResultsData(data), payload);
-    assert.deepEqual(decodeResultsData(jsonpackV1.pack(payload)), payload);
   });
 }

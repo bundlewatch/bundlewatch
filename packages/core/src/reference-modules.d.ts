@@ -1,5 +1,5 @@
-// The original 0.x dependencies, installed as dev dependencies so tests can
-// check that the ports behave identically. Neither ships its own types.
+// The original 0.x dependency, installed as a dev dependency so tests can
+// check that the port behaves identically. It doesn't ship its own types.
 
 declare module 'bytes' {
   const bytes: {
@@ -7,12 +7,4 @@ declare module 'bytes' {
     parse(value: string | number): number | null;
   };
   export default bytes;
-}
-
-declare module 'jsonpack-v1/main.js' {
-  const jsonpack: {
-    pack(value: unknown): string;
-    unpack(value: string): unknown;
-  };
-  export default jsonpack;
 }

@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
 
-import { unpack } from 'jsonpack';
+import { decodeResultsData } from '@bundlewatch/core';
 
 const require = createRequire(import.meta.url);
 
@@ -128,7 +128,7 @@ export type Outcome = {
 const decodeLinks = (text: string): string =>
   text.replace(/https?:\/\/[^\s"]+\/results\?d=([^\s"]+)/g, (_, data: string) =>
     JSON.stringify({
-      resultsLink: normalizePayload(unpack(decodeURIComponent(data))),
+      resultsLink: normalizePayload(decodeResultsData(decodeURIComponent(data))),
     }),
   );
 
@@ -146,7 +146,7 @@ const normalizeBody = (body: unknown): unknown => {
       ...rest,
       target_url: data
         ? {
-            resultsLink: normalizePayload(unpack(decodeURIComponent(data))),
+            resultsLink: normalizePayload(decodeResultsData(decodeURIComponent(data))),
           }
         : target_url,
     };
