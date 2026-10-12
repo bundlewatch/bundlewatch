@@ -3,8 +3,9 @@ import { tabsMarkdownPlugin } from "vitepress-plugin-tabs";
 
 import pkg from "../../../../../packages/bundlewatch/package.json" with { type: "json" };
 
-// The latest release, shown in the nav. The Website workflow reads it from the
-// repository's release tags; local builds show the version in package.json.
+// The latest release, shown in the nav. scripts/build.sh, which Amplify and CI
+// run, reads it from the release tags; other builds show the version in
+// package.json.
 export const version = process.env.BUNDLEWATCH_VERSION || pkg.version;
 
 export const shared = defineConfig({

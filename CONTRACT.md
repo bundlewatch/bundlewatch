@@ -276,7 +276,7 @@ Request:
 
 - npm package `bundlewatch`. Publishing rights: charpeni, jakebolam, iamogbz.
 - The domain `service.bundlewatch.io` (Route53, API Gateway custom domain).
-- The domain `bundlewatch.io` (docs, GitHub Pages). CLI messages link to it.
+- The domain `bundlewatch.io` (docs). CLI messages link to it.
 - The GitHub OAuth app (see [Authorization](#authorization)). Its client secret is in the deploy environment.
 - The AWS account that runs the service.
 - The Firebase project behind `ja2r7.app.goo.gl`. Its short links redirect to `/results`. As of October 2026 they still resolve, but Google has announced the product's shutdown.

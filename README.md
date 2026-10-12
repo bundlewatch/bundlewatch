@@ -44,7 +44,7 @@ To report results on pull requests, see [GitHub Actions setup](https://bundlewat
 | [`packages/bundlewatch`](packages/bundlewatch)       | The CLI and Node.js API                                                    | [`bundlewatch` on npm](https://www.npmjs.com/package/bundlewatch) |
 | [`packages/core`](packages/core)                     | Analysis, results links and GitHub statuses, shared by the CLI and service | Bundled into both; not published                                  |
 | [`packages/service`](packages/service)               | Stores baselines and renders results pages                                 | `service.bundlewatch.io` on AWS Lambda                            |
-| [`packages/website`](packages/website)               | The documentation site                                                     | `bundlewatch.io` on GitHub Pages                                  |
+| [`packages/website`](packages/website)               | The documentation site                                                     | `bundlewatch.io` on AWS Amplify, with pull request previews       |
 | [`packages/contract-tests`](packages/contract-tests) | Runs bundlewatch 0.4.2 and the current CLI side by side                    | –                                                                 |
 
 - [CONTRACT.md](CONTRACT.md) lists the behavior that must stay compatible with 0.x CLIs, services and links.

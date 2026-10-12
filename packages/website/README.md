@@ -10,6 +10,8 @@ Run these from the repository root:
 pnpm --filter @bundlewatch/website dev       # start the dev server
 pnpm --filter @bundlewatch/website build     # build into packages/website/docs/.vitepress/dist
 pnpm --filter @bundlewatch/website preview   # serve the built site locally
+bash packages/website/scripts/build.sh       # the production build, with the latest release in the nav
+node packages/website/scripts/check-deployment.mjs <url>  # check a deployed copy of the site
 ```
 
 The build fails on dead internal links. Fix the link rather than ignoring it.
@@ -50,7 +52,7 @@ The [getting started guide](docs/en/guide/getting-started.md#set-up-with-an-ai-a
 
 ## Version in the nav
 
-The version in the nav is the latest release. The Website workflow reads it from the newest `vX.Y.Z` tag, skipping prereleases, and runs after every successful release. Local builds show the version in `packages/bundlewatch/package.json` instead.
+The version in the nav is the latest release. [`scripts/build.sh`](scripts/build.sh) reads it from the newest `vX.Y.Z` tag on GitHub, skipping prereleases. Amplify uses that script for production and previews, and CI uses it to check the site. The Website workflow rebuilds production after every successful release. `pnpm build` alone shows the version in `packages/bundlewatch/package.json` instead.
 
 ## Translation
 
@@ -62,21 +64,73 @@ Every page in `en/` has a counterpart at the same path in `zh/`. When you add or
 
 ## Deployment
 
-The site is served by GitHub Pages at `https://bundlewatch.io`. The [Website workflow](../../.github/workflows/website.yml) builds it and deploys `docs/.vitepress/dist` on every change merged to `main` that touches the site, and can also be started by hand. The custom domain is set in the repository's Pages settings; a GitHub Actions deployment ignores `CNAME` files, so the site needs none.
+The site is hosted on AWS Amplify Hosting at `https://bundlewatch.io`, in the same AWS account and region (`us-east-1`) as the service.
 
-## Moving the site to this repository
+- **Production:** Amplify builds `main` on every push. It is the same build for every change, website or not, so the deployed site always matches `main`.
+- **Previews:** Amplify builds every pull request that targets `main`, including pull requests from forks, and comments the preview URL on it. The preview is deleted when the pull request closes. Previews use the same build, headers and rules as production.
+- **Releases:** the [Website workflow](../../.github/workflows/website.yml) rebuilds `main` after each successful release, so the nav shows the new version.
 
-The site used to be deployed from `bundlewatch/bundlewatch.io`. Moving it here is a one-time change:
+Everything that configures the site is in this repository:
 
-1. Verify `bundlewatch.io` for the bundlewatch GitHub organization (organization Settings → Pages → Add a domain). Once it is verified, only the organization's repositories can publish to it, so nobody else can claim the domain while it moves. GitHub asks for a TXT record; that is the only DNS change.
-2. In `bundlewatch/bundlewatch` Settings → Environments, create `website-production` and allow deployments from `main` only. The workflow deploys through this environment rather than the `github-pages` one GitHub creates and protects automatically, so this rule is what stops other branches from publishing the site. Do this before the workflow reaches `main`: GitHub creates an unprotected environment the first time a workflow names one.
-3. In `bundlewatch/bundlewatch` Settings → Pages, set Source to "GitHub Actions", then run the Website workflow (Actions → Website → Run workflow).
-4. In `bundlewatch/bundlewatch.io` Settings → Pages, remove the custom domain.
-5. In `bundlewatch/bundlewatch` Settings → Pages, add `bundlewatch.io` as the custom domain. The site is unavailable between steps 4 and 5, so do them back to back.
-6. Wait for GitHub to issue the certificate, then enable "Enforce HTTPS".
-7. Disable the Pages workflow of `bundlewatch/bundlewatch.io` (Actions → the workflow → Disable workflow), so it doesn't deploy the old site again.
+| File                                       | What it sets                                                                                                                  |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| [`amplify.yml`](../../amplify.yml)         | The build: Node.js from `.nvmrc`, pnpm from `packageManager`, then [`scripts/build.sh`](scripts/build.sh)                     |
+| [`customHttp.yml`](../../customHttp.yml)   | Response headers: HSTS and CORS as on GitHub Pages, caching of `/assets/`, types of the LLM files                             |
+| [`infra/amplify.yaml`](infra/amplify.yaml) | The Amplify app, the `main` branch with previews, the domain, the 404 and `www` rules, and the role the Website workflow uses |
 
-The A and CNAME records stay as they are:
+Amplify reads `amplify.yml` and `customHttp.yml` on each build. Changes to `infra/amplify.yaml` need an administrator to update the stack.
+
+The app has no IAM service role and no secrets. That is required for previews of a public repository, and it matters: a preview build runs the code of the pull request, which can come from anyone.
+
+## Setting up Amplify and moving the domain
+
+The site used to be deployed to GitHub Pages from `bundlewatch/bundlewatch.io`. Moving it to Amplify is a one-time change, done by an administrator of the AWS account and of the GitHub organization. The old site keeps serving `bundlewatch.io` until DNS changes in step 8, and stays available for a rollback until step 10.
+
+1. In `bundlewatch/bundlewatch` Settings → Environments, create `website-production` and allow deployments from `main` only. Do this before `website.yml` reaches `main`: GitHub creates an unprotected environment the first time a workflow names one.
+2. Install the Amplify GitHub App for `us-east-1` on the bundlewatch organization, for this repository only: <https://github.com/apps/aws-amplify-us-east-1/installations/new>.
+3. As a repository administrator, create a classic personal access token with only the `admin:repo_hook` scope and a short expiration. Amplify uses it to connect through the GitHub App, and doesn't store it.
+4. Deploy the stack, without a domain yet. The GitHub OIDC provider must exist: deploy the service's `infra/bootstrap.yaml` first.
+
+   ```sh
+   read -rs GITHUB_TOKEN
+   aws cloudformation deploy --region us-east-1 \
+     --stack-name bundlewatch-website \
+     --template-file packages/website/infra/amplify.yaml \
+     --capabilities CAPABILITY_IAM \
+     --parameter-overrides GitHubAccessToken="$GITHUB_TOKEN"
+   ```
+
+5. Add the stack outputs `AppId` and `ReleaseBuildRoleArn` to the `website-production` environment, as the variables `AMPLIFY_APP_ID` and `AMPLIFY_RELEASE_ROLE_ARN`.
+6. Run the Website workflow (Actions → Website → Run workflow). It starts the first build of `main`, and checks the role on the way.
+7. Check the site at the `DefaultUrl` output, and open a test pull request that changes the website to see its preview:
+
+   ```sh
+   node packages/website/scripts/check-deployment.mjs https://main.<app id>.amplifyapp.com
+   ```
+
+8. Add the domain. Pass a new token, since the first one has expired or should be revoked:
+
+   ```sh
+   read -rs GITHUB_TOKEN
+   aws cloudformation deploy --region us-east-1 \
+     --stack-name bundlewatch-website \
+     --template-file packages/website/infra/amplify.yaml \
+     --capabilities CAPABILITY_IAM \
+     --parameter-overrides GitHubAccessToken="$GITHUB_TOKEN" CustomDomain=bundlewatch.io
+   ```
+
+   The `bundlewatch.io` hosted zone is in Route 53, in this account, so Amplify creates the certificate's validation record and points `bundlewatch.io` and `www` at the app. The update finishes once the domain is active, which can take up to an hour. If the console (Amplify → the app → Custom domains) still shows records to update, replace the GitHub Pages records with the ones it lists. While DNS changes, visitors reach either host, and both serve the same site.
+
+9. Check the site again, and that `www` redirects:
+
+   ```sh
+   node packages/website/scripts/check-deployment.mjs https://bundlewatch.io
+   curl -sI https://www.bundlewatch.io | grep -i '^location'   # https://bundlewatch.io/
+   ```
+
+10. After a few days without problems, in `bundlewatch/bundlewatch.io` Settings → Pages, unpublish the site and disable its Pages workflow. Then archive the repository.
+
+To roll back before step 10, point the records back at GitHub Pages:
 
 | Name             | Type  | Value                                                                      |
 | ---------------- | ----- | -------------------------------------------------------------------------- |

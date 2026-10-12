@@ -1,0 +1,23 @@
+# AWS Amplify Hosting builds bundlewatch.io with this file: main for
+# production, and every pull request for a preview. See
+# packages/website/README.md.
+version: 1
+applications:
+  - appRoot: packages/website
+    frontend:
+      # Run from the repository root, where .nvmrc and the lockfile are.
+      buildPath: /
+      phases:
+        preBuild:
+          commands:
+            - nvm install
+            - corepack enable
+            # The pnpm version comes from packageManager in package.json.
+            - COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm install --frozen-lockfile --filter @bundlewatch/website
+        build:
+          commands:
+            - bash packages/website/scripts/build.sh
+      artifacts:
+        baseDirectory: packages/website/docs/.vitepress/dist
+        files:
+          - '**/*'
