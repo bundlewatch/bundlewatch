@@ -161,6 +161,15 @@ Resources:
 
   ExecutionRole:
     Type: AWS::IAM::Role
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            # cfn-lint's list of IAM actions lacks apigateway:TagResource and
+            # apigateway:UntagResource. AWS checks them: the first deploy
+            # failed without TagResource, and CloudFormation's
+            # AWS::ApiGatewayV2::Stage schema lists both.
+            - W3037
     Properties:
       Description: Used by CloudFormation to create and update the bundlewatch service stack.
       AssumeRolePolicyDocument:
