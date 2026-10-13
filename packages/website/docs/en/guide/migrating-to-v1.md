@@ -30,6 +30,10 @@ pnpm add bundlewatch@1 --save-dev
 yarn add bundlewatch@1 --dev
 ```
 
+```bash [Bun]
+bun add bundlewatch@1 --dev
+```
+
 :::
 
 3. Go through [Things to check](#things-to-check) below.

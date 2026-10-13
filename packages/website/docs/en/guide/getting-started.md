@@ -27,6 +27,10 @@ pnpm add bundlewatch --save-dev
 yarn add bundlewatch --dev
 ```
 
+```bash [Bun]
+bun add bundlewatch --dev
+```
+
 :::
 
 ## Configuration
