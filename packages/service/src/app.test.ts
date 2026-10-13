@@ -907,5 +907,44 @@ describe('stylesheets', () => {
       assert.match(css, /\.container \{/);
       assert.doesNotMatch(css, /@import|googleapis/);
     });
+
+    test(`${name} loads Source Sans Pro from the service`, async () => {
+      const css = await (await setup().call('GET', `/static/${name}`)).text();
+      const fonts = [...css.matchAll(/url\('([^']+)'\) format\('woff2'\)/g)].map(
+        (match) => match[1] ?? '',
+      );
+      assert.equal(fonts.length, 4);
+      await Promise.all(
+        fonts.map(async (font) => {
+          const response = await setup().call('GET', font);
+          assert.equal(response.status, 200, font);
+          assert.equal(response.headers.get('content-type'), 'font/woff2');
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          assert.equal(Buffer.from(bytes.subarray(0, 4)).toString('latin1'), 'wOF2', font);
+        }),
+      );
+    });
   }
+
+  test('pages may load fonts from the service only', async () => {
+    const response = await setup().call('GET', '/r/AAAAAAAAAAAA');
+    assert.match(response.headers.get('content-security-policy') ?? '', /font-src 'self'/);
+  });
+
+  test('unknown fonts are 404', async () => {
+    const statuses = await Promise.all(
+      ['/static/fonts/missing.woff2', '/static/fonts/constructor'].map(
+        async (path) => (await setup().call('GET', path)).status,
+      ),
+    );
+    assert.deepEqual(statuses, [404, 404]);
+  });
+
+  test('the logo with the name', async () => {
+    const response = await setup().call('GET', '/static/logo.svg');
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('content-type'), 'image/svg+xml');
+    const svg = await response.text();
+    assert.match(svg, /^<svg[^>]*viewBox="0 0 296\.97 52\.64"/);
+  });
 });

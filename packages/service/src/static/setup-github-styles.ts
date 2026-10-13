@@ -1,8 +1,10 @@
 // Copied from the 0.x service (src/static/setup-github-styles.css), embedded
-// so the Lambda bundle is self-contained. The Google Fonts import is gone so
-// the page makes no third-party requests.
+// so the Lambda bundle is self-contained. Source Sans Pro comes from the
+// service instead of Google Fonts, so the page makes no third-party requests.
 
-export const SETUP_GITHUB_CSS = `
+import { FONT_FACES } from './fonts.ts';
+
+export const SETUP_GITHUB_CSS: string = `${FONT_FACES}
 * {
   -webkit-font-smoothing: antialiased;
   -webkit-overflow-scrolling: touch;

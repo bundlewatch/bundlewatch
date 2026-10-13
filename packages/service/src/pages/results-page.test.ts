@@ -209,8 +209,17 @@ describe('renderResultsPage', () => {
     assert.deepEqual(loaded, [
       'https://bundlewatch.io/favicon.svg',
       '/static/results-styles.css',
-      'https://bundlewatch.io/logo-large.svg',
+      '/static/logo.svg',
     ]);
+  });
+
+  test('shows the short commit of the service, linking to the full one', () => {
+    const sha = '3021e0aad67a0a7a35cb73154c0d005db2372387';
+    const page = renderResultsPage({ payload: payload(), serverCommitSha: sha });
+    assert.match(
+      page,
+      new RegExp(`<a href="https://github.com/bundlewatch/bundlewatch/commit/${sha}">3021e0a</a>`),
+    );
   });
 
   test('starts with a doctype and declares the charset and viewport', () => {

@@ -6,6 +6,7 @@ const JSON_TYPE = 'application/json; charset=utf-8';
 export const CONTENT_SECURITY_POLICY: string = [
   "default-src 'none'",
   "style-src 'self' 'unsafe-inline'",
+  "font-src 'self'",
   "img-src 'self' https://bundlewatch.io",
   "base-uri 'none'",
   "form-action 'none'",

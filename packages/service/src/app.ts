@@ -14,6 +14,8 @@ import { CONTENT_SECURITY_POLICY, HttpError, htmlPage, json, readJsonBody } from
 import { renderResultsNotFoundPage, renderResultsPage } from './pages/results-page.ts';
 import { renderSetupGithubPage } from './pages/setup-github-page.ts';
 import { SHORT_LINK_ID, saveShortLink } from './short-links.ts';
+import { FONT_FILES } from './static/fonts.ts';
+import { LOGO_SVG } from './static/logo.ts';
 import { RESULTS_CSS } from './static/results-styles.ts';
 import { SETUP_GITHUB_CSS } from './static/setup-github-styles.ts';
 import type { BaselineStore } from './stores/baseline-store.ts';
@@ -132,6 +134,29 @@ const stylesheet =
         'cache-control': 'public, max-age=3600',
       },
     });
+
+const WEEK_SECONDS = 7 * 24 * 60 * 60;
+
+const logo: Handler = async () =>
+  new Response(LOGO_SVG, {
+    headers: {
+      'content-type': 'image/svg+xml',
+      'cache-control': `public, max-age=${WEEK_SECONDS}`,
+    },
+  });
+
+const font: Handler = async (_request, _url, [name]) => {
+  const data = name && Object.hasOwn(FONT_FILES, name) ? FONT_FILES[name] : undefined;
+  if (!data) {
+    return new Response(null, { status: 404 });
+  }
+  return new Response(new Uint8Array(data), {
+    headers: {
+      'content-type': 'font/woff2',
+      'cache-control': `public, max-age=${WEEK_SECONDS}`,
+    },
+  });
+};
 
 export const createApp = (deps: AppDeps): App => {
   const { baselineStore, resultsStore, config } = deps;
@@ -499,6 +524,8 @@ export const createApp = (deps: AppDeps): App => {
       path: '/static/setup-github-styles.css',
       handle: stylesheet(SETUP_GITHUB_CSS),
     },
+    { method: 'GET', path: '/static/logo.svg', handle: logo },
+    { method: 'GET', path: /^\/static\/fonts\/([\w.-]+)$/, handle: font },
   ];
 
   const route = async (request: Request, url: URL): Promise<Response> => {
