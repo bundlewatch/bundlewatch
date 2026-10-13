@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Builds the site as it is deployed. Amplify runs this for production and for
-# selected pull request previews, and CI runs it to check the site.
+# GitHub Actions uses this for production, selected PR previews, and CI.
 #
 # The nav shows the latest release: the newest vX.Y.Z tag, skipping
 # prereleases. release.yml only publishes tags that match the package version.

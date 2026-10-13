@@ -5,7 +5,7 @@
 //
 // Every page in the sitemap must load at its clean URL without a redirect,
 // the files for LLMs must have the right type, unknown paths must get the
-// 404 page, and the headers from customHttp.yml must be there.
+// 404 page, and the headers from infra/amplify.yaml must be there.
 
 const [input] = process.argv.slice(2);
 if (!URL.canParse(input)) {

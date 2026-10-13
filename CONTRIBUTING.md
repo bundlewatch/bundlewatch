@@ -60,4 +60,4 @@ The [release workflow](.github/workflows/release.yml) runs every check, then pub
 ## Deploying
 
 - **Service:** deploys on every change to `main` that touches it. Setup and runbook: [packages/service/README.md](packages/service/README.md).
-- **Website:** GitHub Actions selects website-related changes for AWS Amplify to build and deploy, both on `main` and in pull-request previews. Releases also rebuild production. Setup and moving the bundlewatch.io domain: [packages/website/README.md](packages/website/README.md).
+- **Website:** GitHub Actions builds website-related changes and uploads the files to AWS Amplify, both on `main` and in pull-request previews. Releases also rebuild production. Setup and moving the bundlewatch.io domain: [packages/website/README.md](packages/website/README.md).

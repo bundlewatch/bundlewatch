@@ -1,31 +1,21 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
-  bundlewatch.io on AWS Amplify Hosting. GitHub Actions selects website changes
-  for production and PR previews, built by Amplify (amplify.yml). Deployed
-  by an administrator; see packages/website/README.md.
+  bundlewatch.io artifact hosting. GitHub Actions builds the site and uploads
+  it to Amplify. For the migration, CREATE a bundlewatch-website-artifacts
+  stack; do not apply this template to the old Git-connected stack.
 
 Parameters:
   GitHubRepository:
     Type: String
     Default: bundlewatch/bundlewatch
-  GitHubAccessToken:
-    Type: String
-    NoEcho: true
-    Description: >-
-      Personal access token of a repository admin: fine-grained, for this
-      repository only, with Webhooks read and write (or classic, with only
-      admin:repo_hook). Amplify uses it once to connect through the Amplify
-      GitHub App, and doesn't store it.
   GitHubEnvironment:
     Type: String
     Default: website-production
-    Description: Only workflow jobs running in this GitHub environment can start release builds.
+    Description: GitHub environment allowed to deploy production; restrict it to main.
   CustomDomain:
     Type: String
     Default: ''
-    Description: >-
-      bundlewatch.io, once the site has been checked on its amplifyapp.com
-      URL. Leave empty to deploy without a custom domain.
+    Description: Leave empty until production has been verified on its amplifyapp.com URL.
 
 Conditions:
   HasCustomDomain: !Not [!Equals [!Ref CustomDomain, '']]
@@ -34,31 +24,37 @@ Resources:
   App:
     Type: AWS::Amplify::App
     Properties:
-      Name: bundlewatch-website
-      Description: bundlewatch.io documentation site (packages/website)
-      Repository: !Sub https://github.com/${GitHubRepository}
-      AccessToken: !Ref GitHubAccessToken
+      Name: !Ref AWS::StackName
+      Description: bundlewatch.io static artifacts from GitHub Actions
       Platform: WEB
-      # No IAMServiceRole and no secrets: preview branches contain untrusted
-      # code, including code from forks.
-      EnvironmentVariables:
-        - Name: AMPLIFY_MONOREPO_APP_ROOT
-          Value: packages/website
-        # Actions filters all inputs, including root files and release events.
-        - Name: AMPLIFY_DIFF_DEPLOY
-          Value: 'false'
-      EnableBranchAutoDeletion: true
-      # The trusted Website preview workflow updates these refs only when
-      # website inputs change, and deletes them when their PR closes.
+      # No repository connection, build service role, or native build triggers.
+      EnableBranchAutoDeletion: false
       AutoBranchCreationConfig:
-        EnableAutoBranchCreation: true
-        AutoBranchCreationPatterns:
-          - website-pr-*
-        EnableAutoBuild: true
-        EnablePullRequestPreview: false
-        Stage: PULL_REQUEST
-      # Clean URLs need no rule: Amplify serves /guide/x from /guide/x.html.
-      # Headers are in customHttp.yml at the repository root.
+        EnableAutoBranchCreation: false
+      CustomHeaders: |
+        customHeaders:
+          - pattern: '**/*'
+            headers:
+              - key: Strict-Transport-Security
+                value: max-age=31556952
+              - key: Access-Control-Allow-Origin
+                value: '*'
+              - key: X-Content-Type-Options
+                value: nosniff
+          - pattern: '/assets/**/*'
+            headers:
+              - key: Cache-Control
+                value: public, max-age=31536000, immutable
+          - pattern: '**/*.md'
+            headers:
+              - key: Content-Type
+                value: text/markdown; charset=utf-8
+          - pattern: '/llms*.txt'
+            headers:
+              - key: Content-Type
+                value: text/plain; charset=utf-8
+      # Amplify serves /guide/x from /guide/x.html. Keep the 404 status and
+      # the www redirect used by the existing site.
       CustomRules:
         - !If
           - HasCustomDomain
@@ -66,10 +62,6 @@ Resources:
             Target: !Sub https://${CustomDomain}
             Status: '301'
           - !Ref AWS::NoValue
-        # 404-200 serves the 404 page with a 404 status. Amplify's 404
-        # redirects instead, to a page that answers 200. A missing path
-        # without an extension first gets a slash added (301), as Amplify
-        # looks for a directory.
         - Source: /<*>
           Target: /404.html
           Status: '404-200'
@@ -79,10 +71,8 @@ Resources:
     Properties:
       AppId: !GetAtt App.AppId
       BranchName: main
-      Description: Production
+      Description: Production artifact destination
       Stage: PRODUCTION
-      # website.yml starts production builds; website-preview.yml manages
-      # preview refs. Native triggers would deploy unrelated changes too.
       EnableAutoBuild: false
       EnablePullRequestPreview: false
 
@@ -98,13 +88,10 @@ Resources:
         - Prefix: www
           BranchName: !GetAtt MainBranch.BranchName
 
-  # The Website workflow builds main for website changes and releases.
-  # Keep this logical ID and output stable for existing installations.
-  # It can start builds and nothing else.
-  ReleaseBuildRole:
+  ProductionDeployRole:
     Type: AWS::IAM::Role
     Properties:
-      Description: Starts a build of the website's main branch from GitHub Actions
+      Description: Uploads website artifacts to the main Amplify destination
       MaxSessionDuration: 3600
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
@@ -118,21 +105,69 @@ Resources:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
                 token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:environment:${GitHubEnvironment}
       Policies:
-        - PolicyName: start-main-build
+        - PolicyName: deploy-production
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
-                Action: amplify:StartJob
+                Action:
+                  - amplify:GetBranch
+                  - amplify:CreateDeployment
+                  - amplify:StartDeployment
+                Resource: !Sub ${App.Arn}/branches/main
+              - Effect: Allow
+                Action:
+                  - amplify:GetJob
+                  - amplify:StopJob
                 Resource: !Sub ${App.Arn}/branches/main/jobs/*
+
+  PreviewDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Publishes and removes pr-* artifact destinations; cannot deploy main
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                # workflow_run and pull_request_target run from trusted main.
+                # A pull_request build has a different subject and is denied.
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:ref:refs/heads/main
+      Policies:
+        - PolicyName: deploy-previews
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - amplify:CreateBranch
+                  - amplify:GetBranch
+                  - amplify:DeleteBranch
+                  - amplify:CreateDeployment
+                  - amplify:StartDeployment
+                Resource: !Sub ${App.Arn}/branches/pr-*
+              - Effect: Allow
+                Action:
+                  - amplify:GetJob
+                  - amplify:StopJob
+                Resource: !Sub ${App.Arn}/branches/pr-*/jobs/*
 
 Outputs:
   AppId:
-    Description: GitHub environment variable AMPLIFY_APP_ID
+    Description: Repository variable AMPLIFY_APP_ID
     Value: !GetAtt App.AppId
-  ReleaseBuildRoleArn:
-    Description: GitHub environment variable AMPLIFY_RELEASE_ROLE_ARN
-    Value: !GetAtt ReleaseBuildRole.Arn
+  ProductionDeployRoleArn:
+    Description: AMPLIFY_DEPLOY_ROLE_ARN in the website-production GitHub environment
+    Value: !GetAtt ProductionDeployRole.Arn
+  PreviewDeployRoleArn:
+    Description: Repository variable AMPLIFY_PREVIEW_ROLE_ARN
+    Value: !GetAtt PreviewDeployRole.Arn
   DefaultUrl:
-    Description: The production branch before the custom domain is added
+    Description: Verify production here before moving the domain
     Value: !Sub https://main.${App.DefaultDomain}

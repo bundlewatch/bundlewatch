@@ -1,0 +1,78 @@
+name: Website preview deployment
+
+# This workflow runs from trusted main. It treats the build artifact as opaque
+# data: no PR checkout, dependency installation, archive extraction, or scripts.
+on:
+  workflow_run:
+    workflows: [Website preview]
+    types: [completed]
+  pull_request_target:
+    branches: [main]
+    types: [closed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+jobs:
+  resolve:
+    if: >-
+      vars.AMPLIFY_PREVIEW_ROLE_ARN != '' &&
+      (github.event_name == 'pull_request_target' ||
+      github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      number: ${{ steps.preview.outputs.number }}
+      run-id: ${{ steps.preview.outputs.run-id }}
+      artifact-id: ${{ steps.preview.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - id: preview
+        run: node packages/website/scripts/preview.mjs resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  deploy:
+    needs: resolve
+    if: needs.resolve.outputs.number != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency:
+      group: website-preview-deploy-${{ needs.resolve.outputs.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+      deployments: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AMPLIFY_PREVIEW_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: Publish or remove preview
+        run: node packages/website/scripts/preview.mjs publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AMPLIFY_APP_ID: ${{ vars.AMPLIFY_APP_ID }}
+          PULL_NUMBER: ${{ needs.resolve.outputs.number }}
+          BUILD_RUN_ID: ${{ needs.resolve.outputs.run-id }}
+          ARTIFACT_ID: ${{ needs.resolve.outputs.artifact-id }}
