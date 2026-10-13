@@ -53,7 +53,7 @@ Resources:
       AutoBranchCreationConfig:
         EnableAutoBranchCreation: true
         AutoBranchCreationPatterns:
-          - website-pr-*
+          - pr-*
         EnableAutoBuild: true
         EnablePullRequestPreview: false
         Stage: PULL_REQUEST

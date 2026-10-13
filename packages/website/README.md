@@ -67,7 +67,7 @@ Every page in `en/` has a counterpart at the same path in `zh/`. When you add or
 The site is hosted on AWS Amplify Hosting at `https://bundlewatch.io`, in the same AWS account and region (`us-east-1`) as the service.
 
 - **Production:** the [Website workflow](../../.github/workflows/website.yml) asks Amplify to build `main` when a push changes website inputs. Manual runs can rebuild it at any time.
-- **Previews:** the [Website preview workflow](../../.github/workflows/website-preview.yml) creates a `website-pr-<number>` branch for a pull request targeting `main` with website changes, including forks. Amplify automatically builds these branches. The preview URL is in the workflow's run summary, and becomes available when Amplify finishes building. Closing the PR, changing its target away from `main`, or removing its website changes deletes the branch; Amplify deletes its deployment too. Unrelated follow-up commits don't rebuild an existing preview.
+- **Previews:** the [Website preview workflow](../../.github/workflows/website-preview.yml) creates a `pr-<number>` branch for a pull request targeting `main` with website changes, including forks. Amplify automatically builds these branches. The preview URL is in the workflow's run summary, and becomes available when Amplify finishes building. Closing the PR, changing its target away from `main`, or removing its website changes deletes the branch; Amplify deletes its deployment too. Unrelated follow-up commits don't rebuild an existing preview.
 - **Releases:** the [Website workflow](../../.github/workflows/website.yml) rebuilds `main` after each successful release, so the nav shows the new version.
 
 Website inputs are `packages/website/**`, `packages/bundlewatch/package.json` (imported by the site config), `amplify.yml`, `customHttp.yml`, root `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.nvmrc`, and the two website workflows. Changes only to the CLI or service source don't deploy the website. Shared lockfile changes rebuild conservatively, even when only another package's dependencies changed. Keep the production path list and `isWebsitePath` in [`scripts/sync-preview.mjs`](scripts/sync-preview.mjs) in sync.
@@ -84,7 +84,7 @@ Everything that configures the site is in this repository:
 
 Amplify reads `amplify.yml` and `customHttp.yml` on each build. Changes to `infra/amplify.yaml` need an administrator to update the stack.
 
-The preview workflow uses `pull_request_target` and a token with `contents: write` to manage preview refs. It checks out only its trusted workflow revision, installs no project dependencies, and never executes PR code. Preview refs copy the PR source while retaining `.github` from the trusted base, so they cannot introduce PR-supplied Actions definitions. Updates made with `GITHUB_TOKEN` don't trigger other GitHub workflows. Reserve `website-pr-*` for this workflow; branch rulesets must allow its ref creation, force updates, and deletion.
+The preview workflow uses `pull_request_target` and a token with `contents: write` to manage preview refs. It checks out only its trusted workflow revision, installs no project dependencies, and never executes PR code. Preview refs copy the PR source while retaining `.github` from the trusted base, so they cannot introduce PR-supplied Actions definitions. Updates made with `GITHUB_TOKEN` don't trigger other GitHub workflows. Reserve `pr-*` for this workflow; branch rulesets must allow its ref creation, force updates, and deletion.
 
 The Amplify app has no IAM service role and no secrets. A preview build runs code from the pull request, which can come from anyone. Keep it that way, and:
 
@@ -94,11 +94,12 @@ The Amplify app has no IAM service role and no secrets. A preview build runs cod
 
 ### Updating an existing Amplify installation
 
-1. Add `AMPLIFY_APP_ID` as a GitHub **repository variable** as well as the existing `website-production` environment variable, so preview run summaries can show their URLs. Keep `AMPLIFY_RELEASE_ROLE_ARN` in `website-production`.
+1. Move `AMPLIFY_APP_ID` to a GitHub **repository variable**, so both workflows can read it. Add the repository variable before removing the duplicate from `website-production`. Keep `AMPLIFY_RELEASE_ROLE_ARN` in `website-production`.
 2. Merge both website workflows and the preview script to `main` before updating the stack.
-3. Update the `bundlewatch-website` CloudFormation stack with [`infra/amplify.yaml`](infra/amplify.yaml), preserving its domain and repository parameters (the deployment command in the setup section applies). This disables native production pushes and native PR previews, and enables automatic builds and deletion for `website-pr-*` branches. No extra AWS permissions or credentials are needed by the preview workflow.
-4. Run Website manually once, then open a website PR and a service-only PR. Only the website PR should create a preview branch. An unrelated follow-up commit should leave that branch unchanged; closing the PR should remove it and its Amplify branch.
-5. Remove any old native `pr-*` preview branches still present in Amplify after the transition. Existing open PRs get the new preview on their next update or when reopened.
+3. Before enabling `pr-*` branch detection, remove any old native Amplify `pr-*` preview branches that have no matching GitHub `pr-*` source branch. The new previews reuse these names.
+4. Update the `bundlewatch-website` CloudFormation stack with [`infra/amplify.yaml`](infra/amplify.yaml), preserving its domain and repository parameters (the deployment command in the setup section applies). This disables native production pushes and native PR previews, and enables automatic builds and deletion for `pr-*` branches. No extra AWS permissions or credentials are needed by the preview workflow.
+5. Run Website manually once, then open a website PR and a service-only PR. Only the website PR should create a preview branch. An unrelated follow-up commit should leave that branch unchanged; closing the PR should remove it and its Amplify branch.
+6. If upgrading from the earlier `website-pr-*` naming, delete those obsolete GitHub branches after verifying the new previews; Amplify automatically deletes their deployments. Existing open PRs get the new `pr-*` preview on their next update or when reopened.
 
 The workflows report that a build was requested; check Amplify for the build result. If a preview build fails, retry it in Amplify. The same source inputs are not automatically retried by an unrelated PR update.
 
@@ -129,7 +130,7 @@ The site used to be deployed to GitHub Pages from `bundlewatch/bundlewatch.io`. 
    pbcopy < /dev/null # clears the clipboard
    ```
 
-5. Add the stack outputs `AppId` and `ReleaseBuildRoleArn` to the `website-production` environment, as the variables `AMPLIFY_APP_ID` and `AMPLIFY_RELEASE_ROLE_ARN`. Also add `AMPLIFY_APP_ID` as a repository variable for the preview workflow's URL summaries.
+5. Add the stack output `AppId` as the repository variable `AMPLIFY_APP_ID`. Add `ReleaseBuildRoleArn` as `AMPLIFY_RELEASE_ROLE_ARN` in the `website-production` environment.
 6. Run the Website workflow (Actions → Website → Run workflow). It starts the first build of `main`, and checks the role on the way.
 7. Check the site at the `DefaultUrl` output, and open a test pull request that changes the website to see its preview:
 

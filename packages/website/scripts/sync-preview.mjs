@@ -29,7 +29,7 @@ export async function syncPreview({ repository, pullNumber, api }) {
     throw new Error("PULL_NUMBER must be a positive integer");
   }
   const repo = `/repos/${repository}`;
-  const branch = `website-pr-${pullNumber}`;
+  const branch = `pr-${pullNumber}`;
   const ref = `${repo}/git/refs/heads/${branch}`;
   // Read live state, so queued synchronize/close events cannot revive a
   // closed PR or roll a preview back to an earlier commit.

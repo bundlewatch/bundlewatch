@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { isWebsitePath, syncPreview } from "./sync-preview.mjs";
 
 const repo = "/repos/bundlewatch/bundlewatch";
-const ref = `${repo}/git/refs/heads/website-pr-12`;
+const ref = `${repo}/git/refs/heads/pr-12`;
 const file = (path, sha = "same") => ({ path, sha, type: "blob", mode: "100644" });
 const tree = (entries = [], truncated = false) => ({ tree: entries, truncated });
 
@@ -22,7 +22,7 @@ function fixture({ pr = {}, existing = null, pages = [[]], trees = {} } = {}) {
         ...pr,
       };
     }
-    if (path === `${repo}/git/ref/heads/website-pr-12`) return existing;
+    if (path === `${repo}/git/ref/heads/pr-12`) return existing;
     if (path.startsWith(`${repo}/pulls/12/files?`)) {
       return pages[Number(new URL(`https://api.github.com${path}`).searchParams.get("page")) - 1];
     }
@@ -78,7 +78,7 @@ test("checks later pages and renames out of the website; mirrors the live PR hea
     {
       method: "POST",
       path: `${repo}/git/refs`,
-      body: { ref: "refs/heads/website-pr-12", sha: "head" },
+      body: { ref: "refs/heads/pr-12", sha: "head" },
       allowMissing: undefined,
     },
   ]);
@@ -158,7 +158,7 @@ test("PR-supplied Actions definitions are replaced with the trusted base's defin
     tree: [{ path: ".github", mode: "040000", type: "tree", sha: "trusted" }],
   });
   assert.deepEqual(writes[1].body.parents, ["head"]);
-  assert.deepEqual(writes[2].body, { ref: "refs/heads/website-pr-12", sha: "sanitized" });
+  assert.deepEqual(writes[2].body, { ref: "refs/heads/pr-12", sha: "sanitized" });
 });
 
 test("API errors fail the run instead of silently skipping deployment", async () => {
