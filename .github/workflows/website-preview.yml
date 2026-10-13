@@ -1,0 +1,36 @@
+name: Website preview
+
+# Only trusted workflow code runs here. Never check out or execute PR code
+# with this token: it can write repository refs. Amplify builds the PR in its
+# own environment, with no service role or secrets.
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited, closed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - name: Sync preview branch
+        run: node packages/website/scripts/sync-preview.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PULL_NUMBER: ${{ github.event.pull_request.number }}
+          AMPLIFY_APP_ID: ${{ vars.AMPLIFY_APP_ID }}

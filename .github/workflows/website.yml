@@ -1,13 +1,27 @@
 name: Website
 
-# bundlewatch.io is hosted on AWS Amplify, which builds main and a preview of
-# every pull request itself (amplify.yml). This workflow only rebuilds main
-# after each successful release, so the nav shows the new version. It assumes
+# Amplify builds and hosts bundlewatch.io (amplify.yml). This workflow starts
+# production builds for website changes and after each successful release,
+# so the nav shows the new version. It assumes
 # the role created by packages/website/infra/amplify.yaml with GitHub's OIDC
 # token: no AWS keys are stored. Configure the `website-production`
 # environment as described in packages/website/README.md.
 
 on:
+  push:
+    branches: [main]
+    # Keep in sync with isWebsitePath in sync-preview.mjs.
+    paths:
+      - packages/website/**
+      - packages/bundlewatch/package.json
+      - amplify.yml
+      - customHttp.yml
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .nvmrc
+      - .github/workflows/website.yml
+      - .github/workflows/website-preview.yml
   # Runs on main, like a push.
   workflow_run:
     workflows: [Release]
@@ -26,11 +40,14 @@ jobs:
     # workflow_run matches by name, and a pull request can add a workflow named
     # Release: only accept this repository's release.yml, run for a tag.
     if: >-
-      github.event_name == 'workflow_dispatch' || (
+      github.ref == 'refs/heads/main' && (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch' || (
         github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.event == 'push' &&
         github.event.workflow_run.path == '.github/workflows/release.yml' &&
         github.event.workflow_run.head_repository.full_name == github.repository
+        )
       )
     runs-on: ubuntu-latest
     environment:

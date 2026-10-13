@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
-  bundlewatch.io on AWS Amplify Hosting. Amplify builds main for production and
-  every pull request for a preview, with the same build (amplify.yml). Deployed
+  bundlewatch.io on AWS Amplify Hosting. GitHub Actions selects website changes
+  for production and PR previews, built by Amplify (amplify.yml). Deployed
   by an administrator; see packages/website/README.md.
 
 Parameters:
@@ -39,13 +39,24 @@ Resources:
       Repository: !Sub https://github.com/${GitHubRepository}
       AccessToken: !Ref GitHubAccessToken
       Platform: WEB
-      # No IAMServiceRole and no secrets: Amplify only builds pull requests of
-      # public repositories for apps without a service role, and those builds
-      # run code from forks.
+      # No IAMServiceRole and no secrets: preview branches contain untrusted
+      # code, including code from forks.
       EnvironmentVariables:
         - Name: AMPLIFY_MONOREPO_APP_ROOT
           Value: packages/website
+        # Actions filters all inputs, including root files and release events.
+        - Name: AMPLIFY_DIFF_DEPLOY
+          Value: 'false'
       EnableBranchAutoDeletion: true
+      # The trusted Website preview workflow updates these refs only when
+      # website inputs change, and deletes them when their PR closes.
+      AutoBranchCreationConfig:
+        EnableAutoBranchCreation: true
+        AutoBranchCreationPatterns:
+          - website-pr-*
+        EnableAutoBuild: true
+        EnablePullRequestPreview: false
+        Stage: PULL_REQUEST
       # Clean URLs need no rule: Amplify serves /guide/x from /guide/x.html.
       # Headers are in customHttp.yml at the repository root.
       CustomRules:
@@ -70,9 +81,10 @@ Resources:
       BranchName: main
       Description: Production
       Stage: PRODUCTION
-      EnableAutoBuild: true
-      # Previews of pull requests targeting main, deleted when they close.
-      EnablePullRequestPreview: true
+      # website.yml starts production builds; website-preview.yml manages
+      # preview refs. Native triggers would deploy unrelated changes too.
+      EnableAutoBuild: false
+      EnablePullRequestPreview: false
 
   Domain:
     Type: AWS::Amplify::Domain
@@ -86,8 +98,9 @@ Resources:
         - Prefix: www
           BranchName: !GetAtt MainBranch.BranchName
 
-  # The Website workflow rebuilds main after each release, so the nav shows
-  # the new version. It can start builds and nothing else.
+  # The Website workflow builds main for website changes and releases.
+  # Keep this logical ID and output stable for existing installations.
+  # It can start builds and nothing else.
   ReleaseBuildRole:
     Type: AWS::IAM::Role
     Properties:
