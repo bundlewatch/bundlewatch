@@ -1,9 +1,12 @@
 // Copied from the 0.x service (src/static/results-styles.css), embedded so
-// the Lambda bundle is self-contained. Changes: no Google Fonts import (the
-// page makes no third-party requests; the font stacks fall back to system
-// fonts), and sizing for the inline SVG icons that replace Material Icons.
+// the Lambda bundle is self-contained. Changes: Source Sans Pro comes from
+// the service instead of Google Fonts, system-ui is the generic family
+// rather than a quoted name, and sizing for the inline SVG icons that
+// replace Material Icons.
 
-export const RESULTS_CSS = `
+import { FONT_FACES } from './fonts.ts';
+
+export const RESULTS_CSS: string = `${FONT_FACES}
 * {
     -webkit-font-smoothing: antialiased;
     -webkit-overflow-scrolling: touch;
@@ -30,7 +33,7 @@ body {
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
     color: #222;
-    font-family: 'Inter', 'Source Sans Pro', 'system-ui', 'Helvetica Neue',
+    font-family: 'Inter', 'Source Sans Pro', system-ui, 'Helvetica Neue',
         Arial, sans-serif;
     font-size: 16px;
     background: #f7f8fa;

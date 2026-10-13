@@ -147,7 +147,7 @@ export const serverCommitFooter = (serverCommitSha: string | undefined): SafeHtm
       serverCommitSha &&
       html`<div class="server-commit-sha">
         <p>
-            <a href="https://github.com/bundlewatch/bundlewatch/commit/${encodeURIComponent(serverCommitSha)}">${serverCommitSha}</a>
+            <a href="https://github.com/bundlewatch/bundlewatch/commit/${encodeURIComponent(serverCommitSha)}">${serverCommitSha.slice(0, 7)}</a>
         </p>
     </div>`
     }

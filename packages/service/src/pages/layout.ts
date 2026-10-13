@@ -31,7 +31,7 @@ ${body}
 export const logoHeader: SafeHtml = html`<header>
         <div class="logo">
             <a target="_blank" rel="noopener" href="https://bundlewatch.io/">
-                <img src="https://bundlewatch.io/logo-large.svg" alt="BundleWatch" height="100">
+                <img src="/static/logo.svg" alt="BundleWatch" height="100">
             </a>
         </div>
     </header>`;
