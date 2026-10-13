@@ -33,7 +33,9 @@ jobs:
         github.event.workflow_run.head_repository.full_name == github.repository
       )
     runs-on: ubuntu-latest
-    environment: website-production
+    environment:
+      name: website-production
+      url: https://bundlewatch.io
     permissions:
       id-token: write
     steps:
