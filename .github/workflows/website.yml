@@ -1,0 +1,47 @@
+name: Website
+
+# bundlewatch.io is hosted on AWS Amplify, which builds main and a preview of
+# every pull request itself (amplify.yml). This workflow only rebuilds main
+# after each successful release, so the nav shows the new version. It assumes
+# the role created by packages/website/infra/amplify.yaml with GitHub's OIDC
+# token: no AWS keys are stored. Configure the `website-production`
+# environment as described in packages/website/README.md.
+
+on:
+  # Runs on main, like a push.
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    # workflow_run matches by name, and a pull request can add a workflow named
+    # Release: only accept this repository's release.yml, run for a tag.
+    if: >-
+      github.event_name == 'workflow_dispatch' || (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.path == '.github/workflows/release.yml' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      )
+    runs-on: ubuntu-latest
+    environment: website-production
+    permissions:
+      id-token: write
+    steps:
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AMPLIFY_RELEASE_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: Rebuild main
+        env:
+          AMPLIFY_APP_ID: ${{ vars.AMPLIFY_APP_ID }}
+        run: aws amplify start-job --app-id "$AMPLIFY_APP_ID" --branch-name main --job-type RELEASE --query jobSummary.jobId --output text

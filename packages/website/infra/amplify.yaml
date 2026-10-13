@@ -1,0 +1,120 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  bundlewatch.io on AWS Amplify Hosting. Amplify builds main for production and
+  every pull request for a preview, with the same build (amplify.yml). Deployed
+  by an administrator; see packages/website/README.md.
+
+Parameters:
+  GitHubRepository:
+    Type: String
+    Default: bundlewatch/bundlewatch
+  GitHubAccessToken:
+    Type: String
+    NoEcho: true
+    Description: >-
+      Classic personal access token of a repository admin, with the
+      admin:repo_hook scope. Amplify uses it once to connect through the
+      Amplify GitHub App, and doesn't store it.
+  GitHubEnvironment:
+    Type: String
+    Default: website-production
+    Description: Only workflow jobs running in this GitHub environment can start release builds.
+  CustomDomain:
+    Type: String
+    Default: ''
+    Description: >-
+      bundlewatch.io, once the site has been checked on its amplifyapp.com
+      URL. Leave empty to deploy without a custom domain.
+
+Conditions:
+  HasCustomDomain: !Not [!Equals [!Ref CustomDomain, '']]
+
+Resources:
+  App:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: bundlewatch-website
+      Description: bundlewatch.io documentation site (packages/website)
+      Repository: !Sub https://github.com/${GitHubRepository}
+      AccessToken: !Ref GitHubAccessToken
+      Platform: WEB
+      # No IAMServiceRole and no secrets: Amplify only builds pull requests of
+      # public repositories for apps without a service role, and those builds
+      # run code from forks.
+      EnvironmentVariables:
+        - Name: AMPLIFY_MONOREPO_APP_ROOT
+          Value: packages/website
+      EnableBranchAutoDeletion: true
+      # Clean URLs need no rule: Amplify serves /guide/x from /guide/x.html.
+      # Headers are in customHttp.yml at the repository root.
+      CustomRules:
+        - !If
+          - HasCustomDomain
+          - Source: !Sub https://www.${CustomDomain}
+            Target: !Sub https://${CustomDomain}
+            Status: '301'
+          - !Ref AWS::NoValue
+        - Source: /<*>
+          Target: /404.html
+          Status: '404'
+
+  MainBranch:
+    Type: AWS::Amplify::Branch
+    Properties:
+      AppId: !GetAtt App.AppId
+      BranchName: main
+      Description: Production
+      Stage: PRODUCTION
+      EnableAutoBuild: true
+      # Previews of pull requests targeting main, deleted when they close.
+      EnablePullRequestPreview: true
+
+  Domain:
+    Type: AWS::Amplify::Domain
+    Condition: HasCustomDomain
+    Properties:
+      AppId: !GetAtt App.AppId
+      DomainName: !Ref CustomDomain
+      SubDomainSettings:
+        - Prefix: ''
+          BranchName: !GetAtt MainBranch.BranchName
+        - Prefix: www
+          BranchName: !GetAtt MainBranch.BranchName
+
+  # The Website workflow rebuilds main after each release, so the nav shows
+  # the new version. It can start builds and nothing else.
+  ReleaseBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Starts a build of the website's main branch from GitHub Actions
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:environment:${GitHubEnvironment}
+      Policies:
+        - PolicyName: start-main-build
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: amplify:StartJob
+                Resource: !Sub ${App.Arn}/branches/main/jobs/*
+
+Outputs:
+  AppId:
+    Description: GitHub environment variable AMPLIFY_APP_ID
+    Value: !GetAtt App.AppId
+  ReleaseBuildRoleArn:
+    Description: GitHub environment variable AMPLIFY_RELEASE_ROLE_ARN
+    Value: !GetAtt ReleaseBuildRole.Arn
+  DefaultUrl:
+    Description: The production branch before the custom domain is added
+    Value: !Sub https://main.${App.DefaultDomain}

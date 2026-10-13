@@ -1,141 +1,61 @@
 <div align="center">
   <a href="https://bundlewatch.io">
-    <img src="https://cdn.rawgit.com/bundlewatch/bundlewatch.io/master/docs/_assets/logo-large.svg" width="600px">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="packages/website/docs/public/logo-wordmark-dark.svg">
+      <img src="packages/website/docs/public/logo-wordmark.svg" width="400" alt="BundleWatch">
+    </picture>
   </a>
   <br>
   <br>
 
 Keep watch of your bundle size.
 
-[![Version](https://badge.fury.io/js/bundlewatch.svg)](https://www.npmjs.org/package/bundlewatch)
-[![Monthly Downloads](https://img.shields.io/npm/dm/bundlewatch)](https://www.npmjs.org/package/bundlewatch)
-[![Coveralls](https://coveralls.io/repos/github/bundlewatch/bundlewatch/badge.svg?branch=master)](https://coveralls.io/github/bundlewatch/bundlewatch?branch=master)
-[![GitHub License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/bundlewatch/bundlewatch/blob/master/LICENSE)
+[![Version](https://img.shields.io/npm/v/bundlewatch)](https://www.npmjs.com/package/bundlewatch)
+[![Monthly Downloads](https://img.shields.io/npm/dm/bundlewatch)](https://www.npmjs.com/package/bundlewatch)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 </div>
 
-<hr />
+BundleWatch checks file sizes so bundled browser assets don't suddenly grow. A sharp increase usually means something went wrong: a package that bloats the bundle, an incorrect import, or a missing minification step.
 
-BundleWatch checks file sizes, ensuring bundled browser assets don't jump in file size.
+On pull requests, it compares each file with the target branch and reports the result as a GitHub status.
 
-Sharp increases in BundleWatch can signal that something is wrong, such as adding a package that bloats the slug, an incorrect import, or forgetting to minify.
-
-Inspired by [Siddharth Kshetrapal's `bundlesize`][bundlesize]
-
-## Getting Started
-
-Install the BundleWatch package:
+## Getting started
 
 ```sh
-npm install bundlewatch --save-dev
+npm install --save-dev bundlewatch
 ```
 
-Add some basic configuration to your `package.json`
+Add your files to `package.json`:
 
 ```json
 {
-    "name": "my package name",
-    "version": "0.0.1",
-    "bundlewatch": {
-        "files": [
-            {
-                "path": "myfolder/*.js",
-                "maxSize": "100kB"
-            }
-        ]
-    }
+  "bundlewatch": {
+    "files": [{ "path": "./dist/*.js", "maxSize": "100kB" }]
+  }
 }
 ```
 
-> [!NOTE]
-> You can also use a `bundlewatch.config.js` file instead of the `package.json` field. See the [documentation][bundlewatch-docs-url] for more details.
+Run `npx bundlewatch` after your build.
 
-### Usage
+To report results on pull requests, see [GitHub Actions setup](https://bundlewatch.io/guide/using-bundlewatch#github-actions). The [documentation](https://bundlewatch.io) also covers other CI providers, configuration files, the Node.js API and [migrating from 0.x](https://bundlewatch.io/guide/migrating-to-v1).
 
-```sh
-npm run bundlewatch
-```
+## Repository layout
 
-This will give you command line output. If you want BundleWatch to report build status on your pull requests, see below.
+| Path                                                 | What it is                                                                 | Ships as                                                          |
+| ---------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [`packages/bundlewatch`](packages/bundlewatch)       | The CLI and Node.js API                                                    | [`bundlewatch` on npm](https://www.npmjs.com/package/bundlewatch) |
+| [`packages/core`](packages/core)                     | Analysis, results links and GitHub statuses, shared by the CLI and service | Bundled into both; not published                                  |
+| [`packages/service`](packages/service)               | Stores baselines and renders results pages                                 | `service.bundlewatch.io` on AWS Lambda                            |
+| [`packages/website`](packages/website)               | The documentation site                                                     | `bundlewatch.io` on AWS Amplify, with pull request previews       |
+| [`packages/contract-tests`](packages/contract-tests) | Runs bundlewatch 0.4.2 and the current CLI side by side                    | –                                                                 |
 
-## Adding Build Status
+- [CONTRACT.md](CONTRACT.md) lists the behavior that must stay compatible with 0.x CLIs, services and links.
+- [MIGRATION.md](MIGRATION.md) lists what changed in 1.0.
+- [CONTRIBUTING.md](CONTRIBUTING.md) explains how to work on the repository.
 
-BundleWatch can report its status on your GitHub Pull Requests.
+## License
 
-<div align="center">
-    <img alt="build status preview" src="https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-status-preview.png" width="700px">
-</div>
+[MIT](LICENSE)
 
-### CI Auth Variables Needed by BundleWatch
-
--   `BUNDLEWATCH_GITHUB_TOKEN`
-
-You will need to give BundleWatch access to your GitHub Statuses, which can be done by heading to:
-[https://service.bundlewatch.io/setup-github][setup-github-url]
-
-This will give you your `BUNDLEWATCH_GITHUB_TOKEN`. You will need to set this as an environment variable in CI.
-
-### CI Variables Needed by BundleWatch
-
-The most efficient way to get this running is to ensure that some environment variables are available for BundleWatch to find.
-
--   `CI_REPO_OWNER` github.com/**facebook**/react
--   `CI_REPO_NAME` github.com/facebook/**react**
--   `CI_COMMIT_SHA`
--   `CI_BRANCH`
-
-If you're using, _Travis_, _CircleCI_, _Wrecker_, _Drone_ or _GitHub Actions_ these should all work out of the box.
-
-> [!TIP]
-> Have a look at the source code to see which variables are automatically found: [`getCIVars`][get-ci-vars-source]
-
-### Viewing the results breakdown
-
-After setting up the above you will have BuildStatus on your Pull Requests. Clicking the _details_ link on the reported status will show you a results file breakdown.
-
-<div align="center">
-    <img alt="build results preview" src="https://raw.githubusercontent.com/bundlewatch/bundlewatch.io/master/docs/_assets/build-results-preview.png" width="700px">
-</div>
-
----
-
-## Additional Documentation
-
-Full [documentation available on bundlewatch.io][bundlewatch-docs-url]
-
-### I use bundlesize, why should I switch to BundleWatch
-
--   Bundlesize has entered maintenance mode and pull requests are left hanging, so we wanted to reboot the community through creating BundleWatch
--   New [BundleWatch service][bundlewatch-service] with infrastructure as code
--   Launched [bundlewatch.io documentation website][bundlewatch-docs-url]
--   Enough test coverage to support CD
--   Node API Support
--   Lower barrier to contributing (automated testing and publishing), build a trusted community of contributors to have continuous improvement
-
-### Additional Features
-
--   [x] Config validation to stop users from guessing why BundleWatch won't work
--   [x] Support for config file path
--   [x] Better results breakdown page
--   [x] Better comparisons between branches, support branches other than master
--   [x] Support for your own server for storing data
--   [x] New and improved CI behaviour
--   [ ] Show history of BundleWatchs over time
-
-### Contributors
-
-<a href="https://github.com/bundlewatch/bundlewatch/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=bundlewatch/bundlewatch" />
-</a>
-
-### Want to Help? Become a Contributor
-
-Contributions of any kind are welcome!
-[See the Contributing docs][contrib-docs-url].
-
-[bundlesize]: https://github.com/siddharthkp/bundlesize
-[bundlewatch-docs-url]: https://bundlewatch.io/
-[bundlewatch-service]: https://github.com/bundlewatch/service
-[contrib-docs-url]: https://github.com/bundlewatch/bundlewatch/blob/master/CONTRIBUTING.md
-[get-ci-vars-source]: https://github.com/bundlewatch/bundlewatch/blob/master/src/app/config/getCIVars.js
-[setup-github-url]: https://service.bundlewatch.io/setup-github
+Inspired by [Siddharth Kshetrapal's `bundlesize`](https://github.com/siddharthkp/bundlesize).

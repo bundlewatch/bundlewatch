@@ -1,0 +1,16 @@
+packages:
+  - packages/*
+
+# Supply-chain hardening. pnpm 12 already waits 24h before installing a new
+# release (minimumReleaseAge) and refuses unreviewed install scripts
+# (strictDepBuilds). On top of that, refuse any version whose publish
+# provenance is weaker than an earlier release of the same package.
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  # Required by @types/node@22. Published in 2024 by the same Node.js
+  # maintainer as every other release; an earlier release happened to carry
+  # provenance, which trips the policy.
+  - undici-types@6.21.0
+
+allowBuilds:
+  esbuild: true

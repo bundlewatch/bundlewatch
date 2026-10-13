@@ -1,0 +1,272 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  One-time setup that lets GitHub Actions deploy the bundlewatch service
+  without stored AWS keys. Deploy it once with an administrator account; see
+  the runbook in packages/service/README.md.
+
+  GitHub Actions can only assume the deploy role, which can only start
+  CloudFormation deployments of the service stack. CloudFormation makes the
+  changes with the execution role, which can't create IAM roles: the
+  function's role is defined here, with exactly the access it needs.
+
+Parameters:
+  GitHubRepository:
+    Type: String
+    Default: bundlewatch/bundlewatch
+  GitHubEnvironment:
+    Type: String
+    Default: service-production
+    Description: Only workflow jobs running in this GitHub environment can deploy.
+  ExistingOidcProviderArn:
+    Type: String
+    Default: ''
+    Description: >-
+      ARN of the account's existing token.actions.githubusercontent.com OIDC
+      provider. Leave empty to create one (an account can only have one).
+  ServiceStackName:
+    Type: String
+    Default: bundlewatch-service
+  StoreTableName:
+    Type: String
+    Default: bundlewatch-service-store-table-prod
+    Description: Existing baseline table; must match StoreTableName in template.yaml.
+  ResultsTableName:
+    Type: String
+    Default: bundlewatch-service-results
+    Description: Must match ResultsTableName in template.yaml.
+
+Conditions:
+  CreateOidcProvider: !Equals [!Ref ExistingOidcProviderArn, '']
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: CreateOidcProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          # Rolling back a deploy needs the previous code bundle, which can be
+          # months old for a service that rarely changes.
+          - Id: expire-old-artifacts
+            Status: Enabled
+            ExpirationInDays: 365
+
+  ServiceFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Runtime role of the bundlewatch service Lambda function.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: service
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                Resource:
+                  - !Sub arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${StoreTableName}
+                  - !Sub arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ResultsTableName}
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/bundlewatch/service:*
+
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Assumed by GitHub Actions to deploy the bundlewatch service.
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !If
+                - CreateOidcProvider
+                - !Ref GitHubOidcProvider
+                - !Ref ExistingOidcProviderArn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:environment:${GitHubEnvironment}
+      Policies:
+        - PolicyName: deploy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:CreateChangeSet
+                  - cloudformation:DeleteChangeSet
+                  - cloudformation:DescribeChangeSet
+                  - cloudformation:DescribeStackEvents
+                  - cloudformation:DescribeStacks
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:GetTemplate
+                  - cloudformation:ListStackResources
+                Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ServiceStackName}/*
+              - Effect: Allow
+                Action: cloudformation:CreateChangeSet
+                Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31
+              - Effect: Allow
+                Action:
+                  - cloudformation:GetTemplateSummary
+                  - cloudformation:ValidateTemplate
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub ${ArtifactBucket.Arn}/*
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketLocation
+                  - s3:ListBucket
+                Resource: !GetAtt ArtifactBucket.Arn
+              - Effect: Allow
+                Action: iam:PassRole
+                Resource: !GetAtt ExecutionRole.Arn
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: cloudformation.amazonaws.com
+
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Used by CloudFormation to create and update the bundlewatch service stack.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: service-resources
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # SAM names the function <stack>-ServiceFunction-<suffix>. A
+              # wider pattern would also match the 0.x function,
+              # bundlewatch-service-prod-expressRouter.
+              - Effect: Allow
+                Action: lambda:*
+                Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ServiceStackName}-ServiceFunction-*
+              # Only API Gateway may invoke it: no public function URL, and no
+              # permission for any other principal.
+              - Effect: Deny
+                Action:
+                  - lambda:CreateFunctionUrlConfig
+                  - lambda:UpdateFunctionUrlConfig
+                Resource: '*'
+              - Effect: Deny
+                Action: lambda:AddPermission
+                Resource: '*'
+                Condition:
+                  StringNotEquals:
+                    lambda:Principal: apigateway.amazonaws.com
+              # Lambda reads the code bundle with this role's credentials.
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub ${ArtifactBucket.Arn}/*
+              # The only role the stack's resources may use.
+              - Effect: Allow
+                Action: iam:PassRole
+                Resource: !GetAtt ServiceFunctionRole.Arn
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: lambda.amazonaws.com
+              # HTTP APIs, their stages, routes and integrations. The custom
+              # domain's mapping is changed by hand (see the runbook).
+              - Effect: Allow
+                Action:
+                  - apigateway:DELETE
+                  - apigateway:GET
+                  - apigateway:PATCH
+                  - apigateway:POST
+                  - apigateway:PUT
+                Resource:
+                  - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis
+                  - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis/*
+                  - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/tags/*
+              # DeleteTable: with RetainExceptOnCreate, a failed first deploy
+              # removes the table it created, so a retry can create it again.
+              - Effect: Allow
+                Action:
+                  - dynamodb:CreateTable
+                  - dynamodb:DeleteTable
+                  - dynamodb:DescribeContinuousBackups
+                  - dynamodb:DescribeContributorInsights
+                  - dynamodb:DescribeKinesisStreamingDestination
+                  - dynamodb:DescribeTable
+                  - dynamodb:DescribeTimeToLive
+                  - dynamodb:GetResourcePolicy
+                  - dynamodb:ListTagsOfResource
+                  - dynamodb:TagResource
+                  - dynamodb:UntagResource
+                  - dynamodb:UpdateContinuousBackups
+                  - dynamodb:UpdateTable
+                  - dynamodb:UpdateTimeToLive
+                Resource: !Sub arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ResultsTableName}
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:DeleteLogGroup
+                  - logs:DeleteRetentionPolicy
+                  - logs:DescribeIndexPolicies
+                  - logs:GetDataProtectionPolicy
+                  - logs:ListTagsForResource
+                  - logs:PutRetentionPolicy
+                  - logs:TagResource
+                  - logs:UntagResource
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/bundlewatch/service*
+              - Effect: Allow
+                Action:
+                  - logs:DescribeLogGroups
+                  - logs:DescribeResourcePolicies
+                Resource: '*'
+
+Outputs:
+  DeployRoleArn:
+    Description: GitHub environment variable AWS_DEPLOY_ROLE_ARN
+    Value: !GetAtt DeployRole.Arn
+  ExecutionRoleArn:
+    Description: GitHub environment variable CFN_EXECUTION_ROLE_ARN
+    Value: !GetAtt ExecutionRole.Arn
+  ArtifactBucketName:
+    Description: GitHub environment variable SAM_ARTIFACT_BUCKET
+    Value: !Ref ArtifactBucket
+  ServiceFunctionRoleArn:
+    Description: Imported by template.yaml
+    Value: !GetAtt ServiceFunctionRole.Arn
+    Export:
+      Name: bundlewatch-service-function-role-arn

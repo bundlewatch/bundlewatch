@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "sortImports": true,
+  "embeddedLanguageFormatting": "off",
+  "ignorePatterns": [
+    "pnpm-lock.yaml",
+    "**/dist/**",
+    "**/__fixtures__/**",
+    "packages/website/docs/.vitepress/cache/**"
+  ],
+  "overrides": [
+    {
+      "files": ["packages/website/**/*.{mjs,js,ts,vue,css}"],
+      "options": {
+        "singleQuote": false
+      }
+    }
+  ]
+}

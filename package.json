@@ -1,90 +1,24 @@
 {
-    "name": "bundlewatch",
-    "version": "0.0.0",
-    "description": "Keep watch of your bundle size",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/bundlewatch/bundlewatch.git"
-    },
-    "main": "lib/app/index.js",
-    "bin": {
-        "bundlewatch": "lib/bin/index.js"
-    },
-    "files": [
-        "lib"
-    ],
-    "lint-staged": {
-        "*.js": [
-            "node_modules/.bin/eslint"
-        ]
-    },
-    "keywords": [
-        "library",
-        "size",
-        "check",
-        "build",
-        "maxSize"
-    ],
-    "author": "bundlewatch",
-    "license": "MIT",
-    "dependencies": {
-        "axios": "^0.31.1",
-        "bytes": "^3.1.1",
-        "chalk": "^4.0.0",
-        "ci-env": "^1.17.0",
-        "commander": "^5.0.0",
-        "glob": "^7.1.2",
-        "gzip-size": "^6.0.0",
-        "jsonpack": "^1.1.5",
-        "lodash.merge": "^4.6.1",
-        "read-pkg-up": "^7.0.1"
-    },
-    "devDependencies": {
-        "@babel/cli": "^7.24.8",
-        "@babel/core": "^7.24.9",
-        "@babel/eslint-parser": "^7.24.8",
-        "@babel/preset-env": "^7.24.8",
-        "axios-mock-adapter": "^1.20.0",
-        "coveralls": "^3.1.1",
-        "del-cli": "^5.1.0",
-        "eslint": "^8.6.0",
-        "eslint-config-airbnb-base": "^15.0.0",
-        "eslint-config-prettier": "^8.3.0",
-        "eslint-plugin-import": "^2.25.4",
-        "eslint-plugin-jest": "^25.3.4",
-        "eslint-plugin-prettier": "^4.0.0",
-        "husky": "^7.0.0",
-        "jest": "^27.4.7",
-        "jest-junit": "^13.0.0",
-        "lint-staged": "^12.1.7",
-        "prettier": "2.5.1"
-    },
-    "jest": {
-        "testEnvironment": "node",
-        "collectCoverage": true,
-        "coverageDirectory": "artifacts/test_results/jest/coverage"
-    },
-    "engines": {
-        "node": ">=16"
-    },
-    "bundlewatch": {
-        "files": [
-            {
-                "path": "./__testdata__/*.jpg",
-                "maxSize": "500kB",
-                "compression": "none"
-            },
-            {
-                "path": "./lib/**/*.js",
-                "maxSize": "2kB"
-            },
-            {
-                "path": "./artifacts/*.tgz",
-                "maxSize": "15kB"
-            }
-        ]
-    },
-    "scripts": {
-        "prepare": "husky install"
-    }
+  "name": "bundlewatch-monorepo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --recursive --filter=!@bundlewatch/website run build",
+    "check": "oxfmt --check && oxlint --deny-warnings",
+    "format": "oxfmt",
+    "lint": "oxlint --deny-warnings",
+    "typecheck": "pnpm --recursive run typecheck",
+    "test": "pnpm --recursive --filter=!@bundlewatch/contract-tests run test",
+    "test:contract": "pnpm --filter=@bundlewatch/contract-tests run test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "oxfmt": "0.72.0",
+    "oxlint": "1.87.0",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@12.11.2"
 }
