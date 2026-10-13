@@ -14,6 +14,9 @@ const deploymentsFor = (number, api) =>
 export async function selectPreview(pr, appId, api = github) {
   if (pr.state !== "open" || pr.base.ref !== "main" || !(await hasWebsiteChanges(pr, api)))
     return "remove";
+  // A fork PR's build may not receive AMPLIFY_APP_ID. Without it, an existing
+  // preview can't be confirmed to be on the current app, so build anyway.
+  if (!appId) return "build";
   const deployments = await deploymentsFor(pr.number, api);
   const latest = deployments.find((deployment) => deployment.payload?.appId === appId);
   if (latest) {

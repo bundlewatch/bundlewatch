@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { publishPreview, resolvePreview, selectPreview } from "./preview.mjs";
@@ -99,6 +100,27 @@ test("preview filtering skips unrelated PRs and unchanged inputs, but retries fa
   state = "failure";
   assert.equal(await selectPreview(pr, appId, api), "build");
   assert.equal(await selectPreview(pr, "dnewapp", api), "build");
+});
+
+test("without the app ID, as in a fork PR's build, website PRs build instead of trusting a preview", async () => {
+  const lookups = [];
+  const api = async (path) => {
+    lookups.push(path);
+    return [{ filename: "packages/website/docs/en/index.md" }];
+  };
+  assert.equal(await selectPreview(pr, "", api), "build");
+  assert.equal(await selectPreview(pr, undefined, api), "build");
+  // Only changed files were read: without the app ID, no deployment can count as current.
+  assert.ok(lookups.every((path) => path.includes("/files?")));
+  assert.equal(await selectPreview(pr, "", async () => [{ filename: "README.md" }]), "remove");
+});
+
+test("PR builds aren't gated on repository variables, which fork PRs may not receive", () => {
+  const workflow = readFileSync(
+    new URL("../../../.github/workflows/website-preview.yml", import.meta.url),
+    "utf8",
+  );
+  assert.doesNotMatch(workflow, /^\s*if:.*\bvars\./m);
 });
 
 function fixture({
@@ -230,6 +252,18 @@ test("publishing and closing one PR leave other previews in the shared environme
         .every(({ body }) => body.auto_inactive === false),
     );
   }
+});
+
+test("after AMPLIFY_APP_ID changes, a current preview on the old app is published to the new one", async () => {
+  // Same PR SHA and a success status: only the app ID shows this preview is stale.
+  const f = fixture({ deployments: [{ id: 9, sha: "head", payload: { appId: "dpreviousapp" } }] });
+  assert.match(await f.publish(), /Website deployed: .*pr-12.dtest/);
+  assert.equal(f.writes[0].path, "/deployments");
+  assert.ok(
+    f.writes.some(
+      ({ path, body }) => path === "/deployments/9/statuses" && body.state === "inactive",
+    ),
+  );
 });
 
 test("publisher rejects an artifact from a different run before any mutations", async () => {

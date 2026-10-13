@@ -49,6 +49,7 @@ jobs:
     environment:
       name: website-preview
       # preview.mjs records the deployment on the PR commit, with its own URL.
+      # GitHub's automatic record would belong to this run's main commit.
       deployment: false
     concurrency:
       group: website-preview-deploy-${{ needs.resolve.outputs.number }}
