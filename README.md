@@ -1,6 +1,9 @@
 <div align="center">
   <a href="https://bundlewatch.io">
-    <img src="https://bundlewatch.io/logo-large.svg" width="600px" alt="BundleWatch">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="packages/website/docs/public/logo-wordmark-dark.svg">
+      <img src="packages/website/docs/public/logo-wordmark.svg" width="400" alt="BundleWatch">
+    </picture>
   </a>
   <br>
   <br>
