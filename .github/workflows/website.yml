@@ -72,7 +72,7 @@ jobs:
     timeout-minutes: 25
     environment:
       name: website-production
-      url: ${{ steps.deploy.outputs.url }}
+      url: https://bundlewatch.io
     permissions:
       contents: read
       actions: read
@@ -94,7 +94,6 @@ jobs:
           role-to-assume: ${{ vars.AMPLIFY_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
       - name: Deploy production
-        id: deploy
         env:
           GH_TOKEN: ${{ github.token }}
           AMPLIFY_APP_ID: ${{ vars.AMPLIFY_APP_ID }}
