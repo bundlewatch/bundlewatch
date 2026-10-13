@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
-    "preview": "vitepress preview docs"
+    "preview": "vitepress preview docs",
+    "test": "node --test scripts/*.test.mjs"
   },
   "devDependencies": {
     "medium-zoom": "1.1.0",
