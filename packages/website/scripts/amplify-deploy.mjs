@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { setTimeout as sleep } from "node:timers/promises";
 import { pathToFileURL } from "node:url";
 
-import { github, output, summary } from "./github.mjs";
+import { github } from "./github.mjs";
 
 export function amplifyClient(appId, execute = execFileSync) {
   if (!/^d[a-z0-9]+$/.test(appId ?? "")) throw new Error("Invalid AMPLIFY_APP_ID");
@@ -119,7 +119,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     branchName: "main",
     amplify: amplifyClient(process.env.AMPLIFY_APP_ID),
   });
-  const url = `https://main.${process.env.AMPLIFY_APP_ID}.amplifyapp.com`;
-  output("url", url);
-  summary(`Website deployed: [Open site](${url})`);
 }
