@@ -102,8 +102,9 @@ const overallStatus = (fileResults: FileResult[]): Status => {
   return STATUSES.PASS;
 };
 
-export const getOverallDifference = (
-  fullResults: FileResult[],
+// Generic, so the service can pass the entries of a results page.
+export const getOverallDifference = <File extends Pick<FileResult, 'size' | 'baseBranchSize'>>(
+  fullResults: readonly File[],
 ): {
   totalAdded: number;
   totalRemoved: number;

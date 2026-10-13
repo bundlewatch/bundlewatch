@@ -1,27 +1,9 @@
 import { html, type SafeHtml } from '../html.ts';
 
-// Inline replacements for the Material Icons font, so results pages make no
-// third-party requests. Paths from Material Design Icons (Apache-2.0). The
-// `material-icons` class is kept for the 0.x markup and CSS.
+// Inline icons, so pages make no third-party requests.
 
-const PATHS = {
-  check: 'M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z',
-  warning: 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z',
-  close:
-    'M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
-  remove_circle:
-    'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z',
-} as const;
+/** GitHub's mark, from Primer Octicons (MIT). */
+export const githubIcon: SafeHtml = html`<svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>`;
 
-export const icon = ({
-  name,
-  className,
-  label,
-  title,
-}: {
-  name: keyof typeof PATHS;
-  className: string;
-  label: string;
-  title?: string | undefined;
-}): SafeHtml =>
-  html`<svg class="${className} material-icons" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="${label}">${title && html`<title>${title}</title>`}<path d="${PATHS[name]}"/></svg>`;
+/** Two overlapping sheets. */
+export const copyIcon: SafeHtml = html`<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-.5a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.5"/></svg>`;

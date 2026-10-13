@@ -10,17 +10,17 @@ It runs on AWS Lambda behind an API Gateway HTTP API, with two DynamoDB tables. 
 
 ## Routes
 
-| Route                                                                   | Auth | Responses                                                                                             |
-| ----------------------------------------------------------------------- | ---- | ----------------------------------------------------------------------------------------------------- |
-| `GET /`                                                                 |      | `200 {"message":"hello world"}`. Browsers (`Accept: text/html`) get a page with links instead.        |
-| `POST /store`                                                           | yes  | Saves a baseline. `200` with the stored item, `401`, `413`, `422`, `500`                              |
-| `POST /store/lookup`                                                    | yes  | `200 { fileDetailsByPath }`, `404` (empty body) when there is no baseline, `401`, `413`, `422`, `500` |
-| `GET /results?d=…`                                                      |      | Results page (HTML). `400` when `d` is missing or not jsonpack, `422` when it isn't results data      |
-| `POST /results`                                                         | yes  | Creates a short link. `201 { id, url }`, `400`, `401`, `413`, `422`, `500`                            |
-| `GET /r/{id}`                                                           |      | Results page of a short link. `404` page for unknown or expired ids                                   |
-| `GET /setup-github[?code=]`                                             |      | OAuth authorize button, or the token for `code`. `500 { error }` when the exchange fails              |
-| `POST /analyze`                                                         | yes  | Analyzes on the server and posts commit statuses. `202`, `401`, `413`, `422`, `500`. No known callers |
-| `GET /static/results-styles.css`, `GET /static/setup-github-styles.css` |      | Stylesheets                                                                                           |
+| Route                                                                   | Auth | Responses                                                                                                                                                                       |
+| ----------------------------------------------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /`                                                                 |      | `200 {"message":"hello world"}`. Browsers (`Accept: text/html`) get a page with links instead.                                                                                  |
+| `POST /store`                                                           | yes  | Saves a baseline. `200` with the stored item, `401`, `413`, `422`, `500`                                                                                                        |
+| `POST /store/lookup`                                                    | yes  | `200 { fileDetailsByPath }`, `404` (empty body) when there is no baseline, `401`, `413`, `422`, `500`                                                                           |
+| `GET /results?d=…`                                                      |      | Results page (HTML). `400` when `d` is missing or not jsonpack, `422` when it isn't results data                                                                                |
+| `POST /results`                                                         | yes  | Creates a short link. `201 { id, url }`, `400`, `401`, `413`, `422`, `500`                                                                                                      |
+| `GET /r/{id}`                                                           |      | Results page of a short link. `404` page for unknown or expired ids                                                                                                             |
+| `GET /setup-github[?code=]`                                             |      | OAuth authorize button, or the token for `code`. A `400` page when the `state` doesn't match, and a `500` page when the exchange fails, both with the button to authorize again |
+| `POST /analyze`                                                         | yes  | Analyzes on the server and posts commit statuses. `202`, `401`, `413`, `422`, `500`. No known callers                                                                           |
+| `GET /static/results-styles.css`, `GET /static/setup-github-styles.css` |      | The stylesheet of every page, at both paths the 0.x pages linked                                                                                                                |
 
 Anything else is `404 {"error":"Not found"}`. `HEAD` works wherever `GET` does.
 
@@ -215,10 +215,11 @@ Items are written with `attribute_not_exists(id)`, and a taken id is retried wit
 - Stricter authorization for writes, in report-only mode until `WRITE_AUTHORIZATION=enforce` (above). Lookups keep the 0.x check.
 - GitHub failures during the check are a `503`, not a `401` or `500`.
 - Baselines too big for DynamoDB (over 350 KB) are a `413`, not a `500`. Size strings such as `"100KB"`, which 0.x CLIs sent for a numeric `maxSize` in their config, are read as bytes; 0.x rejected those baselines and links.
-- `/setup-github` sends a `state` to GitHub and checks it on the way back, and the token page can't be framed. 0.x had neither.
+- `/setup-github` sends a `state` to GitHub and checks it on the way back, and the token page can't be framed. 0.x had neither. When the state doesn't match or GitHub refuses the code, it shows a page with the button to authorize again, rather than JSON.
+- Pages run no scripts, except the Copy buttons of the token page, which its Content-Security-Policy allows by hash.
 - Responses are gzipped for clients that accept it, so pages of very large projects stay under Lambda's 6 MB response limit.
 - `/store` waits for the write and answers `500` if it fails. 0.x answered `200` before writing.
-- Results links where a file has no `maxSize` render. 0.x CLIs pack `Infinity` there and the 0.x schema rejected it with a `422`, so those links never rendered. Unlimited sizes show as `Infinity`. Empty `details` strings are accepted too.
+- Results links where a file has no `maxSize` render. 0.x CLIs pack `Infinity` there and the 0.x schema rejected it with a `422`, so those links never rendered. Unlimited sizes show as "No limit". Empty `details` strings are accepted too.
 - Malformed `d` is a `400`, not a `500`.
 - `422` bodies leave out Joi's `_original`, which echoed the request including the token.
 - Bodies up to 1 MB are accepted (0.x: 100 kB).

@@ -13,12 +13,15 @@ import { exchangeOAuthCode, githubWebUrl } from './github-oauth.ts';
 import { CONTENT_SECURITY_POLICY, HttpError, htmlPage, json, readJsonBody } from './http.ts';
 import { renderHomePage } from './pages/home-page.ts';
 import { renderResultsNotFoundPage, renderResultsPage } from './pages/results-page.ts';
-import { renderSetupGithubPage } from './pages/setup-github-page.ts';
+import {
+  COPY_SCRIPT_HASH,
+  renderSetupGithubPage,
+  type SetupFailure,
+} from './pages/setup-github-page.ts';
 import { SHORT_LINK_ID, saveShortLink } from './short-links.ts';
 import { FONT_FILES } from './static/fonts.ts';
 import { LOGO_SVG } from './static/logo.ts';
-import { RESULTS_CSS } from './static/results-styles.ts';
-import { SETUP_GITHUB_CSS } from './static/setup-github-styles.ts';
+import { PAGE_CSS } from './static/page-styles.ts';
 import type { BaselineStore } from './stores/baseline-store.ts';
 import type { ResultsStore } from './stores/results-store.ts';
 import {
@@ -379,32 +382,35 @@ export const createApp = (deps: AppDeps): App => {
   const setupGithub: Handler = async (request, url) => {
     const webUrl = githubWebUrl(apiUrl);
     const clientId = config.githubClientId;
-    const code = url.searchParams.get('code');
-    if (!code) {
-      // `state` ties GitHub's redirect to this browser, so nobody can
-      // make a victim's browser show the attacker's token (0.x sent
-      // none).
+    // The authorize button, with a new `state`: it ties GitHub's redirect to
+    // this browser, so nobody can make a victim's browser show the
+    // attacker's token (0.x sent none). After a failure, the page explains
+    // it and asks to authorize again.
+    const authorizePage = (status: number, failure?: SetupFailure): Response => {
       const state = randomBytes(16).toString('base64url');
       return htmlPage(
-        200,
+        status,
         renderSetupGithubPage({
           clientId,
           githubWebUrl: webUrl,
           state,
+          failure,
+          serverCommitSha: config.commitSha,
         }),
         {
           ...tokenPageHeaders,
           'set-cookie': `${OAUTH_STATE_COOKIE}=${state}; Path=/setup-github; Max-Age=600; HttpOnly; Secure; SameSite=Lax`,
         },
       );
+    };
+    const code = url.searchParams.get('code');
+    if (!code) {
+      return authorizePage(200);
     }
     const expected = readCookie(request, OAUTH_STATE_COOKIE);
     const state = url.searchParams.get('state');
     if (!expected || state !== expected) {
-      return json(400, {
-        error:
-          'This authorization expired or started in another browser. Start again at /setup-github.',
-      });
+      return authorizePage(400, { kind: 'expired' });
     }
     const exchange = await exchangeOAuthCode({
       webUrl,
@@ -413,7 +419,7 @@ export const createApp = (deps: AppDeps): App => {
       code,
     });
     if ('error' in exchange) {
-      return json(500, { error: exchange.error });
+      return authorizePage(500, { kind: 'exchange', error: exchange.error });
     }
     return htmlPage(
       200,
@@ -421,9 +427,12 @@ export const createApp = (deps: AppDeps): App => {
         token: exchange.token,
         clientId,
         githubWebUrl: webUrl,
+        serverCommitSha: config.commitSha,
       }),
       {
         ...tokenPageHeaders,
+        // The Copy buttons' script, and nothing else.
+        'content-security-policy': `${tokenPageHeaders['content-security-policy']}; script-src 'sha256-${COPY_SCRIPT_HASH}'`,
         'referrer-policy': 'no-referrer',
         'set-cookie': `${OAUTH_STATE_COOKIE}=; Path=/setup-github; Max-Age=0; HttpOnly; Secure; SameSite=Lax`,
       },
@@ -522,16 +531,9 @@ export const createApp = (deps: AppDeps): App => {
     { method: 'GET', path: /^\/r\/([^/]+)$/, handle: showShortLink },
     { method: 'GET', path: '/setup-github', handle: setupGithub },
     { method: 'POST', path: '/analyze', handle: analyzeAndReport },
-    {
-      method: 'GET',
-      path: '/static/results-styles.css',
-      handle: stylesheet(RESULTS_CSS),
-    },
-    {
-      method: 'GET',
-      path: '/static/setup-github-styles.css',
-      handle: stylesheet(SETUP_GITHUB_CSS),
-    },
+    // One stylesheet, at both paths the 0.x pages linked.
+    { method: 'GET', path: '/static/results-styles.css', handle: stylesheet(PAGE_CSS) },
+    { method: 'GET', path: '/static/setup-github-styles.css', handle: stylesheet(PAGE_CSS) },
     { method: 'GET', path: '/static/logo.svg', handle: logo },
     { method: 'GET', path: /^\/static\/fonts\/([\w.-]+)$/, handle: font },
   ];

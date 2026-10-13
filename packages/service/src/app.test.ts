@@ -11,6 +11,8 @@ import {
 import { createResultsPayload, createResultsUrl } from '@bundlewatch/core';
 
 import { type AppConfig, type AppDeps, createApp } from './app.ts';
+import { COPY_SCRIPT_HASH } from './pages/setup-github-page.ts';
+import { PAGE_CSS } from './static/page-styles.ts';
 import { MemoryBaselineStore } from './stores/baseline-store.ts';
 import { DynamoResultsStore } from './stores/dynamodb-results-store.ts';
 import { MemoryResultsStore } from './stores/results-store.ts';
@@ -140,7 +142,7 @@ describe('GET /', () => {
     assert.match(page, /<title>bundlewatch service \| BundleWatch<\/title>/);
     assert.match(page, /href="https:\/\/bundlewatch.io\/guide\/getting-started"/);
     assert.match(page, /href="\/setup-github"/);
-    assert.match(page, /src="\/static\/logo.svg"/);
+    assert.match(page, /<svg class="bw-mark"/);
     assert.match(page, />4988746<\/a>/);
   });
 
@@ -379,13 +381,18 @@ describe('GET /results?d=', () => {
     const page = await response.text();
     assert.match(page, /\.\/dist\/&lt;script&gt;alert\(1\)&lt;\/script&gt;\.js/);
     assert.doesNotMatch(page, /<script>/);
+    // The file with an unlimited maxSize is new: it has no size on master.
     assert.match(
       page,
-      /<td>1000B<\/td>\s*<td>\s*<span title="Not available">n\/a<\/span>\s*<\/td>\s*<td>Infinity<\/td>/,
+      /\+1000B<small>new file<\/small><\/span>\s*<span class="limit">No limit<\/span>/,
     );
-    assert.match(page, /\(feat\/&quot;quotes&quot;&amp;&lt;b&gt;\)/);
-    assert.match(page, />3b63e5c0<\/a>/);
-    assert.match(page, /maxSize check failed/);
+    assert.match(page, /<b>feat\/&quot;quotes&quot;&amp;&lt;b&gt;<\/b> into master/);
+    assert.match(page, />3b63e5c<\/a>/);
+    assert.match(page, /<meta name="description" content="maxSize check failed">/);
+    assert.match(
+      page,
+      /vendor\.js is 100KB over its 100KB limit, and \.\/dist\/\*\.map matched no files\./,
+    );
     assert.match(page, /commit\/abc1234">abc1234</);
     assert.doesNotMatch(page, /width:(?:NaN|Infinity)/);
   });
@@ -400,9 +407,12 @@ describe('GET /results?d=', () => {
   test('decodes `+` in captured links as jsonpack 1.x does', async () => {
     const response = await setup().call('GET', `/results?d=${CAPTURED_LINK_DATA.littleDifference}`);
     const page = await response.text();
-    assert.match(page, /PASS :: Everything is in check \(\+0B, -15B\)/);
+    assert.match(
+      page,
+      /<meta name="description" content="PASS :: Everything is in check \(\+0B, -15B\)">/,
+    );
     assert.match(page, /bundlewatch\/e2e-test/);
-    assert.match(page, /<td>131B<\/td>\s*<td>\s*-15B\s*<\/td>\s*<td>5KB<\/td>/);
+    assert.match(page, /−15B<small>131B now<\/small>/);
   });
 
   test('renders links built by core', async () => {
@@ -426,7 +436,7 @@ describe('GET /results?d=', () => {
     });
     const response = await setup().call('GET', url.slice('https://service.test'.length));
     assert.equal(response.status, 200);
-    assert.match(await response.text(), /<td>Infinity<\/td>/);
+    assert.match(await response.text(), /<span class="limit">No limit<\/span>/);
   });
 
   for (const [name, query] of [
@@ -509,7 +519,7 @@ describe('POST /results and GET /r/{id}', () => {
     assert.equal(page.status, 200);
     const text = await page.text();
     assert.match(text, /dist\/&lt;a&gt;\.js/);
-    assert.match(text, /<td>Infinity<\/td>/);
+    assert.match(text, /<span class="limit">No limit<\/span>/);
     assert.match(text, /\+1KB/);
   });
 
@@ -677,7 +687,7 @@ describe('GET /setup-github', () => {
       ),
     );
     assert.match(page, /href="\/static\/setup-github-styles.css"/);
-    assert.match(page, /data-title="Authorize on GitHub"/);
+    assert.match(page, /Authorize on GitHub<\/a>/);
     assert.doesNotMatch(page, /Github/);
     assert.match(response.headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/);
     assert.equal(response.headers.get('x-frame-options'), 'DENY');
@@ -694,8 +704,11 @@ describe('GET /setup-github', () => {
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('cache-control'), 'no-store');
     assert.match(response.headers.get('set-cookie') ?? '', /Max-Age=0/);
+    const csp = response.headers.get('content-security-policy') ?? '';
+    assert.match(csp, /frame-ancestors 'none'/);
+    assert.ok(csp.endsWith(`; script-src 'sha256-${COPY_SCRIPT_HASH}'`), csp);
     const page = await response.text();
-    assert.match(page, /<code>&lt;b&gt;gho_token&lt;\/b&gt;<\/code>/);
+    assert.match(page, /<code id="copy-value"[^>]*>&lt;b&gt;gho_token&lt;\/b&gt;<\/code>/);
     const [exchange] = github.requests;
     assert.equal(exchange?.headers.accept, 'application/json');
     assert.deepEqual(JSON.parse(exchange?.body ?? ''), {
@@ -715,6 +728,18 @@ describe('GET /setup-github', () => {
       const response = await setup({ config }).call('GET', path, undefined, headers);
       assert.equal(response.status, 400);
       assert.equal(github.requests.length, 0);
+      assert.equal(response.headers.get('content-type'), 'text/html; charset=utf-8');
+      // A new state, to authorize again from this page.
+      assert.match(
+        response.headers.get('set-cookie') ?? '',
+        /^bundlewatch_oauth_state=[\w-]+; .*Max-Age=600/,
+      );
+      const page = await response.text();
+      assert.match(page, /That authorization expired/);
+      assert.match(
+        page,
+        /oauth\/authorize\?scope=repo%3Astatus&amp;client_id=04fcf325dd26ca2a159f&amp;state=/,
+      );
     });
   }
 
@@ -730,9 +755,11 @@ describe('GET /setup-github', () => {
       withState,
     );
     assert.equal(response.status, 500);
-    assert.deepEqual(await response.json(), {
-      error: 'The code passed is incorrect or expired.',
-    });
+    assert.equal(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assert.match(response.headers.get('set-cookie') ?? '', /Max-Age=600/);
+    const page = await response.text();
+    assert.match(page, /GitHub didn’t issue a token/);
+    assert.match(page, /The code passed is incorrect or expired\. Authorize again/);
   });
 
   test('500 without the raw response when GitHub sends neither a token nor a description', async () => {
@@ -744,7 +771,7 @@ describe('GET /setup-github', () => {
       withState,
     );
     assert.equal(response.status, 500);
-    assert.deepEqual(await response.json(), { error: 'GitHub did not return a token' });
+    assert.match(await response.text(), /GitHub did not return a token\./);
   });
 
   test('500 with the status when the exchange fails', async () => {
@@ -756,7 +783,7 @@ describe('GET /setup-github', () => {
       withState,
     );
     assert.equal(response.status, 500);
-    assert.deepEqual(await response.json(), { error: 502 });
+    assert.match(await response.text(), /GitHub answered with HTTP 502\./);
   });
 });
 
@@ -930,16 +957,16 @@ describe('stylesheets', () => {
       assert.equal(response.status, 200);
       assert.equal(response.headers.get('content-type'), 'text/css; charset=utf-8');
       const css = await response.text();
-      assert.match(css, /\.container \{/);
+      assert.equal(css, PAGE_CSS);
       assert.doesNotMatch(css, /@import|googleapis/);
     });
 
-    test(`${name} loads Source Sans Pro from the service`, async () => {
+    test(`${name} loads its fonts from the service`, async () => {
       const css = await (await setup().call('GET', `/static/${name}`)).text();
       const fonts = [...css.matchAll(/url\('([^']+)'\) format\('woff2'\)/g)].map(
         (match) => match[1] ?? '',
       );
-      assert.equal(fonts.length, 4);
+      assert.equal(fonts.length, 6);
       await Promise.all(
         fonts.map(async (font) => {
           const response = await setup().call('GET', font);
