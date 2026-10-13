@@ -59,3 +59,5 @@ To report results on pull requests, see [GitHub Actions setup](https://bundlewat
 [MIT](LICENSE)
 
 Inspired by [Siddharth Kshetrapal's `bundlesize`](https://github.com/siddharthkp/bundlesize).
+
+<!-- Temporary check: an unrelated follow-up must retain the existing website preview. -->
