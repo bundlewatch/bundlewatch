@@ -12,9 +12,10 @@ Parameters:
     Type: String
     NoEcho: true
     Description: >-
-      Classic personal access token of a repository admin, with the
-      admin:repo_hook scope. Amplify uses it once to connect through the
-      Amplify GitHub App, and doesn't store it.
+      Personal access token of a repository admin: fine-grained, for this
+      repository only, with Webhooks read and write (or classic, with only
+      admin:repo_hook). Amplify uses it once to connect through the Amplify
+      GitHub App, and doesn't store it.
   GitHubEnvironment:
     Type: String
     Default: website-production

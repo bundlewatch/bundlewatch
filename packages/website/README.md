@@ -92,16 +92,25 @@ The site used to be deployed to GitHub Pages from `bundlewatch/bundlewatch.io`. 
 
 1. In `bundlewatch/bundlewatch` Settings → Environments, create `website-production` and allow deployments from `main` only. Do this before `website.yml` reaches `main`: GitHub creates an unprotected environment the first time a workflow names one.
 2. Install the Amplify GitHub App for `us-east-1` on the bundlewatch organization, for this repository only: <https://github.com/apps/aws-amplify-us-east-1/installations/new>.
-3. As a repository administrator, create a classic personal access token with only the `admin:repo_hook` scope and a short expiration. Amplify uses it to connect through the GitHub App, and doesn't store it.
+3. As a repository administrator, create a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new). Amplify uses it to connect through the GitHub App, and doesn't store it.
+   - Resource owner: the `bundlewatch` organization.
+   - Expiration: 7 days.
+   - Repository access: only `bundlewatch/bundlewatch`.
+   - Repository permissions: Webhooks, Read and write. GitHub adds Metadata, Read.
+
+   If the organization requires approval for fine-grained tokens, approve it under the organization's Settings → Personal access tokens. A classic token with only the `admin:repo_hook` scope works too, but it covers every repository you administer.
+
 4. Deploy the stack, without a domain yet. The GitHub OIDC provider must exist: deploy the service's `infra/bootstrap.yaml` first.
 
+   Copy the token, then run this. It reads the token from the clipboard with `pbpaste` (macOS; on Linux, use `wl-paste` or `xclip -selection clipboard -o`), so it never appears on screen or in your shell history:
+
    ```sh
-   read -rs GITHUB_TOKEN
    aws cloudformation deploy --region us-east-1 \
      --stack-name bundlewatch-website \
      --template-file packages/website/infra/amplify.yaml \
      --capabilities CAPABILITY_IAM \
-     --parameter-overrides GitHubAccessToken="$GITHUB_TOKEN"
+     --parameter-overrides GitHubAccessToken="$(pbpaste)"
+   pbcopy < /dev/null # clears the clipboard
    ```
 
 5. Add the stack outputs `AppId` and `ReleaseBuildRoleArn` to the `website-production` environment, as the variables `AMPLIFY_APP_ID` and `AMPLIFY_RELEASE_ROLE_ARN`.
@@ -112,15 +121,15 @@ The site used to be deployed to GitHub Pages from `bundlewatch/bundlewatch.io`. 
    node packages/website/scripts/check-deployment.mjs https://main.<app id>.amplifyapp.com
    ```
 
-8. Add the domain. Pass a new token, since the first one has expired or should be revoked:
+8. Add the domain. Create a new token as in step 3, since the first one has expired or should be revoked, copy it, then:
 
    ```sh
-   read -rs GITHUB_TOKEN
    aws cloudformation deploy --region us-east-1 \
      --stack-name bundlewatch-website \
      --template-file packages/website/infra/amplify.yaml \
      --capabilities CAPABILITY_IAM \
-     --parameter-overrides GitHubAccessToken="$GITHUB_TOKEN" CustomDomain=bundlewatch.io
+     --parameter-overrides GitHubAccessToken="$(pbpaste)" CustomDomain=bundlewatch.io
+   pbcopy < /dev/null # clears the clipboard
    ```
 
    The `bundlewatch.io` hosted zone is in Route 53, in this account, so Amplify creates the certificate's validation record and points `bundlewatch.io` and `www` at the app. The update finishes once the domain is active, which can take up to an hour. If the console (Amplify → the app → Custom domains) still shows records to update, replace the GitHub Pages records with the ones it lists. While DNS changes, visitors reach either host, and both serve the same site.
