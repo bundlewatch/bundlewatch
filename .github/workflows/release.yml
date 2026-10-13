@@ -74,7 +74,9 @@ jobs:
   publish:
     needs: [check, pack]
     runs-on: ubuntu-latest
-    environment: npm-production
+    environment:
+      name: npm-production
+      url: https://www.npmjs.com/package/bundlewatch/v/${{ steps.tarball.outputs.version }}
     permissions:
       id-token: write
     steps:
@@ -97,6 +99,7 @@ jobs:
           merge-multiple: true
           digest-mismatch: error
       - name: Check the tarball
+        id: tarball
         working-directory: ${{ runner.temp }}/package
         env:
           FILE: ${{ needs.pack.outputs.file }}
@@ -111,6 +114,7 @@ jobs:
             exit 1
           fi
           echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Publish
         working-directory: ${{ runner.temp }}/package
         env:
