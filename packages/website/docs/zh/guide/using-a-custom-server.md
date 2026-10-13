@@ -36,7 +36,7 @@ URL 的格式，以及如何在不使用服务的情况下运行，请参阅 [bu
 2. 为 `/setup-github` 创建一个 GitHub OAuth 应用，回调 URL 为 `<你的服务>/setup-github`。
 3. 按照 [Running your own service](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/README.md#running-your-own-service) 中的说明，使用你的服务 URL、OAuth 应用和表名部署 [`template.yaml`](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/template.yaml)。
 
-该 README 章节中没有以下两个参数：
+`template.yaml` 还有以下两个参数：
 
 - `WriteAuthorization`：设为 `enforce` 时，从一开始就对保存基准和创建短链接应用更严格的检查。默认值 `report` 会像 0.x 一样进行授权，只在更严格的检查会做出不同决定时记录日志。参见 [服务的变化](./migrating-to-v1.md#service-changes)。
 - `ResultsRetentionDays`：短链接的保留天数。默认值 `0` 表示永久保留。

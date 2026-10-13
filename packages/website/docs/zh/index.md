@@ -30,7 +30,7 @@ features:
     link: /zh/guide/using-bundlewatch#github-statuses
     linkText: GitHub 状态
   - title: 结果页面
-    details: 结果页面列出每个文件的体积、限制，以及相对基准的变化。
+    details: 列出每个文件的体积、限制，以及相对基准的变化。
     link: /zh/guide/using-bundlewatch#viewing-the-results-breakdown
     linkText: 查看结果
   - title: 任意 CI

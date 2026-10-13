@@ -24,9 +24,9 @@ Bundlewatch 会检查你构建出的浏览器资源的体积，避免文件在�
 4. 结果会以 `bundlewatch` 状态显示在提交上，并附带一个链接，指向按文件逐一列出结果的页面。
 5. 跟踪分支（例如 `main`）的构建会将其体积保存为新的基准，供之后的 Pull Request 对比。
 
-`service.bundlewatch.io` 上的服务是免费的。Bundlewatch 会向它发送文件名和体积、仓库、分支和提交，以及用于检查访问权限的 GitHub token。它从不发送文件本身。
+`service.bundlewatch.io` 上的服务是免费的。Bundlewatch 会向它发送文件名和体积、仓库、分支和提交，以及用于检查访问权限的 GitHub token。它从不发送文件本身。你也可以[运行自己的服务](./using-a-custom-server.md)，或者完全不使用服务：没有服务时，Bundlewatch 仍会检查 `maxSize`。
 
-任何拿到结果链接的人都能打开结果页面：参见 [结果链接](./using-bundlewatch.md#results-links)。你也可以[运行自己的服务](./using-a-custom-server.md)，或者完全不使用服务：没有服务时，Bundlewatch 仍会检查 `maxSize`。
+任何拿到结果链接的人都能打开结果页面：参见 [结果链接](./using-bundlewatch.md#results-links)。
 
 ## 阻止合并 {#blocking-merges}
 

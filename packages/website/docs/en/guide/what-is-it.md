@@ -24,9 +24,9 @@ A sudden increase in size usually means something went wrong:
 4. The result appears as a `bundlewatch` status on the commit, with a link to a page that breaks it down file by file.
 5. Builds of tracked branches, such as `main`, save their sizes as the new baseline that later pull requests are compared with.
 
-The service at `service.bundlewatch.io` is free. Bundlewatch sends it file names and sizes, the repository, branch and commit, and your GitHub token so it can check your access. It never sends the files themselves.
+The service at `service.bundlewatch.io` is free. Bundlewatch sends it file names and sizes, the repository, branch and commit, and your GitHub token so it can check your access. It never sends the files themselves. You can also [run your own](./using-a-custom-server.md), or none at all: without a service, Bundlewatch still checks `maxSize`.
 
-Anyone with a results link can open the page: see [Results links](./using-bundlewatch.md#results-links). You can also [run your own](./using-a-custom-server.md), or none at all: without a service, Bundlewatch still checks `maxSize`.
+Anyone with a results link can open its page: see [Results links](./using-bundlewatch.md#results-links).
 
 ## Blocking merges
 

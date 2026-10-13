@@ -30,7 +30,7 @@ features:
     link: /guide/using-bundlewatch#github-statuses
     linkText: GitHub statuses
   - title: Results page
-    details: The results page shows each file's size, limit and change from the baseline.
+    details: Shows each file's size, limit and change from the baseline.
     link: /guide/using-bundlewatch#viewing-the-results-breakdown
     linkText: Read the results
   - title: Any CI

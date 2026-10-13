@@ -36,7 +36,7 @@ The service lives in the Bundlewatch repository, in [`packages/service`](https:/
 2. Create a GitHub OAuth app for `/setup-github`, with the callback URL `<your service>/setup-github`.
 3. Deploy [`template.yaml`](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/template.yaml) with your service's URL, OAuth app and table names, as described in [Running your own service](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/README.md#running-your-own-service).
 
-These two parameters aren't in that README section:
+`template.yaml` also has these two parameters:
 
 - `WriteAuthorization`: `enforce` to apply the stricter check for saving baselines and creating short links from the start. The default, `report`, authorizes like 0.x and only logs where the stricter check would decide differently. See [Service changes](./migrating-to-v1.md#service-changes).
 - `ResultsRetentionDays`: how many days to keep short links. The default, `0`, keeps them forever.
