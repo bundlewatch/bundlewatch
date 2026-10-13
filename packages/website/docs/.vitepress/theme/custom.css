@@ -111,3 +111,18 @@ html[lang="en-US"] {
 .vp-doc div.language-text code {
   width: auto;
 }
+
+/* Home page feature icons: drawn in brand colors, without the default tinted square. */
+.VPFeature .box .icon {
+  justify-content: flex-start;
+  width: auto;
+  height: auto;
+  margin-bottom: 16px;
+  border-radius: 0;
+  background: none;
+  color: #000051;
+}
+
+.dark .VPFeature .box .icon {
+  color: #dcdcf2;
+}
