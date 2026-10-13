@@ -211,7 +211,9 @@ Resources:
                   StringEquals:
                     iam:PassedToService: lambda.amazonaws.com
               # HTTP APIs, their stages, routes and integrations. The custom
-              # domain's mapping is changed by hand (see the runbook).
+              # domain's mapping is changed by hand (see the runbook). Tagging
+              # has its own actions, checked when SAM's tags are set on the
+              # stage.
               - Effect: Allow
                 Action:
                   - apigateway:DELETE
@@ -219,6 +221,8 @@ Resources:
                   - apigateway:PATCH
                   - apigateway:POST
                   - apigateway:PUT
+                  - apigateway:TagResource
+                  - apigateway:UntagResource
                 Resource:
                   - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis
                   - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis/*
