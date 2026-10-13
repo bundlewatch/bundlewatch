@@ -64,6 +64,7 @@ Bundlewatch 不读取 `HTTPS_PROXY` 等代理变量。位于代理之后时，�
 
 ## 创建 token {#creating-a-token}
 
-| 消息                                                                                      | 含义和处理方法                                                                                                                                               |
-| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `This authorization expired or started in another browser. Start again at /setup-github.` | 没有创建 token。请在 [/setup-github](https://service.bundlewatch.io/setup-github) 重新开始，并在启用 cookie 的情况下，于 10 分钟内在同一个浏览器中完成授权。 |
+| 消息                          | 含义和处理方法                                                                                                                                                                                                 |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `That authorization expired`  | 没有创建 token：授权超过了 10 分钟，或者是在另一个浏览器中开始的。请在 [/setup-github](https://service.bundlewatch.io/setup-github) 重新开始，并在启用 cookie 的情况下，于 10 分钟内在同一个浏览器中完成授权。 |
+| `GitHub didn’t issue a token` | GitHub 没有用这次授权换发 token，页面上会显示 GitHub 给出的原因。请在 [/setup-github](https://service.bundlewatch.io/setup-github) 重新开始。                                                                  |

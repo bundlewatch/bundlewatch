@@ -131,22 +131,18 @@ Results pages don't check access: anyone with a results link can open its page, 
 
 ## Results page {#viewing-the-results-breakdown}
 
-The results link opens a page with the summary and one row per file:
+The results link opens a page that starts with what the commit changed compared with the base branch: the bytes it adds and removes, and how much larger or smaller the files are in total.
 
 <div align="center">
     <img alt="build results preview" data-zoomable src="/build-results-preview.png" width="700px">
 </div>
 
-| Column | Shows                                                                                                     |
-| ------ | --------------------------------------------------------------------------------------------------------- |
-| Status | Pass, fail, or removed: the file is in the baseline but not in this build                                 |
-| File   | The path, after `normalizeFilenames`                                                                      |
-| Bundle | A bar of the size, split into the baseline size and the change                                            |
-| Now    | The size in this build                                                                                    |
-| Diff   | The change from the baseline; `n/a` when the baseline size is zero or unavailable, such as for a new file |
-| Max    | The `maxSize`; `Infinity` when the file has no limit                                                      |
+- Files are listed by how much they changed, largest first, each next to its limit. A file at 90% of its limit or more is marked. Files that didn't change are collapsed.
+- Until the base branch has a baseline, files are listed by size against their limit instead.
+- Paths that matched no files, or couldn't be read, are listed at the top with the reason.
+- "All files" lists every file in a table: its size, its size on the base branch, the change and its limit.
 
-Paths that matched no files, or couldn't be read, show as failed rows without a size: the CI log has the reason. A short link that doesn't exist or has expired shows Results not found. A self-hosted service keeps short links for [`ResultsRetentionDays`](./using-a-custom-server.md#deploying-the-service) days, or forever by default.
+A short link that doesn't exist or has expired shows "Results not found". A self-hosted service keeps short links for [`ResultsRetentionDays`](./using-a-custom-server.md#deploying-the-service) days, or forever by default.
 
 <a id="troubleshooting"></a>
 

@@ -131,22 +131,18 @@ Bundlewatch 会以 GitHub 提交状态的形式，在它检查的提交上报告
 
 ## 结果页面 {#viewing-the-results-breakdown}
 
-结果链接打开的页面包含摘要，以及每个文件一行：
+结果链接打开的页面会先说明这次提交相对基准分支的变化：增加和减少了多少字节，以及文件总体变大或变小了多少。
 
 <div align="center">
     <img alt="build results preview" data-zoomable src="/build-results-preview.png" width="700px">
 </div>
 
-| 列     | 显示内容                                                     |
-| ------ | ------------------------------------------------------------ |
-| Status | 通过、失败或已移除：文件在基准中，但不在这次构建中           |
-| File   | 经过 `normalizeFilenames` 处理后的路径                       |
-| Bundle | 体积条，分为基准体积和变化量两段                             |
-| Now    | 这次构建中的体积                                             |
-| Diff   | 相对基准的变化；基准体积为零或不可用时（例如新文件）为 `n/a` |
-| Max    | `maxSize`；文件没有限制时为 `Infinity`                       |
+- 文件按变化量从大到小排列，每个文件旁边显示它的限制。达到限制 90% 及以上的文件会被标记出来。没有变化的文件会折叠起来。
+- 基准分支还没有基准时，文件改为按体积相对限制的比例排列。
+- 没有匹配到文件或无法读取的路径会列在最上方，并附上原因。
+- “All files” 用表格列出所有文件：体积、在基准分支上的体积、变化量和限制。
 
-没有匹配到文件或无法读取的路径会显示为没有体积的失败行：原因请查看 CI 日志。不存在或已过期的短链接会显示 Results not found。自托管的服务会将短链接保留 [`ResultsRetentionDays`](./using-a-custom-server.md#deploying-the-service) 天，默认永久保留。
+不存在或已过期的短链接会显示 “Results not found”。自托管的服务会将短链接保留 [`ResultsRetentionDays`](./using-a-custom-server.md#deploying-the-service) 天，默认永久保留。
 
 <a id="troubleshooting"></a>
 

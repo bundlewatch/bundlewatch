@@ -64,6 +64,7 @@ Bundlewatch doesn't read proxy variables such as `HTTPS_PROXY`. Behind a proxy, 
 
 ## Creating a token
 
-| Message                                                                                   | What it means and what to do                                                                                                                                               |
-| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `This authorization expired or started in another browser. Start again at /setup-github.` | No token was created. Start again at [/setup-github](https://service.bundlewatch.io/setup-github), and finish in the same browser within 10 minutes, with cookies enabled. |
+| Message                       | What it means and what to do                                                                                                                                                                                                                           |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `That authorization expired`  | No token was created: the authorization took more than 10 minutes, or started in another browser. Start again at [/setup-github](https://service.bundlewatch.io/setup-github), and finish in the same browser within 10 minutes, with cookies enabled. |
+| `GitHub didn’t issue a token` | GitHub didn't exchange the authorization for a token. The page shows GitHub's reason. Start again at [/setup-github](https://service.bundlewatch.io/setup-github).                                                                                     |
