@@ -52,7 +52,7 @@ The [getting started guide](docs/en/guide/getting-started.md#set-up-with-an-ai-a
 
 ## Version in the nav
 
-The version in the nav is the latest release. [`scripts/build.sh`](scripts/build.sh) reads it from the newest `vX.Y.Z` tag on GitHub, skipping prereleases. Amplify uses that script for production and previews, and CI uses it to check the site. The Website workflow rebuilds production after every successful release. `pnpm build` alone shows the version in `packages/bundlewatch/package.json` instead.
+The version in the nav is the latest release. [`scripts/build.sh`](scripts/build.sh) reads it from the newest `vX.Y.Z` tag on GitHub, skipping prereleases. GitHub Actions uses that script for production, previews, and CI. The Website workflow rebuilds production after every successful release. `pnpm build` alone shows the version in `packages/bundlewatch/package.json` instead.
 
 ## Translation
 
@@ -64,104 +64,121 @@ Every page in `en/` has a counterpart at the same path in `zh/`. When you add or
 
 ## Deployment
 
-The site is hosted on AWS Amplify Hosting at `https://bundlewatch.io`, in the same AWS account and region (`us-east-1`) as the service.
+GitHub Actions builds the site and uploads its files to AWS Amplify Hosting in `us-east-1`. Amplify only hosts the files. Its `main` and `pr-<number>` branches are **hosting destinations**, with no corresponding preview Git branches.
 
-- **Production:** the [Website workflow](../../.github/workflows/website.yml) asks Amplify to build `main` when a push changes website inputs. Manual runs can rebuild it at any time.
-- **Previews:** the [Website preview workflow](../../.github/workflows/website-preview.yml) creates a `website-pr-<number>` branch for a pull request targeting `main` with website changes, including forks. Amplify automatically builds these branches. The preview URL is in the workflow's run summary, and becomes available when Amplify finishes building. Closing the PR, changing its target away from `main`, or removing its website changes deletes the branch; Amplify deletes its deployment too. Unrelated follow-up commits don't rebuild an existing preview.
-- **Releases:** the [Website workflow](../../.github/workflows/website.yml) rebuilds `main` after each successful release, so the nav shows the new version.
+- **Production:** [Website](../../.github/workflows/website.yml) builds website-related pushes to `main`, successful releases, and manual runs. A separate job uploads the artifact and waits for Amplify to finish. GitHub's `website-production` deployment links to the published site.
+- **Previews:** [Website preview](../../.github/workflows/website-preview.yml) checks the PR's changed files before installing dependencies or building. [Website preview deployment](../../.github/workflows/website-preview-deploy.yml) uploads the artifact to `pr-<number>` and records a GitHub deployment on the original PR commit, with a preview URL. Fork PRs are supported; GitHub may require approval before running a contributor's build.
+- **Cleanup:** closing a PR deletes its Amplify destination and marks its GitHub deployments inactive. A completed preview workflow also removes a preview when the PR targets another branch or no longer has website changes. Unrelated follow-up commits keep the existing preview without rebuilding or deploying it.
 
-Website inputs are `packages/website/**`, `packages/bundlewatch/package.json` (imported by the site config), `amplify.yml`, `customHttp.yml`, root `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.nvmrc`, and the two website workflows. Changes only to the CLI or service source don't deploy the website. Shared lockfile changes rebuild conservatively, even when only another package's dependencies changed. Keep the production path list and `isWebsitePath` in [`scripts/sync-preview.mjs`](scripts/sync-preview.mjs) in sync.
+Website inputs are `packages/website/**`, `packages/bundlewatch/package.json`, root `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.nvmrc`, and the three website workflows. Shared lockfile changes rebuild conservatively. Keep the production path list and [`scripts/website-inputs.mjs`](scripts/website-inputs.mjs) in sync. Preview filtering reads all changed-file pages, including renames; exceptionally large PRs rebuild conservatively. CI's independent website check still runs on every PR.
 
-Amplify's native diff-based deployment setting only watches one directory, so it would miss the root-level inputs. Leave it disabled: Actions chooses when to deploy, including release rebuilds without a website source change.
+The production and preview builders have read-only GitHub tokens and no AWS credentials or OIDC permissions. The preview publisher runs trusted `main` code, verifies the workflow, PR head, source repository, artifact identity, and SHA-256 digest, and sends the ZIP directly to Amplify. It never extracts the ZIP or executes PR code. Build jobs do not share dependency caches with privileged jobs.
 
-Everything that configures the site is in this repository:
+Both publishers use GitHub OIDC, without stored AWS keys. Production can upload only to `main`. The preview role trusts runs on `main` and can manage only `pr-*` destinations. The ordinary `pull_request` build cannot assume either role. Keep `website-production` restricted to `main`, and keep previews on `amplifyapp.com`: putting untrusted previews under `bundlewatch.io` would make them same-site with the service.
 
-| File                                       | What it sets                                                                                                                         |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| [`amplify.yml`](../../amplify.yml)         | The build: Node.js from `.nvmrc`, pnpm from `packageManager`, then [`scripts/build.sh`](scripts/build.sh)                            |
-| [`customHttp.yml`](../../customHttp.yml)   | Response headers: HSTS and CORS as on GitHub Pages, caching of `/assets/`, types of the LLM files                                    |
-| [`infra/amplify.yaml`](infra/amplify.yaml) | The Amplify app, production and preview branch settings, the domain, the 404 and `www` rules, and the role the Website workflow uses |
+[`infra/amplify.yaml`](infra/amplify.yaml) owns the app, HTTP headers, redirects, domain, and deployment roles. There is no Amplify Git integration or build configuration. Header and infrastructure changes require a stack update; a website upload alone does not apply them. Amplify failures and timeouts fail the Actions job and its GitHub deployment. Rerun the failed workflow to retry; the publisher waits for an earlier AWS job before starting another one.
 
-Amplify reads `amplify.yml` and `customHttp.yml` on each build. Changes to `infra/amplify.yaml` need an administrator to update the stack.
+## Migrate the existing installation
 
-The preview workflow uses `pull_request_target` and a token with `contents: write` to manage preview refs. It checks out only its trusted workflow revision, installs no project dependencies, and never executes PR code. Preview refs copy the PR source while retaining `.github` from the trusted base, so they cannot introduce PR-supplied Actions definitions. Updates made with `GITHUB_TOKEN` don't trigger other GitHub workflows. Reserve `website-pr-*` for this workflow; branch rulesets must allow its ref creation, force updates, and deletion.
+Create a **new** stack named `bundlewatch-website-artifacts`. Do **not** update the existing `bundlewatch-website` stack with this template: [artifact deployments require an app without a Git repository](https://docs.aws.amazon.com/amplify/latest/APIReference/API_CreateDeployment.html). The existing app continues serving the domain while the new app is tested. Moving the domain can cause a brief interruption while Amplify provisions its association and DNS changes propagate.
 
-The Amplify app has no IAM service role and no secrets. A preview build runs code from the pull request, which can come from anyone. Keep it that way, and:
+Run these commands locally with AWS administrator credentials and GitHub repository administration access. The existing GitHub OIDC provider from the service bootstrap is reused. No GitHub access token is needed for the new app.
 
-- Don't add environment variables with secrets: preview builds can read them.
-- Don't enable automatic subdomains for previews. A preview at `pr-1.bundlewatch.io` would be same-site with `service.bundlewatch.io` and could set cookies for it. On `amplifyapp.com`, a public suffix, previews are isolated.
-- The account's budget alert (see the service's one-time setup) also covers Amplify build minutes, which fork pull requests can spend.
-
-### Updating an existing Amplify installation
-
-1. Add `AMPLIFY_APP_ID` as a GitHub **repository variable** as well as the existing `website-production` environment variable, so preview run summaries can show their URLs. Keep `AMPLIFY_RELEASE_ROLE_ARN` in `website-production`.
-2. Merge both website workflows and the preview script to `main` before updating the stack.
-3. Update the `bundlewatch-website` CloudFormation stack with [`infra/amplify.yaml`](infra/amplify.yaml), preserving its domain and repository parameters (the deployment command in the setup section applies). This disables native production pushes and native PR previews, and enables automatic builds and deletion for `website-pr-*` branches. No extra AWS permissions or credentials are needed by the preview workflow.
-4. Run Website manually once, then open a website PR and a service-only PR. Only the website PR should create a preview branch. An unrelated follow-up commit should leave that branch unchanged; closing the PR should remove it and its Amplify branch.
-5. Remove any old native `pr-*` preview branches still present in Amplify after the transition. Existing open PRs get the new preview on their next update or when reopened.
-
-The workflows report that a build was requested; check Amplify for the build result. If a preview build fails, retry it in Amplify. The same source inputs are not automatically retried by an unrelated PR update.
-
-## Setting up Amplify and moving the domain
-
-The site used to be deployed to GitHub Pages from `bundlewatch/bundlewatch.io`. Moving it to Amplify is a one-time change, done by an administrator of the AWS account and of the GitHub organization. The old site keeps serving `bundlewatch.io` until DNS changes in step 8, and stays available for a rollback until step 10.
-
-1. In `bundlewatch/bundlewatch` Settings → Environments, create `website-production` and allow deployments from `main` only. Do this before `website.yml` reaches `main`: GitHub creates an unprotected environment the first time a workflow names one.
-2. Install the Amplify GitHub App for `us-east-1` on the bundlewatch organization, for this repository only: <https://github.com/apps/aws-amplify-us-east-1/installations/new>.
-3. As a repository administrator, create a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new). Amplify uses it to connect through the GitHub App, and doesn't store it.
-   - Resource owner: the `bundlewatch` organization.
-   - Expiration: 7 days.
-   - Repository access: only `bundlewatch/bundlewatch`.
-   - Repository permissions: Webhooks, Read and write. GitHub adds Metadata, Read.
-
-   If the organization requires approval for fine-grained tokens, approve it under the organization's Settings → Personal access tokens. A classic token with only the `admin:repo_hook` scope works too, but it covers every repository you administer.
-
-4. Deploy the stack, without a domain yet. The GitHub OIDC provider must exist: deploy the service's `infra/bootstrap.yaml` first.
-
-   Copy the token, then run this. It reads the token from the clipboard with `pbpaste` (macOS; on Linux, use `wl-paste` or `xclip -selection clipboard -o`), so it never appears on screen or in your shell history:
+1. Check out this change and create the new stack with **no custom domain**:
 
    ```sh
    aws cloudformation deploy --region us-east-1 \
-     --stack-name bundlewatch-website \
+     --stack-name bundlewatch-website-artifacts \
      --template-file packages/website/infra/amplify.yaml \
      --capabilities CAPABILITY_IAM \
-     --parameter-overrides GitHubAccessToken="$(pbpaste)"
-   pbcopy < /dev/null # clears the clipboard
+     --parameter-overrides GitHubRepository=bundlewatch/bundlewatch GitHubEnvironment=website-production
+
+   aws cloudformation describe-stacks --region us-east-1 \
+     --stack-name bundlewatch-website-artifacts \
+     --query 'Stacks[0].Outputs' --output table
    ```
 
-5. Add the stack outputs `AppId` and `ReleaseBuildRoleArn` to the `website-production` environment, as the variables `AMPLIFY_APP_ID` and `AMPLIFY_RELEASE_ROLE_ARN`. Also add `AMPLIFY_APP_ID` as a repository variable for the preview workflow's URL summaries.
-6. Run the Website workflow (Actions → Website → Run workflow). It starts the first build of `main`, and checks the role on the way.
-7. Check the site at the `DefaultUrl` output, and open a test pull request that changes the website to see its preview:
+2. Disable the two old workflows before changing their app ID. This stops new deployment requests; it does not take the current site offline. Wait for any running Website or Website preview jobs to finish.
 
    ```sh
-   node packages/website/scripts/check-deployment.mjs https://main.<app id>.amplifyapp.com
+   gh workflow disable website.yml --repo bundlewatch/bundlewatch
+   gh workflow disable website-preview.yml --repo bundlewatch/bundlewatch
    ```
 
-8. Add the domain. Create a new token as in step 3, since the first one has expired or should be revoked, copy it, then:
+3. Merge the artifact-deployment PR. Keep the superseded branch-copying PR #508 out of `main`. Update your local checkout to the merged `main` before the later stack commands.
+
+4. Configure the new stack outputs in GitHub. Set `AppId` as the **repository variable** `AMPLIFY_APP_ID`, and `PreviewDeployRoleArn` as the **repository variable** `AMPLIFY_PREVIEW_ROLE_ARN`. Set `ProductionDeployRoleArn` as `AMPLIFY_DEPLOY_ROLE_ARN` in the **website-production environment**, restricted to deployments from `main`. Remove any environment-level `AMPLIFY_APP_ID` that would override the repository value. Keep the old `AMPLIFY_RELEASE_ROLE_ARN` until the migration is verified, for rollback.
+
+   ```sh
+   gh variable set AMPLIFY_APP_ID --repo bundlewatch/bundlewatch \
+     --body "$(aws cloudformation describe-stacks --region us-east-1 --stack-name bundlewatch-website-artifacts --query 'Stacks[0].Outputs[?OutputKey==`AppId`].OutputValue | [0]' --output text)"
+   gh variable set AMPLIFY_PREVIEW_ROLE_ARN --repo bundlewatch/bundlewatch \
+     --body "$(aws cloudformation describe-stacks --region us-east-1 --stack-name bundlewatch-website-artifacts --query 'Stacks[0].Outputs[?OutputKey==`PreviewDeployRoleArn`].OutputValue | [0]' --output text)"
+   gh variable set AMPLIFY_DEPLOY_ROLE_ARN --repo bundlewatch/bundlewatch --env website-production \
+     --body "$(aws cloudformation describe-stacks --region us-east-1 --stack-name bundlewatch-website-artifacts --query 'Stacks[0].Outputs[?OutputKey==`ProductionDeployRoleArn`].OutputValue | [0]' --output text)"
+
+   gh workflow enable website.yml --repo bundlewatch/bundlewatch
+   gh workflow enable website-preview.yml --repo bundlewatch/bundlewatch
+   ```
+
+5. Deploy production to the new app and wait for the Website run to succeed:
+
+   ```sh
+   gh workflow run website.yml --ref main --repo bundlewatch/bundlewatch
+   gh run watch --exit-status --repo bundlewatch/bundlewatch
+   ```
+
+   Verify the new site's default URL:
+
+   ```sh
+   website_default_url=$(aws cloudformation describe-stacks --region us-east-1 \
+     --stack-name bundlewatch-website-artifacts \
+     --query 'Stacks[0].Outputs[?OutputKey==`DefaultUrl`].OutputValue | [0]' --output text)
+   node packages/website/scripts/check-deployment.mjs "$website_default_url"
+   ```
+
+6. Test a website PR and a service-only PR, including a fork if available. Only the website PR should upload a preview; its GitHub deployment must link to `https://pr-<number>.<new-app-id>.amplifyapp.com`. Add an unrelated follow-up commit and verify the preview build is skipped. Close the website PR and verify its Amplify destination is removed. The publisher becomes available after its workflow reaches `main`; an existing PR can be reopened to trigger its first build.
+
+7. After those checks pass, release the domain from the **old** stack using its **previous template**. Preserve its repository, environment, and token parameters:
+
+   ```sh
+   aws cloudformation update-stack --region us-east-1 \
+     --stack-name bundlewatch-website --use-previous-template \
+     --capabilities CAPABILITY_IAM \
+     --parameters \
+       ParameterKey=GitHubRepository,UsePreviousValue=true \
+       ParameterKey=GitHubEnvironment,UsePreviousValue=true \
+       ParameterKey=GitHubAccessToken,UsePreviousValue=true \
+       ParameterKey=CustomDomain,ParameterValue=
+   aws cloudformation wait stack-update-complete --region us-east-1 \
+     --stack-name bundlewatch-website
+   ```
+
+   This removes the old domain association while retaining the old app and its last deployment. If Amplify asks to reauthorize the legacy repository connection, supply a fresh `GitHubAccessToken` for this legacy update only.
+
+8. Attach the domain to the **new** stack:
 
    ```sh
    aws cloudformation deploy --region us-east-1 \
-     --stack-name bundlewatch-website \
+     --stack-name bundlewatch-website-artifacts \
      --template-file packages/website/infra/amplify.yaml \
      --capabilities CAPABILITY_IAM \
-     --parameter-overrides GitHubAccessToken="$(pbpaste)" CustomDomain=bundlewatch.io
-   pbcopy < /dev/null # clears the clipboard
+     --parameter-overrides CustomDomain=bundlewatch.io
    ```
 
-   The `bundlewatch.io` hosted zone is in Route 53, in this account, so Amplify creates the certificate's validation record and points `bundlewatch.io` and `www` at the app. The update finishes once the domain is active, which can take up to an hour. If the console (Amplify → the app → Custom domains) still shows records to update, replace the GitHub Pages records with the ones it lists. While DNS changes, visitors reach either host, and both serve the same site.
-
-9. Check the site again, and that `www` redirects:
+   Wait for the stack to complete. In Amplify → Custom domains, verify both `bundlewatch.io` and `www`. If Amplify lists DNS changes, apply those records in Route 53. Then check:
 
    ```sh
    node packages/website/scripts/check-deployment.mjs https://bundlewatch.io
-   curl -sI https://www.bundlewatch.io | grep -i '^location'   # https://bundlewatch.io/
+   curl -sI https://www.bundlewatch.io
    ```
 
-10. After a few days without problems, in `bundlewatch/bundlewatch.io` Settings → Pages, unpublish the site and disable its Pages workflow. Then archive the repository.
+9. Keep the old stack until the new site has been stable for a few days. Remove the generated `website-pr-*` Git branches after checking their names with `git ls-remote --heads origin 'website-pr-*'`; the old app automatically removes their previews. Then retire the old stack and remove the unused `AMPLIFY_RELEASE_ROLE_ARN` environment variable. The new app does not need the Amplify GitHub App; remove its repository access only after confirming no other Amplify app uses it.
 
-To roll back before step 10, point the records back at GitHub Pages:
+To roll back **before retiring the old stack**, remove `CustomDomain` from the new stack by deploying its template with `CustomDomain=`. Restore the old stack's domain with the step 7 command using `ParameterKey=CustomDomain,ParameterValue=bundlewatch.io` instead. The old app still has its previous production files. Leave the new workflows disabled during rollback; restoring automatic deployments also requires reverting the workflow change and restoring the old repository app ID.
 
-| Name             | Type  | Value                                                                      |
-| ---------------- | ----- | -------------------------------------------------------------------------- |
-| `bundlewatch.io` | A     | `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153` |
-| `www`            | CNAME | `bundlewatch.github.io`                                                    |
+## Fresh installation and later updates
+
+For a fresh installation, create the GitHub OIDC provider using the service's `infra/bootstrap.yaml`, then follow migration steps 1, 4, 5, 6, and 8. Create the `website-production` environment restricted to `main` before its first deployment. There is no old stack to disable or detach.
+
+For later infrastructure or header updates, run `aws cloudformation deploy` against **bundlewatch-website-artifacts** with this template and `CAPABILITY_IAM`. Omitted parameters preserve the stack's existing values. Site content changes deploy through Actions; neither native Amplify auto-builds nor native PR previews should be enabled.
