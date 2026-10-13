@@ -11,6 +11,7 @@ import {
 import { checkRepoAccess, GitHubUnavailableError, type RepoAccess } from './github-auth.ts';
 import { exchangeOAuthCode, githubWebUrl } from './github-oauth.ts';
 import { CONTENT_SECURITY_POLICY, HttpError, htmlPage, json, readJsonBody } from './http.ts';
+import { renderHomePage } from './pages/home-page.ts';
 import { renderResultsNotFoundPage, renderResultsPage } from './pages/results-page.ts';
 import { renderSetupGithubPage } from './pages/setup-github-page.ts';
 import { SHORT_LINK_ID, saveShortLink } from './short-links.ts';
@@ -502,10 +503,17 @@ export const createApp = (deps: AppDeps): App => {
   };
 
   const routes: Route[] = [
+    // Browsers get a page. Everything else, such as monitors and the deploy's
+    // smoke test, keeps getting the JSON of 0.x (see CONTRACT.md).
     {
       method: 'GET',
       path: '/',
-      handle: async () => json(200, { message: 'hello world' }),
+      handle: async (request) =>
+        (request.headers.get('accept') ?? '').toLowerCase().includes('text/html')
+          ? htmlPage(200, renderHomePage({ serverCommitSha: config.commitSha }), {
+              vary: 'Accept',
+            })
+          : json(200, { message: 'hello world' }, { vary: 'Accept' }),
     },
     { method: 'POST', path: '/store', handle: saveBaseline },
     { method: 'POST', path: '/store/lookup', handle: lookupBaseline },

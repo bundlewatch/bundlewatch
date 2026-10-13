@@ -255,6 +255,7 @@ Request:
 ### `GET /`
 
 - Returns `{"message":"hello world"}`. External monitors might be pointed at it, so keep it.
+- Requests whose `Accept` header includes `text/html`, which browsers send, get an HTML page instead. Both responses vary on `Accept`. Clients that send `*/*` or no `Accept` header, like curl, monitors and the deploy's smoke test, keep getting the JSON.
 
 ### Added in 1.0: short links
 
