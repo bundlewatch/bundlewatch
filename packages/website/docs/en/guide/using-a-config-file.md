@@ -1,29 +1,24 @@
 ---
-title: Using a Config File
-description: How to configure Bundlewatch using a config file or package.json.
+title: Using a config file
+description: How to configure BundleWatch using a config file or package.json.
 ---
 
-# Using a Configuration File
+# Using a config file {#using-a-configuration-file}
 
-The [Bundlewatch CLI](../reference/cli.md) can read configuration from a `.json`, `.js`, `.cjs` or `.mjs` file, or from your `package.json`. On Node.js 22.18 and later, which run TypeScript natively, it can also read a `.ts`, `.mts` or `.cts` file.
+Put your configuration under the `bundlewatch` key of package.json, which `npx bundlewatch` reads, or in a file that you pass with `--config`:
 
-- To use a custom config file, specify it on the command line:
-  ```bash
-  bundlewatch --config .bundlewatch.config.js
-  ```
-  Relative paths are resolved from the current directory. Absolute paths work too.
-- If you omit the `--config` flag, Bundlewatch reads the `bundlewatch` key of the nearest `package.json`, looking in the current directory and then its parents. It doesn't look for `bundlewatch.config.*` files on its own.
+```bash
+npx bundlewatch --config bundlewatch.config.mjs
+```
 
-Example `package.json` configuration:
+::: code-group
 
-```json
+```json [package.json]
 {
-  "name": "my package name",
-  "version": "0.0.1",
   "bundlewatch": {
     "files": [
       {
-        "path": "myfolder/*.js",
+        "path": "./dist/*.js",
         "maxSize": "100kB"
       }
     ]
@@ -31,16 +26,12 @@ Example `package.json` configuration:
 }
 ```
 
-Example config files:
-
-::: code-group
-
 ```js [bundlewatch.config.mjs]
 /** @type {import('bundlewatch').BundlewatchConfig} */
 export default {
   files: [
     {
-      path: 'myfolder/*.js',
+      path: './dist/*.js',
       maxSize: '100kB',
     },
   ],
@@ -53,7 +44,7 @@ import type { BundlewatchConfig } from 'bundlewatch'
 export default {
   files: [
     {
-      path: 'myfolder/*.js',
+      path: './dist/*.js',
       maxSize: '100kB',
     },
   ],
@@ -64,7 +55,7 @@ export default {
 module.exports = {
   files: [
     {
-      path: 'myfolder/*.js',
+      path: './dist/*.js',
       maxSize: '100kB',
     },
   ],
@@ -75,7 +66,7 @@ module.exports = {
 {
   "files": [
     {
-      "path": "myfolder/*.js",
+      "path": "./dist/*.js",
       "maxSize": "100kB"
     }
   ]
@@ -84,11 +75,13 @@ module.exports = {
 
 :::
 
+- Config files can be `.json`, `.js`, `.cjs` or `.mjs`, or `.ts`, `.mts` or `.cts` on Node.js 22.18 and later, which run TypeScript natively. `--config` paths are resolved from the current directory; absolute paths work too.
+- Without `--config`, BundleWatch reads the `bundlewatch` key of the nearest package.json, in the current directory or a parent. It stops at the first package.json it finds, even if that file has no `bundlewatch` key: in a monorepo, put the key in the package's own package.json, or use `--config`. It doesn't look for `bundlewatch.config.*` files on its own.
 - The `BundlewatchConfig` type gives your editor completion and checks for every option.
 - In TypeScript, prefer `.mts`: Node.js loads it as an ES module in any package. A `.ts` file works too, but in a package without `"type": "module"`, Node.js prints a warning before loading it.
 - A JavaScript or TypeScript config can also have only named exports, such as `export const files = [...]`, instead of a default export.
 - A JavaScript config can set options that JSON can't, such as a `RegExp` for [`normalizeFilenames`](../reference/configuration.md#normalizefilenames), or values computed from environment variables.
 
-Your configuration is merged with the [defaults](../reference/configuration.md). Arrays such as `files` and `ci.trackBranches` replace the default value instead of being merged with it.
+Your configuration is merged with the [defaults](../reference/configuration.md). If more than one source is present, see [Where configuration comes from](../reference/cli.md#where-configuration-comes-from).
 
 You can also supply the config directly to the [Node.js API](../reference/nodejs.md).

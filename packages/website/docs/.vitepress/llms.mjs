@@ -9,7 +9,7 @@ import path from "node:path";
 const SITE = "https://bundlewatch.io";
 
 const SUMMARY =
-  "Bundlewatch checks the size of built browser assets in CI. It fails the build when a file is over its maxSize, compares each file with the last sizes saved for the base branch, and reports the result as a GitHub commit status with a link to a results page.";
+  "BundleWatch checks the size of built browser assets in CI. It fails the build when a file is over its maxSize, compares each file with the last sizes saved for the base branch, and reports the result as a GitHub commit status with a link to a results page.";
 
 const DETAILS = `Install it with \`npm install --save-dev bundlewatch\`, list the files to check under a \`bundlewatch\` key in package.json, and run \`npx bundlewatch\` after the build. It requires Node.js 22.17 or later. On GitHub Actions, pass the workflow's token as \`BUNDLEWATCH_GITHUB_TOKEN\` and grant \`statuses: write\`.`;
 
@@ -110,6 +110,7 @@ const toPlainMarkdown = (body, pagePath) => {
       if (/^\s*<img\b[^>]*>$/.test(line)) line = line.trim();
       line = line
         .replace(/^(#+ .*?) \{#[\w-]+\}$/, "$1")
+        .replace(/<a id="[^"]*"><\/a>/g, "")
         .replace(/<img\b[^>]*>/g, (img) => {
           const alt = /alt="([^"]*)"/.exec(img)?.[1] ?? "";
           const src = /src="([^"]*)"/.exec(img)?.[1] ?? "";
@@ -124,7 +125,7 @@ const toPlainMarkdown = (body, pagePath) => {
 };
 
 export const writeLlmsFiles = ({ srcDir, outDir, sidebar }) => {
-  const header = `# Bundlewatch\n\n> ${SUMMARY}\n\n${DETAILS}\n`;
+  const header = `# BundleWatch\n\n> ${SUMMARY}\n\n${DETAILS}\n`;
   const index = [header];
   const full = [header];
 

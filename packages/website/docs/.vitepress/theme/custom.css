@@ -111,3 +111,40 @@ html[lang="en-US"] {
 .vp-doc div.language-text code {
   width: auto;
 }
+
+/* Home page feature icons: drawn in brand colors, without the default tinted square. */
+.VPFeature .box .icon {
+  justify-content: flex-start;
+  width: auto;
+  height: auto;
+  margin-bottom: 12px;
+  border-radius: 0;
+  background: none;
+  color: #000051;
+}
+
+.dark .VPFeature .box .icon {
+  color: #dcdcf2;
+}
+
+/* The home page's change table: one image per theme, without a frame. Blending lets the
+   hero's glow show through the image's background, which matches the page's. */
+.HomeResults .on-light {
+  mix-blend-mode: multiply;
+}
+
+.HomeResults .on-dark,
+.dark .HomeResults .on-light {
+  display: none;
+}
+
+.dark .HomeResults .on-dark {
+  display: block;
+  mix-blend-mode: lighten;
+}
+
+/* The home page logo's dashed guide in dark mode. It lives here because a scoped :global(.dark)
+   rule compiles to a bare .dark selector, which every svg path on the page would inherit. */
+.dark .HeroLogo .ghost path {
+  stroke: #dcdcf2;
+}

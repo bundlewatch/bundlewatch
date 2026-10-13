@@ -1,41 +1,15 @@
 ---
-title: 使用 Bundlewatch
-description: 如何运行 Bundlewatch、设置 CI 集成以及查看结果。
+title: 在 CI 中运行
+description: 在 GitHub Actions 或其他 CI 服务上运行 BundleWatch，以及如何看懂它发布的状态和结果页面。
 ---
 
-# 使用 Bundlewatch
+# 在 CI 中运行 {#using-bundlewatch}
 
-在你构建好的资源上运行 Bundlewatch 以检查它们的体积：
+在 CI 中于构建之后运行 BundleWatch。有了 GitHub token，它会在提交上发布 `bundlewatch` 状态，并将每个文件与[基准分支](./diffing-against-branches-other-than-master.md#base-branch)对比。你的仓库需要托管在 GitHub 上；CI 可以在任何地方。
 
-```bash
-npx bundlewatch --max-size 100kb ./webpack-build/*.js
-```
+## GitHub Actions {#github-actions}
 
-示例输出：
-
-```
-Result breakdown at: https://service.bundlewatch.io/results?d=...
-
-PASS ./webpack-build/app.js: 30.71KB < 100KB (gzip)
-FAIL ./webpack-build/vendor.js: 198.6KB > 100KB (gzip)
-
-bundlewatch FAIL
-maxSize check failed
-```
-
-该命令会在终端中立即给出反馈，检查失败时以退出码 1 退出。要在 GitHub Pull Request 上报告结果并与主分支对比，请按下文所述在 CI 中运行它。你的仓库需要托管在 GitHub 上；CI 可以在任何地方。
-
-## 为 GitHub PR 添加构建状态 {#adding-build-status-to-github-prs}
-
-Bundlewatch 可以直接在你的 GitHub Pull Request 上报告其状态。
-
-<div align="center">
-    <img alt="build status preview" data-zoomable src="/build-status-preview.png" width="700px">
-</div>
-
-## GitHub Actions（推荐） {#github-actions}
-
-在 GitHub Actions 中，Bundlewatch 可以使用 GitHub 为每次工作流运行创建的 token，因此无需生成或保存 token。添加一个工作流，例如 `.github/workflows/bundlewatch.yml`：
+在 GitHub Actions 中，BundleWatch 可以使用 GitHub 为每次工作流运行创建的 token，因此无需生成或保存 token。添加一个工作流，例如 `.github/workflows/bundlewatch.yml`：
 
 ```yaml
 name: bundlewatch
@@ -64,45 +38,49 @@ jobs:
           BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-- `statuses: write` 允许 Bundlewatch 使用工作流的 token 发布 `bundlewatch` 提交状态。同时请保留 `contents: read`：`permissions` 块会移除所有未列出的权限。
+- `statuses: write` 允许 BundleWatch 使用工作流的 token 发布 `bundlewatch` 提交状态。同时请保留 `contents: read`：`permissions` 块会移除所有未列出的权限。
 - 服务接受用工作流的 token 保存基准和创建结果短链接。
 - `push` 触发器只列出你跟踪的分支。否则，推送到有打开的 Pull Request 的分支会让工作流运行两次，两次运行会在同一个提交上发布相同的状态。
-- 仓库、提交、分支和 Pull Request 的目标分支会被自动检测，包括仓库的默认分支。在 Pull Request 上，状态会报告到 PR 的最新提交。
-- 推送到被跟踪分支（`master`、`main`、`develop` 以及你的默认分支）时，结果会被保存为新的基准。Pull Request 会与其目标分支的基准进行对比。参见 [基准分支与跟踪分支](./diffing-against-branches-other-than-master.md)。
+- 仓库、提交、分支和 Pull Request 的目标分支会被自动检测，包括仓库的默认分支。在 Pull Request 上，状态会报告到 Pull Request 的最新提交。
+- 推送到[跟踪分支](./diffing-against-branches-other-than-master.md#tracked-branches)时，结果会被保存为新的基准。Pull Request 会与其目标分支的基准对比。
 
 ::: info 来自 fork 的 Pull Request
-GitHub 只为来自 fork 的 Pull Request 提供只读 token，因此 Bundlewatch 无法在这些 PR 上发布状态，而是会记录一个来自 GitHub 的 `403` 错误。不过当文件超过 `maxSize` 时，任务仍然会失败。
+GitHub 只为来自 fork 的 Pull Request 提供只读 token，因此 BundleWatch 无法在这些 Pull Request 上发布状态，而是会记录一个来自 GitHub 的 `403` 错误。当文件超过 `maxSize` 时，任务仍然会失败。
 :::
 
 ## 其他 CI 服务 {#other-ci-providers}
 
-在构建步骤之后运行 `npx bundlewatch`，并通过 `BUNDLEWATCH_GITHUB_TOKEN` 提供 token。
+<a id="setting-up-ci-authentication"></a>
 
-### 设置 CI 认证 {#setting-up-ci-authentication}
+1. 以拥有该仓库推送权限的用户身份登录 GitHub，打开 [service.bundlewatch.io/setup-github](https://service.bundlewatch.io/setup-github)，并授权 BundleWatch。该 token 只有 `repo:status` 权限：它可以读写提交状态，但无法访问你的代码。
+2. 在 CI 设置中，将 token 保存为名为 `BUNDLEWATCH_GITHUB_TOKEN` 的私密环境变量。切勿将它提交到仓库中。
+3. 在构建步骤之后运行 `npx bundlewatch`。
+4. 如果你的 CI 服务不在下表中，或者没有提供某个值，请设置[这些变量](#required-ci-environment-variables)。
 
-Bundlewatch 需要 `BUNDLEWATCH_GITHUB_TOKEN` 中的 GitHub token 来发布 PR 状态，以及与基准对比和保存基准。没有 token 时，它只检查 `maxSize`。你可以在以下地址获取你的 token：
-
-https://service.bundlewatch.io/setup-github
-
-请以拥有该仓库推送权限的用户身份创建它，这样服务才会接受用它保存基准和创建结果短链接。在你的 CI 环境中将此 token 设置为私密环境变量，切勿将它提交到仓库中。
+没有 token 时，BundleWatch 只检查 `maxSize`。
 
 ### 支持的 CI 服务 {#supported-ci-providers}
 
-Bundlewatch 会从以下 CI 服务自己的环境变量中读取仓库、提交和分支：
+BundleWatch 会从以下 CI 服务自己的环境变量中读取仓库、提交和分支。Pull Request 构建会与基准对比，但从不保存基准（[详情](./diffing-against-branches-other-than-master.md#pull-request-builds)）。
 
-| CI 服务        | Pull Request 的基准分支                                               |
-| -------------- | --------------------------------------------------------------------- |
-| GitHub Actions | 自动检测。其他构建使用仓库的默认分支。                                |
-| GitLab CI      | 在合并请求流水线中自动检测                                            |
-| Travis CI      | 自动检测                                                              |
-| Drone          | 自动检测                                                              |
-| CircleCI       | 不提供：请设置 `CI_BRANCH_BASE`，否则 Pull Request 会与 `master` 对比 |
+| CI 服务                                         | Pull Request 的基准分支                          | 算作 Pull Request 构建的情况                 |
+| ----------------------------------------------- | ------------------------------------------------ | -------------------------------------------- |
+| GitHub Actions                                  | 自动检测。其他构建使用仓库的默认分支             | `pull_request` 和 `pull_request_target` 事件 |
+| GitLab CI                                       | 在合并请求流水线和外部 Pull Request 流水线中检测 | 这两类流水线                                 |
+| Travis CI                                       | 自动检测                                         | Pull Request 构建                            |
+| Drone                                           | 自动检测                                         | `pull_request` 事件                          |
+| Buddy、Codefresh                                | 自动检测                                         | 不检测                                       |
+| CircleCI                                        | 不提供                                           | 来自 fork 的 Pull Request 的构建             |
+| Netlify                                         | 不提供                                           | 部署预览                                     |
+| Cloudflare Pages、Codeship、Wercker             | 不提供                                           | 不检测                                       |
+| ZEIT Now（旧的 `NOW_GITHUB_*` 变量）            | 不提供                                           | 不检测                                       |
+| 通用 `CI_*` 变量（设置了 `CI`，且不是上述服务） | `CI_TARGET_BRANCH`                               | `CI_EVENT=pull_request`                      |
 
-它也会读取 Netlify、Cloudflare Pages、Buddy、Codefresh、Codeship 和 Wercker 的变量，但其中一些服务不提供仓库或目标分支。对于检测不到的值，请设置下面的变量。
+在不提供基准分支的情况下，构建会与 `master` 对比，除非你设置了 `CI_BRANCH_BASE`。BundleWatch 不读取 Vercel 的 `VERCEL_*` 变量，上面的一些服务也不提供仓库信息：对于检测不到的值，请设置[下面的变量](#required-ci-environment-variables)。
 
-### CI 所需环境变量 {#required-ci-environment-variables}
+### 检测不到时需要设置的变量 {#required-ci-environment-variables}
 
-在其他 CI 服务上，或对于检测不到的值，请设置以下环境变量：
+对于 CI 服务没有提供的值，请设置以下变量：
 
 - `CI_REPO_OWNER`（例如 github.com/facebook/react 中的 `facebook`）
 - `CI_REPO_NAME`（例如 github.com/facebook/react 中的 `react`）
@@ -110,49 +88,62 @@ Bundlewatch 会从以下 CI 服务自己的环境变量中读取仓库、提交�
 - `CI_BRANCH`
 - `CI_BRANCH_BASE`，即要对比的分支（如果不是 `master`）
 
-Bundlewatch 读取的所有变量请参阅 [环境变量参考](../reference/configuration.md#environment-variables)。
+BundleWatch 读取的所有变量请参阅 [环境变量参考](../reference/configuration.md#environment-variables)。
+
+<a id="adding-build-status-to-github-prs"></a>
 
 ## GitHub 状态 {#github-statuses}
 
-Bundlewatch 会以 GitHub 提交状态的形式，在它检查的提交上报告结果：
+BundleWatch 会以 GitHub 提交状态的形式，在它检查的提交上报告结果：
 
-- **`bundlewatch`**：运行期间为 _pending_（"Checking bundlewatch..."），之后为 _success_ 并附带摘要，例如 `Everything is in check (+1.2KB, -0B, +0.4%)`，或为 _failure_ 并附带 `maxSize check failed`。摘要会分别累计与基准分支相比各文件增加和减少的字节数，并给出总体积的变化。它的 _details_ 链接会打开[结果页面](#results-links)。
-- **`bundlewatch <file path>`**：每个未通过的文件还会各有一个 _failure_ 状态，附带该文件的体积和限制。过长的路径会被截短为最后 37 个字符。
-- 每次运行最多发布五个状态：`bundlewatch` 状态和四个文件的状态。其余未通过的文件只会在日志和结果页面中列出。
-- 如果 Bundlewatch 在发布 _pending_ 之后遇到意外错误，`bundlewatch` 会变为 _error_（"Unable to analyze, check logs."）。无效的配置会在发布任何状态之前报告。
+<div align="center">
+    <img alt="build status preview" data-zoomable src="/build-status-preview.png" width="700px">
+</div>
 
-发布状态需要 token、仓库和提交。缺少它们时，Bundlewatch 只会输出结果并设置退出码。
+| 状态                      | 状态值  | 描述                                                                                                                                                           |
+| ------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bundlewatch`             | pending | 运行期间为 `Checking bundlewatch...`                                                                                                                           |
+| `bundlewatch`             | success | 摘要，例如 `Everything is in check (+1.2KB, -0B, +0.4%)`：与基准相比各文件增加和减少的字节数，以及总体积的变化。没有基准时，每个文件都算作增加，也没有百分比。 |
+| `bundlewatch`             | failure | `maxSize check failed`                                                                                                                                         |
+| `bundlewatch`             | error   | 发生意外错误后为 `Unable to analyze, check logs.` 加上错误信息。                                                                                               |
+| `bundlewatch <file path>` | failure | 每个未通过的文件一个，附带其结果，例如 `198.6KB > 100KB (gzip)`。路径没有匹配到文件或无法读取时没有描述。                                                      |
 
-要阻止会让文件过大的 Pull Request，请在仓库的分支保护规则或规则集中，将 `bundlewatch` 设为必需的状态检查。只需将 `bundlewatch` 设为必需：针对单个文件的状态只会在文件未通过时出现。
+- 有[结果链接](#results-links)时，success 或 failure 的 `bundlewatch` 状态会链接到它。其他状态没有链接。
+- 如果无法连接 GitHub，状态会停留在 GitHub 最后接受的状态，例如 pending：参见 [故障排查](./troubleshooting.md#github-statuses)。
+- 超过 35 个字符的路径会显示为 `*` 加上最后 37 个字符；两个路径结尾相同时，会加上 ` (2)`。
+- 超过 140 个字符的描述会被截断。
+- 每次运行最多发布五个状态：`bundlewatch` 和四个文件的状态。其余未通过的文件只会在日志和结果页面中列出。
+- 无效的配置会在发布任何状态之前报告。
+
+发布状态需要 token、仓库和提交。缺少它们时，BundleWatch 只会输出结果并设置退出码。
+
+要阻止会让文件过大的 Pull Request 被合并，请在仓库的分支保护规则或规则集中，将 `bundlewatch` 设为必需的状态检查。只需将 `bundlewatch` 设为必需：针对单个文件的状态只会在文件未通过时出现。
 
 ## 结果链接 {#results-links}
 
-每次运行都会输出一个指向结果页面的链接（`Result breakdown at: …`），并将其用作 GitHub 状态的 _details_ 链接。
+每次运行都会输出一个指向结果页面的链接（`Result breakdown at: …`），并将其用作 `bundlewatch` 状态的 _details_ 链接。
 
 - 当服务接受你的 token 进行写入时，链接是短链接，例如 `https://service.bundlewatch.io/r/3fK9xQ2LmP7a`。服务接受其用户拥有该仓库推送权限的 token，或 GitHub Actions 中工作流的 `GITHUB_TOKEN`。服务会保存结果，并根据保存的副本渲染页面。
-- 否则，在未配置 token 或服务不接受该 token 进行写入时，结果会被打包进链接本身：`https://service.bundlewatch.io/results?d=…`。对于大型项目，这类链接可能过长，一些浏览器和服务器会拒绝。
+- 否则，结果会被打包进链接本身：`https://service.bundlewatch.io/results?d=…`。没有 token、服务不接受该 token 进行写入、服务早于 1.0，或创建短链接失败或超过 5 秒时，都会这样。对于大型项目，这类链接可能过长，一些浏览器和服务器无法处理。
 - 设置 `bundlewatchServiceHost: null` 时，不会输出链接，GitHub 状态也没有 _details_ 链接。
-- 已有的 `/results?d=…` 链接仍然可以访问。旧的 `ja2r7.app.goo.gl` 短链接在 Google 继续重定向它们期间仍然可用。
 
-## 查看结果详情 {#viewing-the-results-breakdown}
+结果页面不检查访问权限：任何拿到结果链接的人都能打开页面，私有仓库也一样。页面会显示仓库、分支和提交，以及每个文件的名称、体积和限制。它从不包含你的 token 或文件本身。
 
-设置完成后，Bundlewatch 会在你的 PR 上发布构建状态。点击 _details_ 链接可以查看结果详情。
+## 结果页面 {#viewing-the-results-breakdown}
+
+结果链接打开的页面会先说明这次提交相对基准分支的变化：增加和减少了多少字节，以及文件总体变大或变小了多少。
 
 <div align="center">
     <img alt="build results preview" data-zoomable src="/build-results-preview.png" width="700px">
 </div>
 
-## 故障排查 {#troubleshooting}
+- 文件按变化量从大到小排列，每个文件旁边显示它的限制。达到限制 90% 及以上的文件会被标记出来。没有变化的文件会折叠起来。
+- 基准分支还没有基准时，文件改为按体积相对限制的比例排列。
+- 没有匹配到文件或无法读取的路径会列在最上方，并附上原因。
+- “All files” 用表格列出所有文件：体积、在基准分支上的体积、变化量和限制。
 
-- `[ERROR] Unable to fetch fileDetails … code=404`：基准分支还没有保存过基准，例如第一次运行时。在基准分支的某次构建保存了基准之后，该错误就会消失。如果没有消失，请检查基准分支是否正确（参见 [基准分支与跟踪分支](./diffing-against-branches-other-than-master.md)），以及它是否为跟踪分支。
-- 来自 fork 的 Pull Request 上的 `[ERROR] GitHubService HTTP_403 :: …`：它们的 token 无法发布状态。参见 [来自 fork 的 Pull Request](#github-actions)。
-- `[WARNING] Some CI configuration options were not found (…)`：Bundlewatch 缺少列出的值，因此只检查 `maxSize`。在你自己的机器上运行时，这是正常的。在 CI 中，请设置日志中列出的 token 或[变量](#required-ci-environment-variables)。
-- `[ERROR] There is no matching file for ./dist/*.js`：该路径没有匹配到任何文件，这会导致运行失败。请检查构建是否已先运行，以及路径是否相对于你运行 Bundlewatch 的目录。
-- `[WARNING] Max reported statuses reached …`：超过四个文件未通过。参见 [GitHub 状态](#github-statuses)。
-- 将 `DEBUG` 环境变量设为任意值，可以在日志中记录失败请求的详细信息。
+不存在或已过期的短链接会显示 “Results not found”。自托管的服务会将短链接保留 [`ResultsRetentionDays`](./using-a-custom-server.md#deploying-the-service) 天，默认永久保留。
 
----
+<a id="troubleshooting"></a>
 
-- [使用配置文件](./using-a-config-file.md)
-- [基准分支与跟踪分支](./diffing-against-branches-other-than-master.md)
-- [配置参考](../reference/configuration.md)
+遇到问题时，请在 [故障排查](./troubleshooting.md) 中查找对应的日志消息。
