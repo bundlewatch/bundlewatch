@@ -142,3 +142,9 @@ html[lang="en-US"] {
   display: block;
   mix-blend-mode: lighten;
 }
+
+/* The home page logo's dashed guide in dark mode. It lives here because a scoped :global(.dark)
+   rule compiles to a bare .dark selector, which every svg path on the page would inherit. */
+.dark .HeroLogo .ghost path {
+  stroke: #dcdcf2;
+}

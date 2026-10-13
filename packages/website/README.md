@@ -28,8 +28,9 @@ docs/
       zh.mjs           # Chinese nav, sidebar and "Edit this page" link
     llms.mjs           # writes llms.txt, llms-full.txt and a Markdown copy of each page
     theme/
-      index.mjs        # default theme, plus tabs, medium-zoom and HomeResults
+      index.mjs        # default theme, plus tabs, medium-zoom, HeroLogo and HomeResults
       custom.css       # theme overrides (plain CSS with native nesting)
+      HeroLogo.vue     # the home page's logo: assembles on the first load, then lifts the layer under the pointer
       HomeResults.vue  # the change table from a results page on the home page, from its `results` frontmatter
   en/                  # English pages, served at / (rewritten from en/)
   zh/                  # Chinese translation, served at /zh/
