@@ -22,18 +22,19 @@ The build fails on dead internal links. Fix the link rather than ignoring it.
 docs/
   .vitepress/
     config/
-      index.mjs    # combines the shared config and the locales
-      shared.mjs   # site-wide settings: rewrites, clean URLs, search, markdown plugins
-      en.mjs       # English nav, sidebar and "Edit this page" link
-      zh.mjs       # Chinese nav, sidebar and "Edit this page" link
-    llms.mjs       # writes llms.txt, llms-full.txt and a Markdown copy of each page
+      index.mjs        # combines the shared config and the locales
+      shared.mjs       # site-wide settings: rewrites, clean URLs, search, markdown plugins
+      en.mjs           # English nav, sidebar and "Edit this page" link
+      zh.mjs           # Chinese nav, sidebar and "Edit this page" link
+    llms.mjs           # writes llms.txt, llms-full.txt and a Markdown copy of each page
     theme/
-      index.mjs    # default theme, plus tabs and medium-zoom
-      custom.css   # theme overrides (plain CSS with native nesting)
-  en/              # English pages, served at / (rewritten from en/)
-  zh/              # Chinese translation, served at /zh/
-  public/          # copied as-is to the site root: images, logos, favicon
-  _assets/         # old images, not used by the site (see below)
+      index.mjs        # default theme, plus tabs, medium-zoom and HomeResults
+      custom.css       # theme overrides (plain CSS with native nesting)
+      HomeResults.vue  # the home page's results page screenshot, from its `results` frontmatter
+  en/                  # English pages, served at / (rewritten from en/)
+  zh/                  # Chinese translation, served at /zh/
+  public/              # copied as-is to the site root: images, logos, favicon
+  _assets/             # old images, not used by the site (see below)
 ```
 
 `_assets/` is a copy of `docs/_assets/` from the old `bundlewatch/bundlewatch.io` repository. External pages, such as the 0.x npm README, still load images from that repository. Some of the files (`logo.svg`, `logo-square-transparent-highquality.png` and this version of `logo-large.svg`) exist nowhere else. The site itself only uses `public/`. `public/logo-wordmark.svg` is a copy of that `logo-large.svg`, the logo with the name, used by the repository's README; `logo-wordmark-dark.svg` is the same logo with white letters, for dark mode.

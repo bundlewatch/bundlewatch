@@ -20,6 +20,12 @@ hero:
       text: Set up with an AI agent
       link: /guide/getting-started#set-up-with-an-ai-agent
 
+# Shown between the hero and the features, by .vitepress/theme/HomeResults.vue.
+results:
+  src: /home-results-page.png
+  alt: "A pull request's results page: vendor.js is 9.77KB over its 200KB limit, index.js grew by 17.08KB, and charts.js shrank by 5.51KB."
+  caption: "Each pull request's <code>bundlewatch</code> status links to a results page like this one: what the commit changed, file by file, next to each limit."
+
 # The icons are inline SVG, so that their navy parts (currentColor) follow the theme
 # in dark mode. They are drawn from the logo and the results page.
 features:
@@ -54,8 +60,3 @@ features:
     link: /guide/using-a-custom-server
     linkText: Use a custom server
 ---
-
-<figure class="home-results">
-  <img src="/home-results-page.png" alt="A pull request's results page: vendor.js is 9.77KB over its 200KB limit, index.js grew by 17.08KB, and charts.js shrank by 5.51KB." width="1100" height="590" data-zoomable>
-  <figcaption>Each pull request's <code>bundlewatch</code> status links to a results page like this one: what the commit changed, file by file, next to each limit.</figcaption>
-</figure>

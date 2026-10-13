@@ -3,7 +3,9 @@ import { useRoute } from "vitepress";
 import { enhanceAppWithTabs } from "vitepress-plugin-tabs/client";
 // .vitepress/theme/index.mjs
 import DefaultTheme from "vitepress/theme";
-import { onMounted, watch, nextTick } from "vue";
+import { h, onMounted, watch, nextTick } from "vue";
+
+import HomeResults from "./HomeResults.vue";
 
 import "./custom.css";
 
@@ -13,6 +15,7 @@ const initZoom = () => {
 
 export default {
   extends: DefaultTheme,
+  Layout: () => h(DefaultTheme.Layout, null, { "home-features-before": () => h(HomeResults) }),
   enhanceApp({ app }) {
     enhanceAppWithTabs(app);
   },
