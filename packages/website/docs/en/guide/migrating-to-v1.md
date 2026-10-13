@@ -1,6 +1,6 @@
 ---
 title: Migrating to 1.0
-description: What changes when you upgrade from Bundlewatch 0.x to 1.0.
+description: What changes when you upgrade from BundleWatch 0.x to 1.0.
 ---
 
 # Migrating to 1.0
@@ -14,7 +14,7 @@ Most setups need no changes. Your configuration, CLI flags, environment variable
 ## Upgrade by hand
 
 1. Use Node.js 22.17 or later, in CI too. Node.js 16, 18 and 20 are end-of-life.
-2. Update Bundlewatch:
+2. Update BundleWatch:
 
 ::: code-group
 
@@ -44,11 +44,11 @@ bun add bundlewatch@1 --dev
 Copy this prompt into your coding agent to upgrade a project:
 
 ```text:no-line-numbers
-Upgrade Bundlewatch to 1.0 in this repository.
+Upgrade BundleWatch to 1.0 in this repository.
 
 Read https://bundlewatch.io/guide/migrating-to-v1.md for what changed, and https://bundlewatch.io/llms-full.txt for the whole documentation. Then:
 
-1. Update Bundlewatch to the latest 1.x version, with the package manager this project uses. It needs Node.js 22.17 or later: update the Node.js version used in CI if it's older.
+1. Update BundleWatch to the latest 1.x version, with the package manager this project uses. It needs Node.js 22.17 or later: update the Node.js version used in CI if it's older.
 2. Check the configuration against "Things to check" in the migration guide, and follow its links. A numeric "maxSize" is now enforced: if a file now fails a limit that was never checked before, don't raise the limit, tell me.
 3. On GitHub Actions, switch to the workflow's GITHUB_TOKEN as described in the guide, and remove workarounds that 1.0 makes unnecessary, such as CI_BRANCH_BASE set only to avoid comparing with master, or CI_COMMIT_SHA set to the pull request's head commit.
 4. Remove the brotli-size dependency if nothing else uses it.
@@ -113,7 +113,7 @@ See [Pull request builds](./diffing-against-branches-other-than-master.md#pull-r
 
 ### Numeric `maxSize`
 
-A numeric `maxSize` such as `102400` is now enforced. Previously it was silently ignored and the check always passed. If your bundle is over a numeric limit, Bundlewatch now reports it.
+A numeric `maxSize` such as `102400` is now enforced. Previously it was silently ignored and the check always passed. If your bundle is over a numeric limit, BundleWatch now reports it.
 
 `0`, whether a number or a string such as `'0'` or `'0kB'`, still means no limit.
 
@@ -123,14 +123,14 @@ A numeric `maxSize` such as `102400` is now enforced. Previously it was silently
 - <a id="runs-with-missing-files"></a>A run where some files are missing or can't be read no longer sends a baseline. The service rejected those anyway; the CLI now logs why.
 - <a id="empty-files"></a>With `compression: 'none'`, empty files are measured as 0 B instead of failing with `Could not read file`. gzip and brotli already measured them, as 20 B and 1 B.
 - <a id="files-named-after-javascript-object-properties"></a>Removed files named after an `Object.prototype` property, such as `constructor`, now show as removed instead of passing with no size. New files with those names get a zero-byte baseline. A file whose normalized path is exactly `__proto__` is now measured and checked instead of dropped.
-- <a id="running-outside-a-package"></a>Running Bundlewatch in a directory without a package.json no longer crashes (issue [#434](https://github.com/bundlewatch/bundlewatch/issues/434)).
+- <a id="running-outside-a-package"></a>Running BundleWatch in a directory without a package.json no longer crashes (issue [#434](https://github.com/bundlewatch/bundlewatch/issues/434)).
 - <a id="version"></a>`-V` and `--version` print the version. Other flags work as before, including a bare `--max-size` for no limit; see [Command line](../reference/cli.md).
-- <a id="generic-ci-without-a-repository"></a>With `CI` set but no `CI_REPO_OWNER` and `CI_REPO_NAME`, Bundlewatch falls back to `GIT_URL` instead of using the repository `undefined/undefined`.
+- <a id="generic-ci-without-a-repository"></a>With `CI` set but no `CI_REPO_OWNER` and `CI_REPO_NAME`, BundleWatch falls back to `GIT_URL` instead of using the repository `undefined/undefined`.
 - <a id="config-files"></a>`--config` accepts absolute paths. It loads `.mjs` files, and configs with only named exports, with `import()`, and it loads `.ts`, `.mts` and `.cts` files on Node.js 22.18 and later. See [Using a config file](./using-a-config-file.md).
 
 ### Proxy variables
 
-Bundlewatch no longer reads `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY` or similar variables: 0.x used them only as a side effect of its HTTP library, and never documented them. Behind a proxy that blocks direct connections, see [Troubleshooting](./troubleshooting.md#behind-a-proxy).
+BundleWatch no longer reads `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY` or similar variables: 0.x used them only as a side effect of its HTTP library, and never documented them. Behind a proxy that blocks direct connections, see [Troubleshooting](./troubleshooting.md#behind-a-proxy).
 
 ### Brotli
 
@@ -173,4 +173,4 @@ Before service.bundlewatch.io enforces the stricter check below, replace tokens 
 
 ## Using the GitHub Actions token
 
-If you run Bundlewatch on GitHub Actions with a token from `service.bundlewatch.io/setup-github`, you can switch to the token GitHub creates for each workflow run: grant the workflow `statuses: write`, keep `contents: read`, and pass `secrets.GITHUB_TOKEN` as `BUNDLEWATCH_GITHUB_TOKEN`. The service accepts this token for saving baselines and creating short links. See [GitHub Actions](./using-bundlewatch.md#github-actions) for a complete workflow.
+If you run BundleWatch on GitHub Actions with a token from `service.bundlewatch.io/setup-github`, you can switch to the token GitHub creates for each workflow run: grant the workflow `statuses: write`, keep `contents: read`, and pass `secrets.GITHUB_TOKEN` as `BUNDLEWATCH_GITHUB_TOKEN`. The service accepts this token for saving baselines and creating short links. See [GitHub Actions](./using-bundlewatch.md#github-actions) for a complete workflow.

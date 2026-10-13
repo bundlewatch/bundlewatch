@@ -1,17 +1,17 @@
 ---
 title: 快速开始
-description: 在你的项目中设置 Bundlewatch，可以手动完成，也可以交给 AI 编程助手。
+description: 在你的项目中设置 BundleWatch，可以手动完成，也可以交给 AI 编程助手。
 ---
 
 # 快速开始
 
 <a id="requirements"></a>
 
-Bundlewatch 需要 Node.js 22.17 或更高版本。从 0.x 升级请参阅 [迁移到 1.0](./migrating-to-v1.md)。想让 AI 编程助手完成设置，请复制[这段提示词](#set-up-with-an-ai-agent)。
+BundleWatch 需要 Node.js 22.17 或更高版本。从 0.x 升级请参阅 [迁移到 1.0](./migrating-to-v1.md)。想让 AI 编程助手完成设置，请复制[这段提示词](#set-up-with-an-ai-agent)。
 
 ## 安装 {#installation}
 
-将 Bundlewatch 安装为开发依赖：
+将 BundleWatch 安装为开发依赖：
 
 ::: code-group
 
@@ -35,7 +35,7 @@ bun add bundlewatch --dev
 
 ## 配置 {#configuration}
 
-在 `package.json` 中告诉 Bundlewatch 要检查哪些文件，以及它们最大允许多大：
+在 `package.json` 中告诉 BundleWatch 要检查哪些文件，以及它们最大允许多大：
 
 ```json
 {
@@ -71,7 +71,7 @@ bundlewatch PASS
 Everything is in check (+30.71KB, -0B)
 ```
 
-在本机上出现这条警告是正常的：在 CI 中，你会提供 token，而在[支持的 CI 服务](./using-bundlewatch.md#supported-ci-providers)上，Bundlewatch 会自动检测其他值。当某个文件超过其 `maxSize`，或某个路径没有匹配到任何文件时，命令以退出码 1 退出。
+在本机上出现这条警告是正常的：在 CI 中，你会提供 token，而在[支持的 CI 服务](./using-bundlewatch.md#supported-ci-providers)上，BundleWatch 会自动检测其他值。当某个文件超过其 `maxSize`，或某个路径没有匹配到任何文件时，命令以退出码 1 退出。
 
 要选定限制，先在不加 `maxSize` 的情况下运行 `npx bundlewatch`。没有 `maxSize` 的文件不受限制，会显示为 `PASS ./dist/app.js: 30.71KB < Infinity (gzip)`。然后把每个 `maxSize` 设得比当前体积稍大一些，这样检查既能发现真正的增长，又不会因为每个小改动而失败。
 
@@ -81,7 +81,7 @@ Everything is in check (+30.71KB, -0B)
 
 ## 在 CI 中运行 {#running-in-ci}
 
-在 CI 中于构建之后运行 Bundlewatch，它就会在每个 Pull Request 上发布状态，并将每个文件与基准分支对比：
+在 CI 中于构建之后运行 BundleWatch，它就会在每个 Pull Request 上发布状态，并将每个文件与基准分支对比：
 
 - 在 GitHub Actions 上，将[这个工作流](./using-bundlewatch.md#github-actions)复制到 `.github/workflows/bundlewatch.yml`。它使用 GitHub 为每次运行创建的 token，你无需自己创建。
 - 在其他 CI 服务上，[创建一个 token](./using-bundlewatch.md#other-ci-providers)，将它保存为 secret `BUNDLEWATCH_GITHUB_TOKEN`，并在构建之后运行 `npx bundlewatch`。
@@ -93,9 +93,9 @@ Everything is in check (+30.71KB, -0B)
 将下面的提示词复制到你的 AI 编程助手中。它会阅读本文档、测量你的构建产物、选定体积限制，并添加 CI 配置：
 
 ```text:no-line-numbers
-在这个仓库中设置 Bundlewatch（https://bundlewatch.io），让 CI 在构建出的文件过大时失败，并让 Pull Request 显示每个文件的体积变化。
+在这个仓库中设置 BundleWatch（https://bundlewatch.io），让 CI 在构建出的文件过大时失败，并让 Pull Request 显示每个文件的体积变化。
 
-先阅读 https://bundlewatch.io/llms-full.txt：其中包含完整的文档。如果这个仓库已经在使用 Bundlewatch 0.x，请改为按照 https://bundlewatch.io/guide/migrating-to-v1.md 操作。然后：
+先阅读 https://bundlewatch.io/llms-full.txt：其中包含完整的文档。如果这个仓库已经在使用 BundleWatch 0.x，请改为按照 https://bundlewatch.io/guide/migrating-to-v1.md 操作。然后：
 
 1. 找到生产构建命令并运行它。列出它输出的 JavaScript 和 CSS 文件，以及它们的 gzip 体积。
 2. 使用这个项目已在使用的包管理器，将 bundlewatch 添加为开发依赖。

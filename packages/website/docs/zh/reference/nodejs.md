@@ -1,6 +1,6 @@
 ---
 title: Node.js API
-description: 在 Node.js 中运行 Bundlewatch，包括其结果格式、TypeScript 类型和错误。
+description: 在 Node.js 中运行 BundleWatch，包括其结果格式、TypeScript 类型和错误。
 ---
 
 # Node.js API
@@ -113,7 +113,7 @@ const results = await bundlewatch(config)
 
 文件超出限制不会导致拒绝：结果的 `status` 为 `'fail'`。当无法发布 GitHub 状态时，即 GitHub 无法连接或在 5 秒内没有响应，`bundlewatch()` 会拒绝。错误消息是错误码，例如 `ECONNABORTED`；如果这发生在发布 pending 状态之后，它会先尝试把 `bundlewatch` 设为 error。
 
-来自 Bundlewatch 服务的错误从不导致拒绝：它们只会被记录到日志。查询基准失败时，结果中没有对比；创建短链接失败时，`url` 为长链接。
+来自 BundleWatch 服务的错误从不导致拒绝：它们只会被记录到日志。查询基准失败时，结果中没有对比；创建短链接失败时，`url` 为长链接。
 
 ```js
 import bundlewatch, { ValidationError } from 'bundlewatch'

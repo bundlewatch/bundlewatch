@@ -1,6 +1,6 @@
 ---
 title: 配置参考
-description: Bundlewatch 的所有选项及其默认值，以及 Bundlewatch 读取的环境变量。
+description: BundleWatch 的所有选项及其默认值，以及 BundleWatch 读取的环境变量。
 ---
 
 # 配置参考
@@ -23,7 +23,7 @@ description: Bundlewatch 的所有选项及其默认值，以及 Bundlewatch 读
 
 | 字段          | 说明                                                                                                                                                                                                                                                               |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `path`        | 必填。一个 glob，相对于你运行 Bundlewatch 的目录，而不是配置文件所在的目录。支持 `*`、`**` 和 `{a,b}`。没有匹配到任何文件的路径会导致运行失败，匹配到目录的路径也一样：只要 `dist` 中有子目录，`./dist/*` 就会失败，因此请写成 `./dist/*.js` 或 `./dist/**/*.js`。 |
+| `path`        | 必填。一个 glob，相对于你运行 BundleWatch 的目录，而不是配置文件所在的目录。支持 `*`、`**` 和 `{a,b}`。没有匹配到任何文件的路径会导致运行失败，匹配到目录的路径也一样：只要 `dist` 中有子目录，`./dist/*` 就会失败，因此请写成 `./dist/*.js` 或 `./dist/**/*.js`。 |
 | `maxSize`     | 可选。针对每个匹配文件的限制，而不是它们的总和：体积大于其 `maxSize` 的文件会失败。可以写成带单位的字符串，例如 `'100kB'`，也可以写成字节数，例如 `102400`。                                                                                                       |
 | `compression` | 可选：`'gzip'`、`'brotli'` 或 `'none'`。默认为 [defaultCompression](#defaultcompression)。其他非空值不会被拒绝：此时文件会以不压缩的方式测量。                                                                                                                     |
 
@@ -43,9 +43,9 @@ Brotli 使用 Node 内置的 `zlib`，无需额外安装包。
 
 ## `normalizeFilenames` {#normalizefilenames}
 
-移除文件名中在不同构建之间会变化的部分，例如内容 hash，使每个文件都能与其基准对比。它改变的是 Bundlewatch 报告和保存的名称，而不是你的文件。
+移除文件名中在不同构建之间会变化的部分，例如内容 hash，使每个文件都能与其基准对比。它改变的是 BundleWatch 报告和保存的名称，而不是你的文件。
 
-将它设为一个 `RegExp`，或一个由 Bundlewatch 转换为 RegExp 的字符串。写一个从 `^` 到 `$` 匹配整个路径的模式，并用捕获组捕获要移除的部分：Bundlewatch 会移除捕获到的文本。没有被模式匹配的路径保留原名。
+将它设为一个 `RegExp`，或一个由 BundleWatch 转换为 RegExp 的字符串。写一个从 `^` 到 `$` 匹配整个路径的模式，并用捕获组捕获要移除的部分：BundleWatch 会移除捕获到的文本。没有被模式匹配的路径保留原名。
 
 | 路径                              | 模式                       | 结果                     |
 | --------------------------------- | -------------------------- | ------------------------ |
@@ -61,7 +61,7 @@ Brotli 使用 Node 内置的 `zlib`，无需额外安装包。
 :::
 
 ::: details 模式是如何应用的
-Bundlewatch 用该模式拆分路径，得到匹配之前的文本、匹配之后的文本，以及每个捕获组。然后从路径中移除这些片段各自的第一次出现。
+BundleWatch 用该模式拆分路径，得到匹配之前的文本、匹配之后的文本，以及每个捕获组。然后从路径中移除这些片段各自的第一次出现。
 
 对于匹配整个路径的模式，结果就是移除捕获到的文本。只匹配路径一部分的模式还会移除匹配范围之外的所有内容：`/-[a-f0-9]+/` 会把 `./dist/main-abc123.js` 变成 `-abc123`。
 :::
@@ -70,13 +70,13 @@ Bundlewatch 用该模式拆分路径，得到匹配之前的文本、匹配之�
 
 用于保存基准、创建结果短链接和渲染结果页面的服务。默认为 `'https://service.bundlewatch.io'`。
 
-要使用[自定义服务器](../guide/using-a-custom-server.md)，请将它设为你自己服务的 URL。请填写以 `https://` 开头的完整 URL，末尾不带斜杠：Bundlewatch 会在后面拼接 `/store` 等路径。它可以包含 Basic Auth 凭据，例如 `https://user:password@bundlewatch.example.com`：Bundlewatch 会通过 `Authorization` 请求头发送它们，并且不会把它们写进结果链接和日志。
+要使用[自定义服务器](../guide/using-a-custom-server.md)，请将它设为你自己服务的 URL。请填写以 `https://` 开头的完整 URL，末尾不带斜杠：BundleWatch 会在后面拼接 `/store` 等路径。它可以包含 Basic Auth 凭据，例如 `https://user:password@bundlewatch.example.com`：BundleWatch 会通过 `Authorization` 请求头发送它们，并且不会把它们写进结果链接和日志。
 
-设为 `null` 可以禁用服务：此时 Bundlewatch 只检查 `maxSize`，不会与基准对比，也不会保存基准。它不会输出结果链接，GitHub 状态没有 details 链接，[Node.js API](./nodejs.md#result) 返回 `url: undefined`。
+设为 `null` 可以禁用服务：此时 BundleWatch 只检查 `maxSize`，不会与基准对比，也不会保存基准。它不会输出结果链接，GitHub 状态没有 details 链接，[Node.js API](./nodejs.md#result) 返回 `url: undefined`。
 
 ## `ci` {#ci}
 
-`ci` 选项让 Bundlewatch 能够发布 [GitHub 状态](../guide/using-bundlewatch.md#github-statuses)，以及与基准对比和保存基准。大多数默认值会从 CI 环境中自动检测；只有需要覆盖时才设置。
+`ci` 选项让 BundleWatch 能够发布 [GitHub 状态](../guide/using-bundlewatch.md#github-statuses)，以及与基准对比和保存基准。大多数默认值会从 CI 环境中自动检测；只有需要覆盖时才设置。
 
 | 选项                | 默认值                                                                                                                                               |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -93,7 +93,7 @@ Bundlewatch 用该模式拆分路径，得到匹配之前的文本、匹配之�
 
 ## 环境变量 {#environment-variables}
 
-Bundlewatch 会读取以下环境变量。配置中的值优先。`CI_REPO_OWNER`、`CI_REPO_NAME`、`CI_REPO_SLUG`、`CI_COMMIT_SHA`、`GIT_COMMIT`、`CI_BRANCH`、`GIT_BRANCH` 和 `CI_BRANCH_BASE` 优先于 Bundlewatch 从 CI 服务中检测到的值。`GIT_URL` 只在没有其他来源提供仓库时使用；`CI_EVENT` 和 `CI_TARGET_BRANCH` 只在通用 CI 中读取，即设置了 `CI` 且没有检测到受支持的 CI 服务时。
+BundleWatch 会读取以下环境变量。配置中的值优先。`CI_REPO_OWNER`、`CI_REPO_NAME`、`CI_REPO_SLUG`、`CI_COMMIT_SHA`、`GIT_COMMIT`、`CI_BRANCH`、`GIT_BRANCH` 和 `CI_BRANCH_BASE` 优先于 BundleWatch 从 CI 服务中检测到的值。`GIT_URL` 只在没有其他来源提供仓库时使用；`CI_EVENT` 和 `CI_TARGET_BRANCH` 只在通用 CI 中读取，即设置了 `CI` 且没有检测到受支持的 CI 服务时。
 
 | 变量                                                     | 设置                                                                                                                                                                                                                |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -107,7 +107,7 @@ Bundlewatch 会读取以下环境变量。配置中的值优先。`CI_REPO_OWNER
 | `GITHUB_API_URL`                                         | 提交状态发送到的 GitHub API 地址。默认为 `https://api.github.com`；GitHub Actions 会自动设置。GitHub Enterprise 还需要你自己的服务，参见 [GitHub Enterprise](../guide/using-a-custom-server.md#github-enterprise)。 |
 | `CI_EVENT`                                               | 在通用 CI 中，值为 `pull_request` 表示这是 [Pull Request 构建](../guide/diffing-against-branches-other-than-master.md#pull-request-builds)                                                                          |
 | `GIT_URL`                                                | 在没有其他来源设置时，从 github.com 远程地址（例如 `https://github.com/owner/repo.git` 或 `git@github.com:owner/repo.git`）中得到 `ci.repoOwner` 和 `ci.repoName`                                                   |
-| `DEBUG`（任意非空值）                                    | 在日志中记录发往 Bundlewatch 服务的失败请求的详细信息                                                                                                                                                               |
+| `DEBUG`（任意非空值）                                    | 在日志中记录发往 BundleWatch 服务的失败请求的详细信息                                                                                                                                                               |
 | `NO_COLOR`、`NODE_DISABLE_COLORS`、`FORCE_COLOR`         | 只有输出到终端时才带颜色。`NO_COLOR` 或 `NODE_DISABLE_COLORS` 关闭颜色。`FORCE_COLOR` 开启颜色（例如用于支持颜色的 CI 日志查看器），值为 `0` 或 `false` 时除外；它优先于另外两个变量。                              |
 
-在 GitHub Actions、GitLab CI、Travis CI、Drone、CircleCI 以及其他若干 CI 服务上，Bundlewatch 会自动检测其余的值。参见 [支持的 CI 服务](../guide/using-bundlewatch.md#supported-ci-providers)。
+在 GitHub Actions、GitLab CI、Travis CI、Drone、CircleCI 以及其他若干 CI 服务上，BundleWatch 会自动检测其余的值。参见 [支持的 CI 服务](../guide/using-bundlewatch.md#supported-ci-providers)。

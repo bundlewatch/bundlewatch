@@ -1,6 +1,6 @@
 ---
 title: Node.js API
-description: Run Bundlewatch from Node.js, with its result format, TypeScript types and errors.
+description: Run BundleWatch from Node.js, with its result format, TypeScript types and errors.
 ---
 
 # Node.js API
@@ -113,7 +113,7 @@ When the configuration is invalid, `bundlewatch()` rejects with a `ValidationErr
 
 A file over its limit doesn't reject: the result's `status` is `'fail'`. `bundlewatch()` rejects when it can't post a GitHub status, because GitHub can't be reached or doesn't answer within 5 seconds. The error's message is the code, such as `ECONNABORTED`, and if this happens after the pending status, it first tries to set `bundlewatch` to error.
 
-Errors from the Bundlewatch service never reject: they're logged. A failed lookup leaves the result without a comparison, and a failed short link leaves `url` as the long link.
+Errors from the BundleWatch service never reject: they're logged. A failed lookup leaves the result without a comparison, and a failed short link leaves `url` as the long link.
 
 ```js
 import bundlewatch, { ValidationError } from 'bundlewatch'

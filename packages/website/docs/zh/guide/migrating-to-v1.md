@@ -1,6 +1,6 @@
 ---
 title: 迁移到 1.0
-description: 从 Bundlewatch 0.x 升级到 1.0 时有哪些变化。
+description: 从 BundleWatch 0.x 升级到 1.0 时有哪些变化。
 ---
 
 # 迁移到 1.0
@@ -14,7 +14,7 @@ description: 从 Bundlewatch 0.x 升级到 1.0 时有哪些变化。
 ## 手动升级 {#upgrade-by-hand}
 
 1. 使用 Node.js 22.17 或更高版本，CI 中也一样。Node.js 16、18 和 20 已停止维护。
-2. 更新 Bundlewatch：
+2. 更新 BundleWatch：
 
 ::: code-group
 
@@ -44,11 +44,11 @@ bun add bundlewatch@1 --dev
 将下面的提示词复制到你的 AI 编程助手中，以升级项目：
 
 ```text:no-line-numbers
-在这个仓库中将 Bundlewatch 升级到 1.0。
+在这个仓库中将 BundleWatch 升级到 1.0。
 
 阅读 https://bundlewatch.io/guide/migrating-to-v1.md 了解有哪些变化，并阅读 https://bundlewatch.io/llms-full.txt 获取完整的文档。然后：
 
-1. 使用这个项目所用的包管理器，将 Bundlewatch 更新到最新的 1.x 版本。它需要 Node.js 22.17 或更高版本：如果 CI 中使用的 Node.js 版本更旧，请更新它。
+1. 使用这个项目所用的包管理器，将 BundleWatch 更新到最新的 1.x 版本。它需要 Node.js 22.17 或更高版本：如果 CI 中使用的 Node.js 版本更旧，请更新它。
 2. 对照迁移指南中“需要检查的地方”（Things to check）一节检查配置，并跟进其中的链接。数字形式的 "maxSize" 现在会生效：如果某个文件未通过一个以前从未检查过的限制，不要提高该限制，而是告诉我。
 3. 在 GitHub Actions 上，按照指南中的说明改用工作流的 GITHUB_TOKEN，并移除 1.0 已不再需要的变通做法，例如只是为了避免与 master 对比而设置的 CI_BRANCH_BASE，或设置为 Pull Request 最新提交的 CI_COMMIT_SHA。
 4. 如果没有其他地方使用 brotli-size 依赖，请将其移除。
@@ -113,7 +113,7 @@ Pull Request 构建会与基准对比，但不再保存基准。以前，如果 
 
 ### 数字形式的 `maxSize` {#numeric-maxsize}
 
-数字形式的 `maxSize`（例如 `102400`）现在会生效。以前它会被静默忽略，检查总是通过。如果你的 bundle 超过了数字形式的限制，Bundlewatch 现在会报告。
+数字形式的 `maxSize`（例如 `102400`）现在会生效。以前它会被静默忽略，检查总是通过。如果你的 bundle 超过了数字形式的限制，BundleWatch 现在会报告。
 
 `0`（无论是数字，还是 `'0'`、`'0kB'` 这样的字符串）仍然表示不限制。
 
@@ -123,14 +123,14 @@ Pull Request 构建会与基准对比，但不再保存基准。以前，如果 
 - <a id="runs-with-missing-files"></a>如果一次运行中有文件缺失或无法读取，它不再发送基准。服务以前也会拒绝这样的基准；现在 CLI 会记录原因。
 - <a id="empty-files"></a>使用 `compression: 'none'` 时，空文件会被计为 0 B，而不是以 `Could not read file` 失败。使用 gzip 和 brotli 时，空文件以前就会被测量（分别为 20 B 和 1 B）。
 - <a id="files-named-after-javascript-object-properties"></a>名为某个 `Object.prototype` 属性（例如 `constructor`）的文件被删除后，现在会显示为已移除，而不是没有体积的通过项。同名的新文件会以 0 字节作为基准。规范化后路径恰好为 `__proto__` 的文件，现在会被测量和检查，而不是被丢弃。
-- <a id="running-outside-a-package"></a>在没有 package.json 的目录中运行 Bundlewatch 不会再崩溃（issue [#434](https://github.com/bundlewatch/bundlewatch/issues/434)）。
+- <a id="running-outside-a-package"></a>在没有 package.json 的目录中运行 BundleWatch 不会再崩溃（issue [#434](https://github.com/bundlewatch/bundlewatch/issues/434)）。
 - <a id="version"></a>`-V` 和 `--version` 会输出版本号。其他参数与之前一致，包括不带值的 `--max-size` 表示不限制体积；参见 [命令行](../reference/cli.md)。
-- <a id="generic-ci-without-a-repository"></a>设置了 `CI` 但没有设置 `CI_REPO_OWNER` 和 `CI_REPO_NAME` 时，Bundlewatch 会回退到 `GIT_URL`，而不是使用仓库 `undefined/undefined`。
+- <a id="generic-ci-without-a-repository"></a>设置了 `CI` 但没有设置 `CI_REPO_OWNER` 和 `CI_REPO_NAME` 时，BundleWatch 会回退到 `GIT_URL`，而不是使用仓库 `undefined/undefined`。
 - <a id="config-files"></a>`--config` 支持绝对路径。它通过 `import()` 加载 `.mjs` 文件以及只有具名导出的配置，并在 Node.js 22.18 及更高版本上加载 `.ts`、`.mts` 和 `.cts` 文件。参见 [使用配置文件](./using-a-config-file.md)。
 
 ### 代理变量 {#proxy-variables}
 
-Bundlewatch 不再读取 `HTTP_PROXY`、`HTTPS_PROXY`、`NO_PROXY` 或类似的变量：0.x 只是借由其 HTTP 库顺带使用了它们，从未在文档中说明。如果代理会阻止直接连接，请参阅 [故障排查](./troubleshooting.md#behind-a-proxy)。
+BundleWatch 不再读取 `HTTP_PROXY`、`HTTPS_PROXY`、`NO_PROXY` 或类似的变量：0.x 只是借由其 HTTP 库顺带使用了它们，从未在文档中说明。如果代理会阻止直接连接，请参阅 [故障排查](./troubleshooting.md#behind-a-proxy)。
 
 ### Brotli {#brotli}
 
@@ -173,4 +173,4 @@ Bundlewatch 不再读取 `HTTP_PROXY`、`HTTPS_PROXY`、`NO_PROXY` 或类似的�
 
 ## 使用 GitHub Actions 的 token {#using-the-github-actions-token}
 
-如果你在 GitHub Actions 中使用从 `service.bundlewatch.io/setup-github` 获取的 token 运行 Bundlewatch，可以改用 GitHub 为每次工作流运行创建的 token：为工作流授予 `statuses: write` 权限，保留 `contents: read`，并将 `secrets.GITHUB_TOKEN` 作为 `BUNDLEWATCH_GITHUB_TOKEN` 传入。服务接受用该 token 保存基准和创建短链接。完整的工作流请参阅 [GitHub Actions](./using-bundlewatch.md#github-actions)。
+如果你在 GitHub Actions 中使用从 `service.bundlewatch.io/setup-github` 获取的 token 运行 BundleWatch，可以改用 GitHub 为每次工作流运行创建的 token：为工作流授予 `statuses: write` 权限，保留 `contents: read`，并将 `secrets.GITHUB_TOKEN` 作为 `BUNDLEWATCH_GITHUB_TOKEN` 传入。服务接受用该 token 保存基准和创建短链接。完整的工作流请参阅 [GitHub Actions](./using-bundlewatch.md#github-actions)。

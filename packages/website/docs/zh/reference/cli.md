@@ -1,6 +1,6 @@
 ---
 title: 命令行
-description: Bundlewatch 的命令行选项、读取配置的位置以及退出码。
+description: BundleWatch 的命令行选项、读取配置的位置以及退出码。
 ---
 
 # 命令行
@@ -48,17 +48,17 @@ npx bundlewatch --config internals/bundlewatch.config.js
 npx bundlewatch --max-size 100kB "./src/*.js" "./lib/*.js"
 ```
 
-给 glob 加上引号，让 Bundlewatch 而不是你的 shell 去展开它们：这样 `**` 在任何 shell 中都能用。
+给 glob 加上引号，让 BundleWatch 而不是你的 shell 去展开它们：这样 `**` 在任何 shell 中都能用。
 
 ## 配置来源 {#where-configuration-comes-from}
 
-Bundlewatch 会使用以下第一个找到的配置：
+BundleWatch 会使用以下第一个找到的配置：
 
 1. 命令行中的文件 glob，以及 `--max-size`、`--compression` 和 `--normalize`。
 2. 通过 `--config` 指定的文件。
 3. 最近的 `package.json` 中的 `bundlewatch` 键。它可以是一个配置对象，也可以是一个用作 `files` 的数组。
 
-如果同时存在多个来源，Bundlewatch 会输出警告并忽略其余来源。如果都找不到，它会输出 `[ERROR] Configuration missing` 并以退出码 1 退出。
+如果同时存在多个来源，BundleWatch 会输出警告并忽略其余来源。如果都找不到，它会输出 `[ERROR] Configuration missing` 并以退出码 1 退出。
 
 ## 退出码 {#exit-codes}
 
@@ -67,7 +67,7 @@ Bundlewatch 会使用以下第一个找到的配置：
 | `0`    | 所有文件都通过（`bundlewatch PASS`），或者指定了 `--help` 或 `--version`。         |
 | `1`    | 有文件未通过检查（`bundlewatch FAIL`）、配置无效或缺失、选项未知，或发生意外错误。 |
 
-当文件超过其 `maxSize`、某个路径没有匹配到任何文件，或匹配到的路径无法读取（例如目录）时，该文件检查失败。来自 Bundlewatch 服务的错误以及 GitHub 返回的错误响应只会记录到日志，不会改变退出码。如果启用了状态（token、仓库和提交都已知），而 GitHub 无法连接或在 5 秒内没有响应，运行会以退出码 1 失败。
+当文件超过其 `maxSize`、某个路径没有匹配到任何文件，或匹配到的路径无法读取（例如目录）时，该文件检查失败。来自 BundleWatch 服务的错误以及 GitHub 返回的错误响应只会记录到日志，不会改变退出码。如果启用了状态（token、仓库和提交都已知），而 GitHub 无法连接或在 5 秒内没有响应，运行会以退出码 1 失败。
 
 [故障排查](../guide/troubleshooting.md)解释了每条消息。
 

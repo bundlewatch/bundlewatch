@@ -28,7 +28,7 @@ export const zh = defineConfig({
 
     footer: {
       message: "根据 MIT 许可证发布。",
-      copyright: `版权所有 © 2018-至今 Bundlewatch`,
+      copyright: `版权所有 © 2018-至今 BundleWatch`,
     },
   },
 });
@@ -68,7 +68,7 @@ function sidebarGuide() {
     {
       text: "介绍",
       items: [
-        { text: "什么是 Bundlewatch？", link: "what-is-it" },
+        { text: "什么是 BundleWatch？", link: "what-is-it" },
         { text: "快速开始", link: "getting-started" },
       ],
     },

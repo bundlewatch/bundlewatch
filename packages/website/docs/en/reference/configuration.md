@@ -1,6 +1,6 @@
 ---
 title: Configuration reference
-description: Every Bundlewatch option, its default, and the environment variables Bundlewatch reads.
+description: Every BundleWatch option, its default, and the environment variables BundleWatch reads.
 ---
 
 # Configuration reference
@@ -23,7 +23,7 @@ Each entry in `files` checks the files that match its `path`:
 
 | Field         | Description                                                                                                                                                                                                                                                                                                     |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `path`        | Required. A glob, relative to the directory you run Bundlewatch in, not to the config file. `*`, `**` and `{a,b}` work. A path that matches no files fails the run, and so does one that matches a directory: `./dist/*` fails as soon as `dist` contains a folder, so write `./dist/*.js` or `./dist/**/*.js`. |
+| `path`        | Required. A glob, relative to the directory you run BundleWatch in, not to the config file. `*`, `**` and `{a,b}` work. A path that matches no files fails the run, and so does one that matches a directory: `./dist/*` fails as soon as `dist` contains a folder, so write `./dist/*.js` or `./dist/**/*.js`. |
 | `maxSize`     | Optional. The limit for each matching file, not for their total: a file larger than its `maxSize` fails. Write a string with a unit, such as `'100kB'`, or a number of bytes, such as `102400`.                                                                                                                 |
 | `compression` | Optional: `'gzip'`, `'brotli'` or `'none'`. Defaults to [defaultCompression](#defaultcompression). Any other non-empty value isn't rejected: the file is then measured uncompressed.                                                                                                                            |
 
@@ -43,9 +43,9 @@ Brotli uses Node's built-in `zlib`; no extra package is needed.
 
 ## `normalizeFilenames`
 
-Removes the part of each file name that changes between builds, such as a content hash, so that each file can be compared with its baseline. It changes the names Bundlewatch reports and saves, not your files.
+Removes the part of each file name that changes between builds, such as a content hash, so that each file can be compared with its baseline. It changes the names BundleWatch reports and saves, not your files.
 
-Set it to a `RegExp`, or to a string that Bundlewatch turns into one. Write a pattern that matches the whole path, from `^` to `$`, and capture the part to remove: Bundlewatch removes the captured text. A path that the pattern doesn't match keeps its name.
+Set it to a `RegExp`, or to a string that BundleWatch turns into one. Write a pattern that matches the whole path, from `^` to `$`, and capture the part to remove: BundleWatch removes the captured text. A path that the pattern doesn't match keeps its name.
 
 | Path                              | Pattern                    | Becomes                  |
 | --------------------------------- | -------------------------- | ------------------------ |
@@ -61,7 +61,7 @@ When two files end up with the same name, only the last one is checked and saved
 :::
 
 ::: details How the pattern is applied
-Bundlewatch splits the path with the pattern. That gives the text before the match, the text after it, and each captured group. Bundlewatch then removes the first occurrence of each of these pieces from the path.
+BundleWatch splits the path with the pattern. That gives the text before the match, the text after it, and each captured group. BundleWatch then removes the first occurrence of each of these pieces from the path.
 
 With a pattern that matches the whole path, that removes the captured text. A pattern that matches only part of the path also removes everything outside the match: `/-[a-f0-9]+/` turns `./dist/main-abc123.js` into `-abc123`.
 :::
@@ -70,13 +70,13 @@ With a pattern that matches the whole path, that removes the captured text. A pa
 
 The service that stores baselines, creates short results links and renders results pages. Defaults to `'https://service.bundlewatch.io'`.
 
-Set it to your own service's URL to use a [custom server](../guide/using-a-custom-server.md). Give the full URL, starting with `https://`, without a trailing slash: Bundlewatch appends paths such as `/store` to it. It can include Basic auth credentials, such as `https://user:password@bundlewatch.example.com`: Bundlewatch sends them in an `Authorization` header, and leaves them out of results links and log lines.
+Set it to your own service's URL to use a [custom server](../guide/using-a-custom-server.md). Give the full URL, starting with `https://`, without a trailing slash: BundleWatch appends paths such as `/store` to it. It can include Basic auth credentials, such as `https://user:password@bundlewatch.example.com`: BundleWatch sends them in an `Authorization` header, and leaves them out of results links and log lines.
 
-Set it to `null` to disable the service: Bundlewatch then only checks `maxSize`, without comparing with or saving a baseline. It prints no results link, the GitHub status has no details link, and the [Node.js API](./nodejs.md#result) returns `url: undefined`.
+Set it to `null` to disable the service: BundleWatch then only checks `maxSize`, without comparing with or saving a baseline. It prints no results link, the GitHub status has no details link, and the [Node.js API](./nodejs.md#result) returns `url: undefined`.
 
 ## `ci`
 
-The `ci` options let Bundlewatch post [GitHub statuses](../guide/using-bundlewatch.md#github-statuses), and compare with and save baselines. Most defaults are detected from your CI environment; set an option only to override it.
+The `ci` options let BundleWatch post [GitHub statuses](../guide/using-bundlewatch.md#github-statuses), and compare with and save baselines. Most defaults are detected from your CI environment; set an option only to override it.
 
 | Option              | Default                                                                                                                                                  |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -93,7 +93,7 @@ Builds on a branch listed in `trackBranches` save their results as the baseline 
 
 ## Environment variables
 
-Bundlewatch reads these environment variables. Values in your configuration come first. `CI_REPO_OWNER`, `CI_REPO_NAME`, `CI_REPO_SLUG`, `CI_COMMIT_SHA`, `GIT_COMMIT`, `CI_BRANCH`, `GIT_BRANCH` and `CI_BRANCH_BASE` take precedence over what Bundlewatch detects from your CI provider. `GIT_URL` is used only when nothing else gives the repository, and `CI_EVENT` and `CI_TARGET_BRANCH` are read for generic CI: when `CI` is set and no supported provider is detected.
+BundleWatch reads these environment variables. Values in your configuration come first. `CI_REPO_OWNER`, `CI_REPO_NAME`, `CI_REPO_SLUG`, `CI_COMMIT_SHA`, `GIT_COMMIT`, `CI_BRANCH`, `GIT_BRANCH` and `CI_BRANCH_BASE` take precedence over what BundleWatch detects from your CI provider. `GIT_URL` is used only when nothing else gives the repository, and `CI_EVENT` and `CI_TARGET_BRANCH` are read for generic CI: when `CI` is set and no supported provider is detected.
 
 | Variable                                               | Sets                                                                                                                                                                                                                                                            |
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -107,7 +107,7 @@ Bundlewatch reads these environment variables. Values in your configuration come
 | `GITHUB_API_URL`                                       | The GitHub API URL that commit statuses are posted to. Defaults to `https://api.github.com`; GitHub Actions sets it automatically. GitHub Enterprise also needs your own service, see [GitHub Enterprise](../guide/using-a-custom-server.md#github-enterprise). |
 | `CI_EVENT`                                             | `pull_request` marks a [pull request build](../guide/diffing-against-branches-other-than-master.md#pull-request-builds) with generic CI                                                                                                                         |
 | `GIT_URL`                                              | `ci.repoOwner` and `ci.repoName`, from a github.com remote such as `https://github.com/owner/repo.git` or `git@github.com:owner/repo.git`, if nothing else sets them                                                                                            |
-| `DEBUG` (any non-empty value)                          | Logs the details of failed requests to the Bundlewatch service                                                                                                                                                                                                  |
+| `DEBUG` (any non-empty value)                          | Logs the details of failed requests to the BundleWatch service                                                                                                                                                                                                  |
 | `NO_COLOR`, `NODE_DISABLE_COLORS`, `FORCE_COLOR`       | Output is colored only in a terminal. `NO_COLOR` or `NODE_DISABLE_COLORS` turns colors off. `FORCE_COLOR` turns them on, for example in a CI log viewer that supports them, unless it is `0` or `false`; it wins over the other two.                            |
 
-Bundlewatch detects the other values on GitHub Actions, GitLab CI, Travis CI, Drone, CircleCI and several other CI providers. See [Supported CI providers](../guide/using-bundlewatch.md#supported-ci-providers).
+BundleWatch detects the other values on GitHub Actions, GitLab CI, Travis CI, Drone, CircleCI and several other CI providers. See [Supported CI providers](../guide/using-bundlewatch.md#supported-ci-providers).

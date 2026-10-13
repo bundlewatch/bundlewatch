@@ -1,6 +1,6 @@
 ---
 title: Command line
-description: Bundlewatch's command-line options, where it reads configuration from, and its exit codes.
+description: BundleWatch's command-line options, where it reads configuration from, and its exit codes.
 ---
 
 # Command line
@@ -48,17 +48,17 @@ Use the command line:
 npx bundlewatch --max-size 100kB "./src/*.js" "./lib/*.js"
 ```
 
-Quote globs so that Bundlewatch expands them, not your shell: `**` then works in every shell.
+Quote globs so that BundleWatch expands them, not your shell: `**` then works in every shell.
 
 ## Where configuration comes from
 
-Bundlewatch uses the first of these it finds:
+BundleWatch uses the first of these it finds:
 
 1. File globs on the command line, with `--max-size`, `--compression` and `--normalize`.
 2. The file given with `--config`.
 3. The `bundlewatch` key in the nearest `package.json`. It can be a config object, or an array that is used as `files`.
 
-If more than one is present, Bundlewatch logs a warning and ignores the others. If none is found, it prints `[ERROR] Configuration missing` and exits with code 1.
+If more than one is present, BundleWatch logs a warning and ignores the others. If none is found, it prints `[ERROR] Configuration missing` and exits with code 1.
 
 ## Exit codes
 
@@ -67,7 +67,7 @@ If more than one is present, Bundlewatch logs a warning and ignores the others. 
 | `0`  | Every file passes (`bundlewatch PASS`), or `--help` or `--version` was given.                                                              |
 | `1`  | A file fails its check (`bundlewatch FAIL`), the configuration is invalid or missing, an option is unknown, or an unexpected error occurs. |
 
-A file fails when it is over its `maxSize`, when a path matches no files, or when a matched path can't be read, such as a directory. Errors from the Bundlewatch service, and error responses from GitHub, are logged without changing the exit code. If statuses are enabled (a token, the repository and the commit are known) and GitHub can't be reached or doesn't answer within 5 seconds, the run fails with code 1.
+A file fails when it is over its `maxSize`, when a path matches no files, or when a matched path can't be read, such as a directory. Errors from the BundleWatch service, and error responses from GitHub, are logged without changing the exit code. If statuses are enabled (a token, the repository and the commit are known) and GitHub can't be reached or doesn't answer within 5 seconds, the run fails with code 1.
 
 [Troubleshooting](../guide/troubleshooting.md) explains each message.
 

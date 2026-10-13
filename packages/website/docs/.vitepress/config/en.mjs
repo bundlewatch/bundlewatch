@@ -28,7 +28,7 @@ export const en = defineConfig({
 
     footer: {
       message: "Released under the MIT License.",
-      copyright: `Copyright © 2018-present Bundlewatch`,
+      copyright: `Copyright © 2018-present BundleWatch`,
     },
   },
 });
@@ -68,7 +68,7 @@ function sidebarGuide() {
     {
       text: "Introduction",
       items: [
-        { text: "What is Bundlewatch?", link: "what-is-it" },
+        { text: "What is BundleWatch?", link: "what-is-it" },
         { text: "Getting started", link: "getting-started" },
       ],
     },

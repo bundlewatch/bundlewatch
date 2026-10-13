@@ -1,18 +1,18 @@
 ---
 title: 基准分支与跟踪分支
-description: Bundlewatch 如何选择要对比的分支、哪些分支会保存基准，以及文件如何与基准匹配。
+description: BundleWatch 如何选择要对比的分支、哪些分支会保存基准，以及文件如何与基准匹配。
 ---
 
 # 基准分支与跟踪分支
 
-Bundlewatch 会将每次构建与一个基准对比：基准是为基准分支保存的最近一次结果。有两个设置控制这一行为：
+BundleWatch 会将每次构建与一个基准对比：基准是为基准分支保存的最近一次结果。有两个设置控制这一行为：
 
 - 基准分支（`ci.repoBranchBase`）是当前构建要对比的分支。
 - 跟踪分支（`ci.trackBranches`）是构建时会保存新基准的分支。
 
 ## 基准分支 {#base-branch}
 
-Bundlewatch 会使用以下第一个可用的值：
+BundleWatch 会使用以下第一个可用的值：
 
 1. 你的[配置](../reference/configuration.md#ci)中的 `ci.repoBranchBase`。
 2. `CI_BRANCH_BASE` 环境变量。
@@ -32,7 +32,7 @@ Bundlewatch 会使用以下第一个可用的值：
 
 ## 跟踪分支 {#tracked-branches}
 
-默认情况下，Bundlewatch 跟踪 `master`、`main` 和 `develop`，以及能检测到的仓库默认分支（在 GitHub Actions 中）。满足以下条件时，构建会将结果保存为其分支的基准：
+默认情况下，BundleWatch 跟踪 `master`、`main` 和 `develop`，以及能检测到的仓库默认分支（在 GitHub Actions 中）。满足以下条件时，构建会将结果保存为其分支的基准：
 
 - 它的分支被跟踪，
 - 它不是 Pull Request 构建，并且
@@ -40,7 +40,7 @@ Bundlewatch 会使用以下第一个可用的值：
 
 未通过 `maxSize` 检查的构建仍然会保存体积。
 
-要跟踪其他分支（例如 `staging`），请在 `package.json` 的 Bundlewatch 配置中添加 `trackBranches` 选项。该列表会替换默认列表，因此请列出所有你想跟踪的分支：
+要跟踪其他分支（例如 `staging`），请在 `package.json` 的 BundleWatch 配置中添加 `trackBranches` 选项。该列表会替换默认列表，因此请列出所有你想跟踪的分支：
 
 ```json
 {
@@ -59,7 +59,7 @@ Bundlewatch 会使用以下第一个可用的值：
 ```
 
 ::: warning 每个分支一个基准
-每个分支只有一个基准。如果有多次 Bundlewatch 运行在同一个分支上保存基准，例如 monorepo 中每个包各运行一次，最后一次会覆盖其他几次，之后的对比会把其他运行的文件显示为已移除。请在一次运行中检查所有文件。
+每个分支只有一个基准。如果有多次 BundleWatch 运行在同一个分支上保存基准，例如 monorepo 中每个包各运行一次，最后一次会覆盖其他几次，之后的对比会把其他运行的文件显示为已移除。请在一次运行中检查所有文件。
 :::
 
 ### Pull Request 构建 {#pull-request-builds}

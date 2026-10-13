@@ -1,17 +1,17 @@
 ---
 title: Getting started
-description: Set up Bundlewatch in your project, by hand or with a coding agent.
+description: Set up BundleWatch in your project, by hand or with a coding agent.
 ---
 
 # Getting started
 
 <a id="requirements"></a>
 
-Bundlewatch needs Node.js 22.17 or later. Upgrading from 0.x: see [Migrating to 1.0](./migrating-to-v1.md). To let a coding agent do the setup, copy [this prompt](#set-up-with-an-ai-agent).
+BundleWatch needs Node.js 22.17 or later. Upgrading from 0.x: see [Migrating to 1.0](./migrating-to-v1.md). To let a coding agent do the setup, copy [this prompt](#set-up-with-an-ai-agent).
 
 ## Installation
 
-Install Bundlewatch as a dev dependency:
+Install BundleWatch as a dev dependency:
 
 ::: code-group
 
@@ -35,7 +35,7 @@ bun add bundlewatch --dev
 
 ## Configuration
 
-Tell Bundlewatch which files to check, and how big they may get, in your `package.json`:
+Tell BundleWatch which files to check, and how big they may get, in your `package.json`:
 
 ```json
 {
@@ -71,17 +71,17 @@ bundlewatch PASS
 Everything is in check (+30.71KB, -0B)
 ```
 
-The warning is expected on your machine: in CI, you provide the token, and Bundlewatch detects the other values on [supported providers](./using-bundlewatch.md#supported-ci-providers). The command exits with code 1 when a file is over its `maxSize`, or when a path matches no files.
+The warning is expected on your machine: in CI, you provide the token, and BundleWatch detects the other values on [supported providers](./using-bundlewatch.md#supported-ci-providers). The command exits with code 1 when a file is over its `maxSize`, or when a path matches no files.
 
 To choose limits, run `npx bundlewatch` before adding `maxSize`. A file without one has no limit, and shows as `PASS ./dist/app.js: 30.71KB < Infinity (gzip)`. Then set each `maxSize` a little above the current size, so the check catches real increases without failing on every small change.
 
 If your file names contain content hashes, such as `main.3f2a1b9c.js`, set [`normalizeFilenames`](../reference/configuration.md#normalizefilenames). Otherwise each build's files look new, and there is nothing to compare them with.
 
-See [Using a config file](./using-a-config-file.md) for other ways to configure Bundlewatch, and the [configuration reference](../reference/configuration.md) for every option.
+See [Using a config file](./using-a-config-file.md) for other ways to configure BundleWatch, and the [configuration reference](../reference/configuration.md) for every option.
 
 ## Running in CI
 
-Run Bundlewatch in CI after your build, so that it posts a status on each pull request and compares every file with the base branch:
+Run BundleWatch in CI after your build, so that it posts a status on each pull request and compares every file with the base branch:
 
 - On GitHub Actions, copy [this workflow](./using-bundlewatch.md#github-actions) to `.github/workflows/bundlewatch.yml`. It uses the token GitHub creates for each run, so you don't need to create one.
 - On another CI provider, [create a token](./using-bundlewatch.md#other-ci-providers), store it as the secret `BUNDLEWATCH_GITHUB_TOKEN`, and run `npx bundlewatch` after the build.
@@ -93,9 +93,9 @@ Pull requests have nothing to compare with until a push to a [tracked branch](./
 Copy this prompt into your coding agent. It reads this documentation, measures your build, picks limits and adds the CI setup:
 
 ```text:no-line-numbers
-Set up Bundlewatch (https://bundlewatch.io) in this repository, so CI fails when a built file gets too big, and pull requests show how much each file changed.
+Set up BundleWatch (https://bundlewatch.io) in this repository, so CI fails when a built file gets too big, and pull requests show how much each file changed.
 
-Read https://bundlewatch.io/llms-full.txt first: it has the whole documentation. If this repository already uses Bundlewatch 0.x, follow https://bundlewatch.io/guide/migrating-to-v1.md instead. Then:
+Read https://bundlewatch.io/llms-full.txt first: it has the whole documentation. If this repository already uses BundleWatch 0.x, follow https://bundlewatch.io/guide/migrating-to-v1.md instead. Then:
 
 1. Find the production build command and run it. List the JavaScript and CSS files it outputs, with their gzip sizes.
 2. Add bundlewatch as a dev dependency, with the package manager this project already uses.

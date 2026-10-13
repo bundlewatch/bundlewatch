@@ -1,15 +1,15 @@
 ---
 title: 在 CI 中运行
-description: 在 GitHub Actions 或其他 CI 服务上运行 Bundlewatch，以及如何看懂它发布的状态和结果页面。
+description: 在 GitHub Actions 或其他 CI 服务上运行 BundleWatch，以及如何看懂它发布的状态和结果页面。
 ---
 
 # 在 CI 中运行 {#using-bundlewatch}
 
-在 CI 中于构建之后运行 Bundlewatch。有了 GitHub token，它会在提交上发布 `bundlewatch` 状态，并将每个文件与[基准分支](./diffing-against-branches-other-than-master.md#base-branch)对比。你的仓库需要托管在 GitHub 上；CI 可以在任何地方。
+在 CI 中于构建之后运行 BundleWatch。有了 GitHub token，它会在提交上发布 `bundlewatch` 状态，并将每个文件与[基准分支](./diffing-against-branches-other-than-master.md#base-branch)对比。你的仓库需要托管在 GitHub 上；CI 可以在任何地方。
 
 ## GitHub Actions {#github-actions}
 
-在 GitHub Actions 中，Bundlewatch 可以使用 GitHub 为每次工作流运行创建的 token，因此无需生成或保存 token。添加一个工作流，例如 `.github/workflows/bundlewatch.yml`：
+在 GitHub Actions 中，BundleWatch 可以使用 GitHub 为每次工作流运行创建的 token，因此无需生成或保存 token。添加一个工作流，例如 `.github/workflows/bundlewatch.yml`：
 
 ```yaml
 name: bundlewatch
@@ -38,30 +38,30 @@ jobs:
           BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-- `statuses: write` 允许 Bundlewatch 使用工作流的 token 发布 `bundlewatch` 提交状态。同时请保留 `contents: read`：`permissions` 块会移除所有未列出的权限。
+- `statuses: write` 允许 BundleWatch 使用工作流的 token 发布 `bundlewatch` 提交状态。同时请保留 `contents: read`：`permissions` 块会移除所有未列出的权限。
 - 服务接受用工作流的 token 保存基准和创建结果短链接。
 - `push` 触发器只列出你跟踪的分支。否则，推送到有打开的 Pull Request 的分支会让工作流运行两次，两次运行会在同一个提交上发布相同的状态。
 - 仓库、提交、分支和 Pull Request 的目标分支会被自动检测，包括仓库的默认分支。在 Pull Request 上，状态会报告到 Pull Request 的最新提交。
 - 推送到[跟踪分支](./diffing-against-branches-other-than-master.md#tracked-branches)时，结果会被保存为新的基准。Pull Request 会与其目标分支的基准对比。
 
 ::: info 来自 fork 的 Pull Request
-GitHub 只为来自 fork 的 Pull Request 提供只读 token，因此 Bundlewatch 无法在这些 Pull Request 上发布状态，而是会记录一个来自 GitHub 的 `403` 错误。当文件超过 `maxSize` 时，任务仍然会失败。
+GitHub 只为来自 fork 的 Pull Request 提供只读 token，因此 BundleWatch 无法在这些 Pull Request 上发布状态，而是会记录一个来自 GitHub 的 `403` 错误。当文件超过 `maxSize` 时，任务仍然会失败。
 :::
 
 ## 其他 CI 服务 {#other-ci-providers}
 
 <a id="setting-up-ci-authentication"></a>
 
-1. 以拥有该仓库推送权限的用户身份登录 GitHub，打开 [service.bundlewatch.io/setup-github](https://service.bundlewatch.io/setup-github)，并授权 Bundlewatch。该 token 只有 `repo:status` 权限：它可以读写提交状态，但无法访问你的代码。
+1. 以拥有该仓库推送权限的用户身份登录 GitHub，打开 [service.bundlewatch.io/setup-github](https://service.bundlewatch.io/setup-github)，并授权 BundleWatch。该 token 只有 `repo:status` 权限：它可以读写提交状态，但无法访问你的代码。
 2. 在 CI 设置中，将 token 保存为名为 `BUNDLEWATCH_GITHUB_TOKEN` 的私密环境变量。切勿将它提交到仓库中。
 3. 在构建步骤之后运行 `npx bundlewatch`。
 4. 如果你的 CI 服务不在下表中，或者没有提供某个值，请设置[这些变量](#required-ci-environment-variables)。
 
-没有 token 时，Bundlewatch 只检查 `maxSize`。
+没有 token 时，BundleWatch 只检查 `maxSize`。
 
 ### 支持的 CI 服务 {#supported-ci-providers}
 
-Bundlewatch 会从以下 CI 服务自己的环境变量中读取仓库、提交和分支。Pull Request 构建会与基准对比，但从不保存基准（[详情](./diffing-against-branches-other-than-master.md#pull-request-builds)）。
+BundleWatch 会从以下 CI 服务自己的环境变量中读取仓库、提交和分支。Pull Request 构建会与基准对比，但从不保存基准（[详情](./diffing-against-branches-other-than-master.md#pull-request-builds)）。
 
 | CI 服务                                         | Pull Request 的基准分支                          | 算作 Pull Request 构建的情况                 |
 | ----------------------------------------------- | ------------------------------------------------ | -------------------------------------------- |
@@ -76,7 +76,7 @@ Bundlewatch 会从以下 CI 服务自己的环境变量中读取仓库、提交�
 | ZEIT Now（旧的 `NOW_GITHUB_*` 变量）            | 不提供                                           | 不检测                                       |
 | 通用 `CI_*` 变量（设置了 `CI`，且不是上述服务） | `CI_TARGET_BRANCH`                               | `CI_EVENT=pull_request`                      |
 
-在不提供基准分支的情况下，构建会与 `master` 对比，除非你设置了 `CI_BRANCH_BASE`。Bundlewatch 不读取 Vercel 的 `VERCEL_*` 变量，上面的一些服务也不提供仓库信息：对于检测不到的值，请设置[下面的变量](#required-ci-environment-variables)。
+在不提供基准分支的情况下，构建会与 `master` 对比，除非你设置了 `CI_BRANCH_BASE`。BundleWatch 不读取 Vercel 的 `VERCEL_*` 变量，上面的一些服务也不提供仓库信息：对于检测不到的值，请设置[下面的变量](#required-ci-environment-variables)。
 
 ### 检测不到时需要设置的变量 {#required-ci-environment-variables}
 
@@ -88,13 +88,13 @@ Bundlewatch 会从以下 CI 服务自己的环境变量中读取仓库、提交�
 - `CI_BRANCH`
 - `CI_BRANCH_BASE`，即要对比的分支（如果不是 `master`）
 
-Bundlewatch 读取的所有变量请参阅 [环境变量参考](../reference/configuration.md#environment-variables)。
+BundleWatch 读取的所有变量请参阅 [环境变量参考](../reference/configuration.md#environment-variables)。
 
 <a id="adding-build-status-to-github-prs"></a>
 
 ## GitHub 状态 {#github-statuses}
 
-Bundlewatch 会以 GitHub 提交状态的形式，在它检查的提交上报告结果：
+BundleWatch 会以 GitHub 提交状态的形式，在它检查的提交上报告结果：
 
 <div align="center">
     <img alt="build status preview" data-zoomable src="/build-status-preview.png" width="700px">
@@ -115,7 +115,7 @@ Bundlewatch 会以 GitHub 提交状态的形式，在它检查的提交上报告
 - 每次运行最多发布五个状态：`bundlewatch` 和四个文件的状态。其余未通过的文件只会在日志和结果页面中列出。
 - 无效的配置会在发布任何状态之前报告。
 
-发布状态需要 token、仓库和提交。缺少它们时，Bundlewatch 只会输出结果并设置退出码。
+发布状态需要 token、仓库和提交。缺少它们时，BundleWatch 只会输出结果并设置退出码。
 
 要阻止会让文件过大的 Pull Request 被合并，请在仓库的分支保护规则或规则集中，将 `bundlewatch` 设为必需的状态检查。只需将 `bundlewatch` 设为必需：针对单个文件的状态只会在文件未通过时出现。
 

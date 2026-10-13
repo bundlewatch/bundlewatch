@@ -1,6 +1,6 @@
 ---
 title: Using a config file
-description: How to configure Bundlewatch using a config file or package.json.
+description: How to configure BundleWatch using a config file or package.json.
 ---
 
 # Using a config file {#using-a-configuration-file}
@@ -76,7 +76,7 @@ module.exports = {
 :::
 
 - Config files can be `.json`, `.js`, `.cjs` or `.mjs`, or `.ts`, `.mts` or `.cts` on Node.js 22.18 and later, which run TypeScript natively. `--config` paths are resolved from the current directory; absolute paths work too.
-- Without `--config`, Bundlewatch reads the `bundlewatch` key of the nearest package.json, in the current directory or a parent. It stops at the first package.json it finds, even if that file has no `bundlewatch` key: in a monorepo, put the key in the package's own package.json, or use `--config`. It doesn't look for `bundlewatch.config.*` files on its own.
+- Without `--config`, BundleWatch reads the `bundlewatch` key of the nearest package.json, in the current directory or a parent. It stops at the first package.json it finds, even if that file has no `bundlewatch` key: in a monorepo, put the key in the package's own package.json, or use `--config`. It doesn't look for `bundlewatch.config.*` files on its own.
 - The `BundlewatchConfig` type gives your editor completion and checks for every option.
 - In TypeScript, prefer `.mts`: Node.js loads it as an ES module in any package. A `.ts` file works too, but in a package without `"type": "module"`, Node.js prints a warning before loading it.
 - A JavaScript or TypeScript config can also have only named exports, such as `export const files = [...]`, instead of a default export.

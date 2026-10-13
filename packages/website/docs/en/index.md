@@ -5,8 +5,8 @@ layout: home
 hero:
   image:
     src: /logo-large.svg
-    alt: Bundlewatch
-  name: Bundlewatch
+    alt: BundleWatch
+  name: BundleWatch
   text: Keep watch of your bundle size
   tagline: Fail the build when a file gets too big, and see on each pull request how much every file changed.
   actions:
@@ -14,7 +14,7 @@ hero:
       text: Get started
       link: /guide/getting-started
     - theme: alt
-      text: What is Bundlewatch?
+      text: What is BundleWatch?
       link: /guide/what-is-it
     - theme: alt
       text: Set up with an AI agent

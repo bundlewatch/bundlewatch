@@ -5,8 +5,8 @@ layout: home
 hero:
   image:
     src: /logo-large.svg
-    alt: Bundlewatch
-  name: Bundlewatch
+    alt: BundleWatch
+  name: BundleWatch
   text: 盯住你的 bundle 体积
   tagline: 文件超出体积限制时让构建失败，并在每个 Pull Request 上显示每个文件的体积变化。
   actions:
@@ -14,7 +14,7 @@ hero:
       text: 快速开始
       link: /zh/guide/getting-started
     - theme: alt
-      text: 什么是 Bundlewatch？
+      text: 什么是 BundleWatch？
       link: /zh/guide/what-is-it
     - theme: alt
       text: 使用 AI 编程助手设置

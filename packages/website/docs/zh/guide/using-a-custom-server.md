@@ -1,13 +1,13 @@
 ---
 title: 使用自定义服务器
-description: 如何运行你自己的 Bundlewatch 服务，并让项目使用它。
+description: 如何运行你自己的 BundleWatch 服务，并让项目使用它。
 ---
 
 # 使用自定义服务器 {#using-a-custom-server-with-bundlewatch}
 
-Bundlewatch 服务负责保存构建对比所用的基准、创建结果短链接并渲染结果页面。你可以运行自己的实例，而不是使用 `https://service.bundlewatch.io`。
+BundleWatch 服务负责保存构建对比所用的基准、创建结果短链接并渲染结果页面。你可以运行自己的实例，而不是使用 `https://service.bundlewatch.io`。
 
-在 package.json 中让 Bundlewatch 指向你的服务：
+在 package.json 中让 BundleWatch 指向你的服务：
 
 ```json
 {
@@ -27,7 +27,7 @@ URL 的格式，以及如何在不使用服务的情况下运行，请参阅 [bu
 
 ## 部署服务 {#deploying-the-service}
 
-该服务位于 Bundlewatch 仓库的 [`packages/service`](https://github.com/bundlewatch/bundlewatch/tree/main/packages/service) 目录中。它运行在 AWS Lambda 上，数据保存在 DynamoDB 中，并通过 AWS SAM 使用 [`template.yaml`](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/template.yaml) 部署。
+该服务位于 BundleWatch 仓库的 [`packages/service`](https://github.com/bundlewatch/bundlewatch/tree/main/packages/service) 目录中。它运行在 AWS Lambda 上，数据保存在 DynamoDB 中，并通过 AWS SAM 使用 [`template.yaml`](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/template.yaml) 部署。
 
 1. 按照 [Running your own service](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/README.md#running-your-own-service) 中的说明，在你的 AWS 账户和区域中部署 [`infra/bootstrap.yaml`](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/infra/bootstrap.yaml)。将 `GitHubRepository` 设为你的 fork，并使用与第 3 步中 template.yaml 相同的 `StoreTableName` 和 `ResultsTableName`。
 

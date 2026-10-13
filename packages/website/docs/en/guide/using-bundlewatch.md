@@ -1,15 +1,15 @@
 ---
 title: Running in CI
-description: Run Bundlewatch on GitHub Actions or another CI provider, and read the statuses and results pages it posts.
+description: Run BundleWatch on GitHub Actions or another CI provider, and read the statuses and results pages it posts.
 ---
 
 # Running in CI {#using-bundlewatch}
 
-Run Bundlewatch in CI after your build. With a GitHub token, it posts a `bundlewatch` status on the commit and compares each file with the [base branch](./diffing-against-branches-other-than-master.md#base-branch). Your repository has to be on GitHub; the CI can be anywhere.
+Run BundleWatch in CI after your build. With a GitHub token, it posts a `bundlewatch` status on the commit and compares each file with the [base branch](./diffing-against-branches-other-than-master.md#base-branch). Your repository has to be on GitHub; the CI can be anywhere.
 
 ## GitHub Actions {#github-actions}
 
-On GitHub Actions, Bundlewatch can use the token GitHub creates for every workflow run, so there is no token to generate or store. Add a workflow such as `.github/workflows/bundlewatch.yml`:
+On GitHub Actions, BundleWatch can use the token GitHub creates for every workflow run, so there is no token to generate or store. Add a workflow such as `.github/workflows/bundlewatch.yml`:
 
 ```yaml
 name: bundlewatch
@@ -38,30 +38,30 @@ jobs:
           BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-- `statuses: write` lets Bundlewatch post the `bundlewatch` commit status with the workflow's token. Keep `contents: read` as well: a `permissions` block removes every permission it doesn't list.
+- `statuses: write` lets BundleWatch post the `bundlewatch` commit status with the workflow's token. Keep `contents: read` as well: a `permissions` block removes every permission it doesn't list.
 - The service accepts the workflow's token for saving baselines and creating short results links.
 - The `push` trigger lists only the branches you track. Otherwise a push to a branch with an open pull request would run the workflow twice, and both runs would post the same status on one commit.
 - The repository, commit, branch and pull request target are detected automatically, including the repository's default branch. On pull requests, the status goes on the pull request's head commit.
 - Pushes to a [tracked branch](./diffing-against-branches-other-than-master.md#tracked-branches) save their results as the new baseline. Pull requests are compared with the baseline of the branch they target.
 
 ::: info Pull requests from forks
-GitHub gives pull requests from forks a read-only token, so Bundlewatch can't post a status on them, and logs a `403` error from GitHub instead. The job still fails when a file is over its `maxSize`.
+GitHub gives pull requests from forks a read-only token, so BundleWatch can't post a status on them, and logs a `403` error from GitHub instead. The job still fails when a file is over its `maxSize`.
 :::
 
 ## Other CI providers
 
 <a id="setting-up-ci-authentication"></a>
 
-1. Open [service.bundlewatch.io/setup-github](https://service.bundlewatch.io/setup-github), signed in to GitHub as a user with push access to the repository, and authorize Bundlewatch. The token has only the `repo:status` scope: it can read and write commit statuses, not your code.
+1. Open [service.bundlewatch.io/setup-github](https://service.bundlewatch.io/setup-github), signed in to GitHub as a user with push access to the repository, and authorize BundleWatch. The token has only the `repo:status` scope: it can read and write commit statuses, not your code.
 2. In your CI settings, store the token as a secret environment variable named `BUNDLEWATCH_GITHUB_TOKEN`. Never commit it.
 3. Run `npx bundlewatch` after your build step.
 4. If your provider isn't in the table below, or doesn't supply a value, set [these variables](#required-ci-environment-variables).
 
-Without a token, Bundlewatch only checks `maxSize`.
+Without a token, BundleWatch only checks `maxSize`.
 
 ### Supported CI providers
 
-Bundlewatch reads the repository, commit and branch from these providers' own environment variables. Pull request builds are compared with a baseline but never save one ([details](./diffing-against-branches-other-than-master.md#pull-request-builds)).
+BundleWatch reads the repository, commit and branch from these providers' own environment variables. Pull request builds are compared with a baseline but never save one ([details](./diffing-against-branches-other-than-master.md#pull-request-builds)).
 
 | Provider                                               | Base branch of pull requests                                  | Counts as a pull request build                  |
 | ------------------------------------------------------ | ------------------------------------------------------------- | ----------------------------------------------- |
@@ -76,7 +76,7 @@ Bundlewatch reads the repository, commit and branch from these providers' own en
 | ZEIT Now (the legacy `NOW_GITHUB_*` variables)         | Not available                                                 | Not detected                                    |
 | Generic `CI_*` variables (`CI` set, no provider above) | `CI_TARGET_BRANCH`                                            | `CI_EVENT=pull_request`                         |
 
-Where the base branch isn't available, builds are compared with `master` unless you set `CI_BRANCH_BASE`. Bundlewatch doesn't read Vercel's `VERCEL_*` variables, and some providers above don't supply the repository: set the [variables below](#required-ci-environment-variables) for anything that isn't detected.
+Where the base branch isn't available, builds are compared with `master` unless you set `CI_BRANCH_BASE`. BundleWatch doesn't read Vercel's `VERCEL_*` variables, and some providers above don't supply the repository: set the [variables below](#required-ci-environment-variables) for anything that isn't detected.
 
 ### Variables to set when they aren't detected {#required-ci-environment-variables}
 
@@ -88,13 +88,13 @@ Set these for any value your CI provider doesn't supply:
 - `CI_BRANCH`
 - `CI_BRANCH_BASE`, the branch to compare with, if it isn't `master`
 
-See the [environment variables reference](../reference/configuration.md#environment-variables) for every variable Bundlewatch reads.
+See the [environment variables reference](../reference/configuration.md#environment-variables) for every variable BundleWatch reads.
 
 <a id="adding-build-status-to-github-prs"></a>
 
 ## GitHub statuses
 
-Bundlewatch reports on the commit it checks, as GitHub commit statuses:
+BundleWatch reports on the commit it checks, as GitHub commit statuses:
 
 <div align="center">
     <img alt="build status preview" data-zoomable src="/build-status-preview.png" width="700px">
@@ -115,7 +115,7 @@ Bundlewatch reports on the commit it checks, as GitHub commit statuses:
 - At most five statuses per run: `bundlewatch` and four files. The other failing files are only listed in the log and on the results page.
 - An invalid configuration is reported before any status is posted.
 
-Statuses need a token, the repository and the commit. Without them, Bundlewatch only prints its results and sets the exit code.
+Statuses need a token, the repository and the commit. Without them, BundleWatch only prints its results and sets the exit code.
 
 To block pull requests that make a file too big, make `bundlewatch` a required status check, in a branch protection rule or a ruleset of your repository. Require only `bundlewatch`: the per-file statuses appear only when a file fails.
 

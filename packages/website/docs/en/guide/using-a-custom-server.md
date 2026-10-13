@@ -1,13 +1,13 @@
 ---
 title: Using a custom server
-description: How to run your own Bundlewatch service and configure your project to use it.
+description: How to run your own BundleWatch service and configure your project to use it.
 ---
 
 # Using a custom server {#using-a-custom-server-with-bundlewatch}
 
-The Bundlewatch service stores the baselines your builds are compared with, creates short results links and renders the results pages. You can run your own instance instead of using `https://service.bundlewatch.io`.
+The BundleWatch service stores the baselines your builds are compared with, creates short results links and renders the results pages. You can run your own instance instead of using `https://service.bundlewatch.io`.
 
-Point Bundlewatch at your service in package.json:
+Point BundleWatch at your service in package.json:
 
 ```json
 {
@@ -27,7 +27,7 @@ See [bundlewatchServiceHost](../reference/configuration.md#bundlewatchservicehos
 
 ## Deploying the service
 
-The service lives in the Bundlewatch repository, in [`packages/service`](https://github.com/bundlewatch/bundlewatch/tree/main/packages/service). It runs on AWS Lambda, stores its data in DynamoDB, and is deployed with AWS SAM from [`template.yaml`](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/template.yaml).
+The service lives in the BundleWatch repository, in [`packages/service`](https://github.com/bundlewatch/bundlewatch/tree/main/packages/service). It runs on AWS Lambda, stores its data in DynamoDB, and is deployed with AWS SAM from [`template.yaml`](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/template.yaml).
 
 1. Deploy [`infra/bootstrap.yaml`](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/infra/bootstrap.yaml) in your AWS account and region, as described in [Running your own service](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/README.md#running-your-own-service). Set `GitHubRepository` to your fork, and give it the same `StoreTableName` and `ResultsTableName` that you give template.yaml in step 3.
 
