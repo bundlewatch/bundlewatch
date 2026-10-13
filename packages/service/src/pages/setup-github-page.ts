@@ -1,86 +1,151 @@
-import { html } from '../html.ts';
-import { footerLinks, logoHeader, page } from './layout.ts';
+import { createHash } from 'node:crypto';
 
-// Port of setup-github.mustache.
+import { html, type SafeHtml } from '../html.ts';
+import { copyIcon, githubIcon } from './icons.ts';
+import { mark, page } from './layout.ts';
+
+// /setup-github: a GitHub token for CI providers other than GitHub Actions.
+// It starts with where the CI runs, since GitHub Actions needs no token.
+
+const ACTIONS_GUIDE = 'https://bundlewatch.io/guide/using-bundlewatch#github-actions';
+
+/** Why the page asks to authorize again. */
+export type SetupFailure =
+  /** The state didn't match: too slow, or another browser. */
+  | { kind: 'expired' }
+  /** GitHub didn't exchange the code: its description, or an HTTP status. */
+  | { kind: 'exchange'; error: unknown };
+
+const failureText = (failure: SetupFailure): { title: string; detail: string } => {
+  if (failure.kind === 'expired') {
+    return {
+      title: 'That authorization expired',
+      detail:
+        'It took more than ten minutes, or started in another browser. Authorize again to get your token.',
+    };
+  }
+  let reason = 'GitHub didn’t return a token.';
+  if (typeof failure.error === 'string') reason = failure.error;
+  else if (typeof failure.error === 'number')
+    reason = `GitHub answered with HTTP ${failure.error}.`;
+  // GitHub's descriptions end with a period, ours don't always.
+  const sentence = /[.!?]$/.test(reason) ? reason : `${reason}.`;
+  return {
+    title: 'GitHub didn’t issue a token',
+    detail: `${sentence} Authorize again to get a new one.`,
+  };
+};
+
+/**
+ * The page's only script: the Copy buttons. The token page's
+ * Content-Security-Policy allows it by hash (COPY_SCRIPT_HASH). The buttons
+ * stay hidden without it, and a click on a box still selects all of it.
+ * The Clipboard API needs HTTPS; over plain HTTP, such as a local server,
+ * the script selects the text and falls back to execCommand.
+ */
+const COPY_SCRIPT = `for (const button of document.querySelectorAll('[data-copy]')) {
+  const source = document.getElementById(button.dataset.copy);
+  const label = button.querySelector('span');
+  button.hidden = false;
+  button.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(source.textContent);
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents(source);
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+      document.execCommand('copy');
+    }
+    button.classList.add('done');
+    label.textContent = 'Copied';
+    setTimeout(() => {
+      button.classList.remove('done');
+      label.textContent = 'Copy';
+    }, 2000);
+  });
+}`;
+
+export const COPY_SCRIPT_HASH: string = createHash('sha256').update(COPY_SCRIPT).digest('base64');
+
+/** A whole-line box with its own Copy button. */
+const copyBox = (id: string, label: string, value: string): SafeHtml =>
+  html`<span class="label" id="${id}-label">${label}</span>
+        <div class="copy-box"><code id="${id}" aria-labelledby="${id}-label">${value}</code><button type="button" data-copy="${id}" aria-label="Copy the ${label.toLowerCase()}" hidden>${copyIcon}<span>Copy</span></button></div>`;
+
+const scopeAndRevoke = (githubWebUrl: string): SafeHtml => html`<dl class="fine">
+        <dt>Scope</dt><dd><code>repo:status</code>: commit statuses, not your code.</dd>
+        <dt>Revoke</dt><dd>Any time, from <a href="${githubWebUrl}/settings/applications">your GitHub settings</a>.</dd>
+    </dl>`;
+
+const tokenBody = (token: string, githubWebUrl: string): SafeHtml => html`<h1>Your token</h1>
+    <p class="lede">Add it to your CI as a secret environment variable. This page won’t show the token again.</p>
+    <div class="copy-fields">
+        ${copyBox('copy-name', 'Name', 'BUNDLEWATCH_GITHUB_TOKEN')}
+        ${copyBox('copy-value', 'Value', token)}
+    </div>
+    <ol class="steps">
+        <li>Paste both into your CI provider’s secret settings. Never commit the token.</li>
+        <li>Run <code>npx bundlewatch</code> after your build.</li>
+        <li>The next pull request gets a <b>bundlewatch</b> status.</li>
+    </ol>
+    ${scopeAndRevoke(githubWebUrl)}`;
+
+const authorizeBody = (
+  authorizeUrl: string,
+  githubWebUrl: string,
+  failure: SetupFailure | undefined,
+): SafeHtml => {
+  const problem = failure && failureText(failure);
+  return html`<h1>${problem ? problem.title : 'Get a GitHub token for BundleWatch'}</h1>
+    <p class="lede">${problem ? problem.detail : 'BundleWatch reports the size of your files on each pull request, as a commit status:'}</p>
+    ${
+      !problem &&
+      html`<div class="preview" role="img" aria-label="The bundlewatch status on a pull request">
+        <div><span class="ok">✓</span>${mark(16)}<b>bundlewatch</b><span class="desc">— Everything is in check (+1.41KB, -0B, +4.8%)</span><span class="details">Details</span></div>
+    </div>`
+    }
+    <section>
+        <div class="paths">
+            <div>
+                <h2>On GitHub Actions</h2>
+                <p>You don’t need a token. Give the workflow <code>statuses: write</code> and BundleWatch uses its own <code>GITHUB_TOKEN</code>.</p>
+                <p><a class="more" href="${ACTIONS_GUIDE}">Set up the workflow →</a></p>
+            </div>
+            <div>
+                <h2>Anywhere else</h2>
+                <p>Authorize BundleWatch on GitHub, signed in with an account that has push access to the repository. You come back here with a token.</p>
+                <p><a class="button" href="${authorizeUrl}">${githubIcon}${problem ? 'Authorize again' : 'Authorize on GitHub'}</a></p>
+            </div>
+        </div>
+    </section>
+    ${scopeAndRevoke(githubWebUrl)}`;
+};
 
 export const renderSetupGithubPage = ({
   token,
   clientId,
   githubWebUrl,
   state,
+  failure,
+  serverCommitSha,
 }: {
   token?: string | undefined;
   clientId?: string | undefined;
   githubWebUrl: string;
   /** Sent to GitHub and checked when it redirects back. */
   state?: string | undefined;
+  failure?: SetupFailure | undefined;
+  serverCommitSha?: string | undefined;
 }): string => {
   const authorizeUrl = `${githubWebUrl}/login/oauth/authorize?scope=repo%3Astatus&client_id=${encodeURIComponent(clientId ?? '')}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
-  const content = token
-    ? html`<h3>Your GitHub bundlewatch token</h3>
-                <code>${token}</code>
-                <p>Setup bundlewatch on your Pull Requests by adding the above token to CI as an environment variable</p>
-                <code>BUNDLEWATCH_GITHUB_TOKEN</code>`
-    : html`<p>Setup bundlewatch on your Pull Requests by Authorizing bundlewatch on GitHub</p>
-                <a class="btn" data-title="Authorize on GitHub" href="${authorizeUrl}"></a>`;
-
   return page({
-    title: 'Setup GitHub | BundleWatch',
+    title: token ? 'Your token | BundleWatch' : 'Get a GitHub token | BundleWatch',
     stylesheet: '/static/setup-github-styles.css',
-    body: html`<article class="container">
-    ${logoHeader}
-    <div class="card">
-        <img alt="Build status image preview" src="https://bundlewatch.io/build-status-preview.png" width="800" />
-        <div style="margin: 48px auto">
-            ${content}
-        </div>
-        <p style="padding-top: 24px; text-align: right;">
-            Additional documentation available at <a href="https://bundlewatch.io">bundlewatch.io</a>
-        </p>
-     </div>
-</article>
-
-<footer>
-    ${footerLinks}
-</footer>
-
-
-<a href="https://github.com/bundlewatch/bundlewatch" class="github-corner" aria-label="BundleWatch on GitHub">
-    <svg width="80" height="80" viewBox="0 0 250 250"
-         style="fill:#000050; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
-        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
-        <path
-            d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
-            fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
-        <path
-            d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
-            fill="currentColor" class="octo-body"></path>
-    </svg>
-</a>
-<style>.github-corner:hover .octo-arm {
-    animation: octocat-wave 560ms ease-in-out
-}
-
-@keyframes octocat-wave {
-    0%, 100% {
-        transform: rotate(0)
-    }
-    20%, 60% {
-        transform: rotate(-25deg)
-    }
-    40%, 80% {
-        transform: rotate(10deg)
-    }
-}
-
-@media (max-width: 500px) {
-    .github-corner:hover .octo-arm {
-        animation: none
-    }
-
-    .github-corner .octo-arm {
-        animation: octocat-wave 560ms ease-in-out
-    }
-}</style>`,
+    serverCommitSha,
+    body: token
+      ? tokenBody(token, githubWebUrl)
+      : authorizeBody(authorizeUrl, githubWebUrl, failure),
+    script: token ? COPY_SCRIPT : undefined,
   });
 };

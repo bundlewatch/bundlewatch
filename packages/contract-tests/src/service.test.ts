@@ -142,7 +142,7 @@ for (const version of Object.keys(LEGACY_CLIS)) {
       assert.match(decodeURIComponent(link), /Infinity/);
       const page = await fetch(link);
       assert.equal(page.status, 200);
-      assert.match(await page.text(), /<td>Infinity<\/td>/);
+      assert.match(await page.text(), /no limit/i);
     });
   });
 }
