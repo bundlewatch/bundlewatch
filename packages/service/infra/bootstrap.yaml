@@ -161,6 +161,15 @@ Resources:
 
   ExecutionRole:
     Type: AWS::IAM::Role
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            # cfn-lint's list of IAM actions lacks apigateway:TagResource and
+            # apigateway:UntagResource. AWS checks them: the first deploy
+            # failed without TagResource, and CloudFormation's
+            # AWS::ApiGatewayV2::Stage schema lists both.
+            - W3037
     Properties:
       Description: Used by CloudFormation to create and update the bundlewatch service stack.
       AssumeRolePolicyDocument:
@@ -194,6 +203,11 @@ Resources:
                 Condition:
                   StringNotEquals:
                     lambda:Principal: apigateway.amazonaws.com
+              # CloudFormation expands the template's SAM transform with this
+              # role's credentials.
+              - Effect: Allow
+                Action: cloudformation:CreateChangeSet
+                Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31
               # Lambda reads the code bundle with this role's credentials.
               - Effect: Allow
                 Action: s3:GetObject
@@ -206,7 +220,9 @@ Resources:
                   StringEquals:
                     iam:PassedToService: lambda.amazonaws.com
               # HTTP APIs, their stages, routes and integrations. The custom
-              # domain's mapping is changed by hand (see the runbook).
+              # domain's mapping is changed by hand (see the runbook). Tagging
+              # has its own actions, checked when SAM's tags are set on the
+              # stage.
               - Effect: Allow
                 Action:
                   - apigateway:DELETE
@@ -214,6 +230,8 @@ Resources:
                   - apigateway:PATCH
                   - apigateway:POST
                   - apigateway:PUT
+                  - apigateway:TagResource
+                  - apigateway:UntagResource
                 Resource:
                   - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis
                   - !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis/*
