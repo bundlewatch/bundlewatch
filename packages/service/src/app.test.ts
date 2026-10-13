@@ -117,7 +117,31 @@ describe('GET /', () => {
     const response = await setup().call('GET', '/');
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('content-type'), 'application/json; charset=utf-8');
+    assert.equal(response.headers.get('vary'), 'Accept');
     assert.equal(await response.text(), '{"message":"hello world"}');
+  });
+
+  test('says hello to clients that accept anything, like curl', async () => {
+    const response = await setup().call('GET', '/', undefined, { accept: '*/*' });
+    assert.equal(await response.text(), '{"message":"hello world"}');
+  });
+
+  test('shows browsers a page with links and the deployed commit', async () => {
+    const response = await setup({
+      config: { commitSha: '4988746aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+    }).call('GET', '/', undefined, {
+      accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    });
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('content-type'), 'text/html; charset=utf-8');
+    assert.equal(response.headers.get('vary'), 'Accept');
+    assert.match(response.headers.get('content-security-policy') ?? '', /default-src 'none'/);
+    const page = await response.text();
+    assert.match(page, /<title>bundlewatch service \| BundleWatch<\/title>/);
+    assert.match(page, /href="https:\/\/bundlewatch.io\/guide\/getting-started"/);
+    assert.match(page, /href="\/setup-github"/);
+    assert.match(page, /src="\/static\/logo.svg"/);
+    assert.match(page, />4988746<\/a>/);
   });
 
   test('answers HEAD without a body', async () => {
