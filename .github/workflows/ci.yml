@@ -32,7 +32,7 @@ jobs:
             run: pnpm build && pnpm test:contract
           - name: AWS templates
             run: pipx run cfn-lint==1.57.2 packages/service/template.yaml packages/service/infra/bootstrap.yaml packages/website/infra/amplify.yaml
-          # The same build used for production and previews.
+          # The same build as Amplify's, for production and previews.
           - name: Website
             run: bash packages/website/scripts/build.sh
     steps:
