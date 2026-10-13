@@ -5,10 +5,11 @@ import { amplifyClient, deployArtifact, waitForJob } from "./amplify-deploy.mjs"
 import { github, output, pages, summary } from "./github.mjs";
 import { hasWebsiteChanges, sameWebsiteInputs } from "./website-inputs.mjs";
 
-const task = "deploy:website-preview";
+const environment = "website-preview";
+const taskFor = (number) => `deploy:website-preview:${number}`;
 const workflowPath = ".github/workflows/website-preview.yml";
 const deploymentsFor = (number, api) =>
-  pages(`/deployments?environment=pr-${number}&task=${encodeURIComponent(task)}`, api);
+  pages(`/deployments?environment=${environment}&task=${encodeURIComponent(taskFor(number))}`, api);
 
 export async function selectPreview(pr, appId, api = github) {
   if (pr.state !== "open" || pr.base.ref !== "main" || !(await hasWebsiteChanges(pr, api)))
@@ -129,14 +130,14 @@ export async function publishPreview({
     method: "POST",
     body: {
       ref: pr.head.sha,
-      environment: branchName,
-      task,
+      environment,
+      task: taskFor(number),
       auto_merge: false,
       required_contexts: [],
       transient_environment: true,
       production_environment: false,
-      payload: { appId },
-      description: "Amplify website preview",
+      payload: { appId, pullNumber: number },
+      description: `Amplify website preview for PR #${number}`,
     },
   });
   const status = (state) =>

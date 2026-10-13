@@ -139,9 +139,9 @@ Resources:
             Condition:
               StringEquals:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
-                # workflow_run and pull_request_target run from trusted main.
-                # A pull_request build has a different subject and is denied.
-                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:ref:refs/heads/main
+                # Both publishing and cleanup use this main-only GitHub environment.
+                # Untrusted pull_request builds cannot enter it.
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:environment:website-preview
       Policies:
         - PolicyName: deploy-previews
           PolicyDocument:

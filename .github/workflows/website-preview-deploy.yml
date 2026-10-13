@@ -46,6 +46,10 @@ jobs:
     if: needs.resolve.outputs.number != ''
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    environment:
+      name: website-preview
+      # preview.mjs records the deployment on the PR commit, with its own URL.
+      deployment: false
     concurrency:
       group: website-preview-deploy-${{ needs.resolve.outputs.number }}
       cancel-in-progress: false
