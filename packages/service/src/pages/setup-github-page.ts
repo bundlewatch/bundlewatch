@@ -73,7 +73,47 @@ const copyBox = (id: string, label: string, value: string): SafeHtml =>
   html`<span class="label" id="${id}-label">${label}</span>
         <div class="copy-box"><code id="${id}" aria-labelledby="${id}-label">${value}</code><button type="button" data-copy="${id}" aria-label="Copy the ${label.toLowerCase()}" hidden>${copyIcon}<span>Copy</span></button></div>`;
 
-const scopeAndRevoke = (githubWebUrl: string): SafeHtml => html`<dl class="fine">
+/** Where GitHub sends people to authorize the OAuth app, with the scope it needs. */
+export type Authorization = {
+  clientId?: string | undefined;
+  githubWebUrl: string;
+  /** Sent to GitHub and checked when it redirects back to /setup-github. */
+  state?: string | undefined;
+};
+
+const authorizeUrl = ({ githubWebUrl, clientId, state }: Authorization): string =>
+  `${githubWebUrl}/login/oauth/authorize?scope=repo%3Astatus&client_id=${encodeURIComponent(clientId ?? '')}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
+
+/** What BundleWatch posts on a pull request. */
+export const statusPreview: SafeHtml = html`<div class="preview" role="img" aria-label="The bundlewatch status on a pull request">
+        <div><span class="ok">✓</span>${mark(16)}<b>bundlewatch</b><span class="desc">— Everything is in check (+1.41KB, -0B, +4.8%)</span><span class="details">Details</span></div>
+    </div>`;
+
+/** The two ways to connect a CI provider, since GitHub Actions needs no token. */
+export const ciPaths = (
+  authorization: Authorization,
+  buttonLabel = 'Authorize on GitHub',
+): SafeHtml => html`<section>
+        <div class="paths">
+            <div>
+                <h2>On GitHub Actions</h2>
+                <p>You don’t need a token. Give the workflow <code>statuses: write</code> and BundleWatch uses its own <code>GITHUB_TOKEN</code>.</p>
+                <p><a class="more" href="${ACTIONS_GUIDE}">Set up the workflow →</a></p>
+            </div>
+            <div>
+                <h2>Anywhere else</h2>
+                <p>Authorize BundleWatch on GitHub, signed in with an account that has push access to the repository. GitHub sends you back with a token.</p>
+                <p><a class="button" href="${authorizeUrl(authorization)}">${githubIcon}${buttonLabel}</a></p>
+            </div>
+        </div>
+    </section>`;
+
+/** What the token can do, and how to revoke it, after any lines of `before`. */
+export const finePrint = (
+  githubWebUrl: string,
+  before: SafeHtml | '' = '',
+): SafeHtml => html`<dl class="fine">
+        ${before}
         <dt>Scope</dt><dd><code>repo:status</code>: commit statuses, not your code.</dd>
         <dt>Revoke</dt><dd>Any time, from <a href="${githubWebUrl}/settings/applications">your GitHub settings</a>.</dd>
     </dl>`;
@@ -89,63 +129,42 @@ const tokenBody = (token: string, githubWebUrl: string): SafeHtml => html`<h1>Yo
         <li>Run <code>npx bundlewatch</code> after your build.</li>
         <li>The next pull request gets a <b>bundlewatch</b> status.</li>
     </ol>
-    ${scopeAndRevoke(githubWebUrl)}`;
+    ${finePrint(githubWebUrl)}`;
 
 const authorizeBody = (
-  authorizeUrl: string,
-  githubWebUrl: string,
+  authorization: Authorization,
   failure: SetupFailure | undefined,
 ): SafeHtml => {
-  const problem = failure && failureText(failure);
-  return html`<h1>${problem ? problem.title : 'Get a GitHub token for BundleWatch'}</h1>
-    <p class="lede">${problem ? problem.detail : 'BundleWatch reports the size of your files on each pull request, as a commit status:'}</p>
-    ${
-      !problem &&
-      html`<div class="preview" role="img" aria-label="The bundlewatch status on a pull request">
-        <div><span class="ok">✓</span>${mark(16)}<b>bundlewatch</b><span class="desc">— Everything is in check (+1.41KB, -0B, +4.8%)</span><span class="details">Details</span></div>
-    </div>`
-    }
-    <section>
-        <div class="paths">
-            <div>
-                <h2>On GitHub Actions</h2>
-                <p>You don’t need a token. Give the workflow <code>statuses: write</code> and BundleWatch uses its own <code>GITHUB_TOKEN</code>.</p>
-                <p><a class="more" href="${ACTIONS_GUIDE}">Set up the workflow →</a></p>
-            </div>
-            <div>
-                <h2>Anywhere else</h2>
-                <p>Authorize BundleWatch on GitHub, signed in with an account that has push access to the repository. You come back here with a token.</p>
-                <p><a class="button" href="${authorizeUrl}">${githubIcon}${problem ? 'Authorize again' : 'Authorize on GitHub'}</a></p>
-            </div>
-        </div>
-    </section>
-    ${scopeAndRevoke(githubWebUrl)}`;
+  if (failure) {
+    const { title, detail } = failureText(failure);
+    return html`<h1>${title}</h1>
+    <p class="lede">${detail}</p>
+    ${ciPaths(authorization, 'Authorize again')}
+    ${finePrint(authorization.githubWebUrl)}`;
+  }
+  return html`<h1>Get a GitHub token for BundleWatch</h1>
+    <p class="lede">BundleWatch reports the size of your files on each pull request, as a commit status:</p>
+    ${statusPreview}
+    ${ciPaths(authorization)}
+    ${finePrint(authorization.githubWebUrl)}`;
 };
 
 export const renderSetupGithubPage = ({
   token,
-  clientId,
-  githubWebUrl,
-  state,
   failure,
   serverCommitSha,
-}: {
+  ...authorization
+}: Authorization & {
   token?: string | undefined;
-  clientId?: string | undefined;
-  githubWebUrl: string;
-  /** Sent to GitHub and checked when it redirects back. */
-  state?: string | undefined;
   failure?: SetupFailure | undefined;
   serverCommitSha?: string | undefined;
-}): string => {
-  const authorizeUrl = `${githubWebUrl}/login/oauth/authorize?scope=repo%3Astatus&client_id=${encodeURIComponent(clientId ?? '')}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
-  return page({
+}): string =>
+  page({
     title: token ? 'Your token | BundleWatch' : 'Get a GitHub token | BundleWatch',
     stylesheet: '/static/setup-github-styles.css',
     serverCommitSha,
     body: token
-      ? tokenBody(token, githubWebUrl)
-      : authorizeBody(authorizeUrl, githubWebUrl, failure),
+      ? tokenBody(token, authorization.githubWebUrl)
+      : authorizeBody(authorization, failure),
     script: token ? COPY_SCRIPT : undefined,
   });
-};
