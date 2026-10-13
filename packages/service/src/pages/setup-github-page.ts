@@ -21,8 +21,8 @@ export const renderSetupGithubPage = ({
                 <code>${token}</code>
                 <p>Setup bundlewatch on your Pull Requests by adding the above token to CI as an environment variable</p>
                 <code>BUNDLEWATCH_GITHUB_TOKEN</code>`
-    : html`<p>Setup bundlewatch on your Pull Requests by Authorizing bundlewatch on Github</p>
-                <a class="btn" data-title="Authorize on Github" href="${authorizeUrl}"></a>`;
+    : html`<p>Setup bundlewatch on your Pull Requests by Authorizing bundlewatch on GitHub</p>
+                <a class="btn" data-title="Authorize on GitHub" href="${authorizeUrl}"></a>`;
 
   return page({
     title: 'Setup GitHub | BundleWatch',
@@ -45,7 +45,7 @@ export const renderSetupGithubPage = ({
 </footer>
 
 
-<a href="https://github.com/bundlewatch/bundlewatch" class="github-corner" aria-label="BundleWatch on Github">
+<a href="https://github.com/bundlewatch/bundlewatch" class="github-corner" aria-label="BundleWatch on GitHub">
     <svg width="80" height="80" viewBox="0 0 250 250"
          style="fill:#000050; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
         <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>

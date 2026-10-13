@@ -653,6 +653,8 @@ describe('GET /setup-github', () => {
       ),
     );
     assert.match(page, /href="\/static\/setup-github-styles.css"/);
+    assert.match(page, /data-title="Authorize on GitHub"/);
+    assert.doesNotMatch(page, /Github/);
     assert.match(response.headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/);
     assert.equal(response.headers.get('x-frame-options'), 'DENY');
   });
