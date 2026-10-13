@@ -60,7 +60,10 @@ const results = await Promise.all([
   check("/llms.txt", { status: 200, type: "text/plain" }),
   check("/llms-full.txt", { status: 200, type: "text/plain" }),
   check("/guide/getting-started.md", { status: 200, type: "text/markdown" }),
-  check("/this-page-does-not-exist", { status: 404, type: "text/html" }),
+  // Amplify first redirects /missing to /missing/, so check both cases
+  // where the 404 page answers directly.
+  check("/this-page-does-not-exist/", { status: 404, type: "text/html" }),
+  check("/this-file-does-not-exist.txt", { status: 404, type: "text/html" }),
 ]);
 
 const asset = /\/assets\/[^"]+\.js/.exec(await results[0].response.text())?.[0];
