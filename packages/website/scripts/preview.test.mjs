@@ -123,7 +123,20 @@ function fixture({
     if (path === "/actions/artifacts/100") return site;
     if (path.startsWith("/commits/head/pulls?")) return [{ number: 12 }];
     if (path.includes("/files?")) return [{ filename: "pnpm-lock.yaml" }];
-    if (path.startsWith("/deployments?")) return deployments;
+    if (path.startsWith("/deployments?")) {
+      const query = new URL(path, "https://api.github.com").searchParams;
+      return deployments
+        .map((deployment) => ({
+          environment: "website-preview",
+          task: "deploy:website-preview:12",
+          ...deployment,
+        }))
+        .filter(
+          (deployment) =>
+            deployment.environment === query.get("environment") &&
+            deployment.task === query.get("task"),
+        );
+    }
     if (path.includes("/statuses?")) return [{ state: "success" }];
     assert.fail(path);
   };
@@ -182,6 +195,9 @@ test("publishes a deployment on the original PR SHA and succeeds only after uplo
   const f = fixture();
   assert.match(await f.publish(), /https:\/\/pr-12.dtest.amplifyapp.com/);
   assert.equal(f.writes[0].body.ref, "head");
+  assert.equal(f.writes[0].body.environment, "website-preview");
+  assert.equal(f.writes[0].body.task, "deploy:website-preview:12");
+  assert.equal(f.writes[0].body.payload.pullNumber, 12);
   assert.equal(f.writes[0].body.auto_merge, false);
   assert.deepEqual(f.writes[0].body.required_contexts, []);
   assert.deepEqual(
@@ -189,6 +205,31 @@ test("publishes a deployment on the original PR SHA and succeeds only after uplo
     ["in_progress", "success"],
   );
   assert.deepEqual(f.aws, []); // Only the artifact deployer needs AWS.
+  assert.ok(f.writes.slice(1).every(({ body }) => body.auto_inactive === false));
+});
+
+test("publishing and closing one PR leave other previews in the shared environment active", async () => {
+  const deployments = [
+    { id: 9, payload: { appId: "dpreviousapp" } },
+    { id: 10, task: "deploy:website-preview:13", sha: "head", payload: { appId } },
+  ];
+  const published = fixture({ deployments });
+  assert.match(await published.publish(), /Website deployed/);
+  const closed = fixture({ pull: { ...pr, state: "closed" }, deployments });
+  assert.equal(await closed.publish(), "Preview removed");
+  for (const f of [published, closed]) {
+    assert.ok(
+      f.writes.some(
+        ({ path, body }) => path === "/deployments/9/statuses" && body.state === "inactive",
+      ),
+    );
+    assert.ok(!f.writes.some(({ path }) => path === "/deployments/10/statuses"));
+    assert.ok(
+      f.writes
+        .filter(({ path }) => path.includes("/statuses"))
+        .every(({ body }) => body.auto_inactive === false),
+    );
+  }
 });
 
 test("publisher rejects an artifact from a different run before any mutations", async () => {
