@@ -55,9 +55,13 @@ Resources:
             Target: !Sub https://${CustomDomain}
             Status: '301'
           - !Ref AWS::NoValue
+        # 404-200 serves the 404 page with a 404 status. Amplify's 404
+        # redirects instead, to a page that answers 200. A missing path
+        # without an extension first gets a slash added (301), as Amplify
+        # looks for a directory.
         - Source: /<*>
           Target: /404.html
-          Status: '404'
+          Status: '404-200'
 
   MainBranch:
     Type: AWS::Amplify::Branch
