@@ -126,11 +126,15 @@ describe('GET /', () => {
   test('says hello to clients that accept anything, like curl', async () => {
     const response = await setup().call('GET', '/', undefined, { accept: '*/*' });
     assert.equal(await response.text(), '{"message":"hello world"}');
+    assert.equal(response.headers.get('set-cookie'), null);
   });
 
-  test('shows browsers a page with links and the deployed commit', async () => {
+  test('shows browsers what the service does, the authorize button and the deployed commit', async () => {
     const response = await setup({
-      config: { commitSha: '4988746aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+      config: {
+        commitSha: '4988746aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        githubClientId: '04fcf325dd26ca2a159f',
+      },
     }).call('GET', '/', undefined, {
       accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     });
@@ -141,9 +145,20 @@ describe('GET /', () => {
     const page = await response.text();
     assert.match(page, /<title>bundlewatch service \| BundleWatch<\/title>/);
     assert.match(page, /href="https:\/\/bundlewatch.io\/guide\/getting-started"/);
-    assert.match(page, /href="\/setup-github"/);
     assert.match(page, /<svg class="bw-mark"/);
     assert.match(page, />4988746<\/a>/);
+    // The same button as /setup-github, with a state for its callback.
+    const cookie = response.headers.get('set-cookie') ?? '';
+    const state = /^bundlewatch_oauth_state=([\w-]+);/.exec(cookie)?.[1];
+    assert.ok(state, cookie);
+    assert.match(cookie, /Path=\/setup-github; Max-Age=600; HttpOnly; Secure; SameSite=Lax/);
+    assert.ok(
+      page.includes(
+        `href="${github.url}/login/oauth/authorize?scope=repo%3Astatus&amp;client_id=04fcf325dd26ca2a159f&amp;state=${state}"`,
+      ),
+    );
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.match(response.headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/);
   });
 
   test('answers HEAD without a body', async () => {

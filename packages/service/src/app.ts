@@ -372,22 +372,54 @@ export const createApp = (deps: AppDeps): App => {
     );
   };
 
-  // The token page must not be framed by other sites.
+  // Pages with the authorize button or a token must not be framed by other
+  // sites or cached.
   const tokenPageHeaders = {
     'cache-control': 'no-store',
     'content-security-policy': `${CONTENT_SECURITY_POLICY}; frame-ancestors 'none'`,
     'x-frame-options': 'DENY',
   };
 
+  // Pages with the authorize button, at / and /setup-github, send a new
+  // `state` with it. It ties GitHub's redirect to /setup-github to this
+  // browser, so nobody can make a victim's browser show the attacker's
+  // token (0.x sent none).
+  const authorization = (): { state: string; headers: Record<string, string> } => {
+    const state = randomBytes(16).toString('base64url');
+    return {
+      state,
+      headers: {
+        ...tokenPageHeaders,
+        'set-cookie': `${OAUTH_STATE_COOKIE}=${state}; Path=/setup-github; Max-Age=600; HttpOnly; Secure; SameSite=Lax`,
+      },
+    };
+  };
+
+  const home: Handler = async (request) => {
+    // Browsers get a page. Everything else, such as monitors and the deploy's
+    // smoke test, keeps getting the JSON of 0.x (see CONTRACT.md).
+    if (!(request.headers.get('accept') ?? '').toLowerCase().includes('text/html')) {
+      return json(200, { message: 'hello world' }, { vary: 'Accept' });
+    }
+    const { state, headers } = authorization();
+    return htmlPage(
+      200,
+      renderHomePage({
+        clientId: config.githubClientId,
+        githubWebUrl: githubWebUrl(apiUrl),
+        state,
+        serverCommitSha: config.commitSha,
+      }),
+      { ...headers, vary: 'Accept' },
+    );
+  };
+
   const setupGithub: Handler = async (request, url) => {
     const webUrl = githubWebUrl(apiUrl);
     const clientId = config.githubClientId;
-    // The authorize button, with a new `state`: it ties GitHub's redirect to
-    // this browser, so nobody can make a victim's browser show the
-    // attacker's token (0.x sent none). After a failure, the page explains
-    // it and asks to authorize again.
+    // After a failure, the page explains it and asks to authorize again.
     const authorizePage = (status: number, failure?: SetupFailure): Response => {
-      const state = randomBytes(16).toString('base64url');
+      const { state, headers } = authorization();
       return htmlPage(
         status,
         renderSetupGithubPage({
@@ -397,10 +429,7 @@ export const createApp = (deps: AppDeps): App => {
           failure,
           serverCommitSha: config.commitSha,
         }),
-        {
-          ...tokenPageHeaders,
-          'set-cookie': `${OAUTH_STATE_COOKIE}=${state}; Path=/setup-github; Max-Age=600; HttpOnly; Secure; SameSite=Lax`,
-        },
+        headers,
       );
     };
     const code = url.searchParams.get('code');
@@ -512,18 +541,7 @@ export const createApp = (deps: AppDeps): App => {
   };
 
   const routes: Route[] = [
-    // Browsers get a page. Everything else, such as monitors and the deploy's
-    // smoke test, keeps getting the JSON of 0.x (see CONTRACT.md).
-    {
-      method: 'GET',
-      path: '/',
-      handle: async (request) =>
-        (request.headers.get('accept') ?? '').toLowerCase().includes('text/html')
-          ? htmlPage(200, renderHomePage({ serverCommitSha: config.commitSha }), {
-              vary: 'Accept',
-            })
-          : json(200, { message: 'hello world' }, { vary: 'Accept' }),
-    },
+    { method: 'GET', path: '/', handle: home },
     { method: 'POST', path: '/store', handle: saveBaseline },
     { method: 'POST', path: '/store/lookup', handle: lookupBaseline },
     { method: 'GET', path: '/results', handle: showLongLink },
