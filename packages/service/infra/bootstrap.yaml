@@ -194,6 +194,11 @@ Resources:
                 Condition:
                   StringNotEquals:
                     lambda:Principal: apigateway.amazonaws.com
+              # CloudFormation expands the template's SAM transform with this
+              # role's credentials.
+              - Effect: Allow
+                Action: cloudformation:CreateChangeSet
+                Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:aws:transform/Serverless-2016-10-31
               # Lambda reads the code bundle with this role's credentials.
               - Effect: Allow
                 Action: s3:GetObject
