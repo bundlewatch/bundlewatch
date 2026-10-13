@@ -126,3 +126,20 @@ html[lang="en-US"] {
 .dark .VPFeature .box .icon {
   color: #dcdcf2;
 }
+
+/* Home page: the results page screenshot below the features. */
+.home-results {
+  margin: 64px 0 0;
+
+  & img {
+    width: 100%;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 12px;
+  }
+
+  & figcaption {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--vp-c-text-2);
+  }
+}

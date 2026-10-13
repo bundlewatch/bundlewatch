@@ -54,3 +54,8 @@ features:
     link: /zh/guide/using-a-custom-server
     linkText: 使用自定义服务器
 ---
+
+<figure class="home-results">
+  <img src="/home-results-page.png" alt="一个 Pull Request 的结果页面：vendor.js 超出其 200KB 限制 9.77KB，index.js 增加了 17.08KB，charts.js 减少了 5.51KB。" width="1100" height="590" data-zoomable>
+  <figcaption>每个 Pull Request 的 <code>bundlewatch</code> 状态都会链接到这样的结果页面：逐个文件列出这次提交带来的变化，以及每个文件的限制。</figcaption>
+</figure>
