@@ -126,3 +126,19 @@ html[lang="en-US"] {
 .dark .VPFeature .box .icon {
   color: #dcdcf2;
 }
+
+/* The home page's change table: one image per theme, without a frame. Blending lets the
+   hero's glow show through the image's background, which matches the page's. */
+.HomeResults .on-light {
+  mix-blend-mode: multiply;
+}
+
+.HomeResults .on-dark,
+.dark .HomeResults .on-light {
+  display: none;
+}
+
+.dark .HomeResults .on-dark {
+  display: block;
+  mix-blend-mode: lighten;
+}

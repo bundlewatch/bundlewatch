@@ -30,7 +30,7 @@ docs/
     theme/
       index.mjs        # default theme, plus tabs, medium-zoom and HomeResults
       custom.css       # theme overrides (plain CSS with native nesting)
-      HomeResults.vue  # the home page's results page screenshot, from its `results` frontmatter
+      HomeResults.vue  # the change table from a results page on the home page, from its `results` frontmatter
   en/                  # English pages, served at / (rewritten from en/)
   zh/                  # Chinese translation, served at /zh/
   public/              # copied as-is to the site root: images, logos, favicon

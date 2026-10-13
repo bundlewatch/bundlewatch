@@ -22,9 +22,10 @@ hero:
 
 # Shown between the hero and the features, by .vitepress/theme/HomeResults.vue.
 results:
-  src: /home-results-page.png
-  alt: "一个 Pull Request 的结果页面：vendor.js 超出其 200KB 限制 9.77KB，index.js 增加了 17.08KB，charts.js 减少了 5.51KB。"
-  caption: "每个 Pull Request 的 <code>bundlewatch</code> 状态都会链接到这样的结果页面：逐个文件列出这次提交带来的变化，以及每个文件的限制。"
+  src: /home-results-changes.png
+  darkSrc: /home-results-changes-dark.png
+  alt: "一个 Pull Request 结果页面中的变化：index.js 增加了 17.08KB，比 160KB 限制少 14.58KB；vendor.js 增加了 13.17KB，超出 200KB 限制 9.77KB；charts.js 减少了 5.51KB。"
+  caption: "每个 Pull Request 的 <code>bundlewatch</code> 状态都会链接到它的结果页面，逐个文件列出这次提交带来的变化，以及每个文件的限制。"
 
 # The icons are inline SVG, so that their navy parts (currentColor) follow the theme
 # in dark mode. They are drawn from the logo and the results page.
