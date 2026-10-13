@@ -67,7 +67,7 @@ Every page in `en/` has a counterpart at the same path in `zh/`. When you add or
 The site is hosted on AWS Amplify Hosting at `https://bundlewatch.io`, in the same AWS account and region (`us-east-1`) as the service.
 
 - **Production:** the [Website workflow](../../.github/workflows/website.yml) asks Amplify to build `main` when a push changes website inputs. Manual runs can rebuild it at any time.
-- **Previews:** the [Website preview workflow](../../.github/workflows/website-preview.yml) creates a `pr-<number>` branch for a pull request targeting `main` with website changes, including forks. Amplify automatically builds these branches. The preview URL is in the workflow's run summary, and becomes available when Amplify finishes building. Closing the PR, changing its target away from `main`, or removing its website changes deletes the branch; Amplify deletes its deployment too. Unrelated follow-up commits don't rebuild an existing preview.
+- **Previews:** the [Website preview workflow](../../.github/workflows/website-preview.yml) creates a `pr-<number>` branch for a pull request targeting `main` with website changes, including forks. Amplify automatically builds these branches. GitHub records a deployment against the PR commit, with a direct preview link on the PR and in the workflow summary. The deployment succeeds only once Amplify serves the expected website revision. Closing the PR, changing its target away from `main`, or removing its website changes deletes the branch; Amplify deletes its deployment too. Unrelated follow-up commits don't rebuild an existing preview.
 - **Releases:** the [Website workflow](../../.github/workflows/website.yml) rebuilds `main` after each successful release, so the nav shows the new version.
 
 Website inputs are `packages/website/**`, `packages/bundlewatch/package.json` (imported by the site config), `amplify.yml`, `customHttp.yml`, root `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.nvmrc`, and the two website workflows. Changes only to the CLI or service source don't deploy the website. Shared lockfile changes rebuild conservatively, even when only another package's dependencies changed. Keep the production path list and `isWebsitePath` in [`scripts/sync-preview.mjs`](scripts/sync-preview.mjs) in sync.
@@ -84,7 +84,7 @@ Everything that configures the site is in this repository:
 
 Amplify reads `amplify.yml` and `customHttp.yml` on each build. Changes to `infra/amplify.yaml` need an administrator to update the stack.
 
-The preview workflow uses `pull_request_target` and a token with `contents: write` to manage preview refs. It checks out only its trusted workflow revision, installs no project dependencies, and never executes PR code. Preview refs copy the PR source while retaining `.github` from the trusted base, so they cannot introduce PR-supplied Actions definitions. Updates made with `GITHUB_TOKEN` don't trigger other GitHub workflows. Reserve `pr-*` for this workflow; branch rulesets must allow its ref creation, force updates, and deletion.
+The preview workflow uses `pull_request_target` and a token with `contents: write` to manage preview refs and `deployments: write` to publish deployment status. It checks out only its trusted workflow revision, installs no project dependencies, and never executes PR code. Preview refs copy the PR source while retaining `.github` from the trusted base, so they cannot introduce PR-supplied Actions definitions. Updates made with `GITHUB_TOKEN` don't trigger other GitHub workflows. Reserve `pr-*` for this workflow; branch rulesets must allow its ref creation, force updates, and deletion.
 
 The Amplify app has no IAM service role and no secrets. A preview build runs code from the pull request, which can come from anyone. Keep it that way, and:
 
@@ -101,7 +101,9 @@ The Amplify app has no IAM service role and no secrets. A preview build runs cod
 5. Run Website manually once, then open a website PR and a service-only PR. Only the website PR should create a preview branch. An unrelated follow-up commit should leave that branch unchanged; closing the PR should remove it and its Amplify branch.
 6. If upgrading from the earlier `website-pr-*` naming, delete those obsolete GitHub branches after verifying the new previews; Amplify automatically deletes their deployments. Existing open PRs get the new `pr-*` preview on their next update or when reopened.
 
-The workflows report that a build was requested; check Amplify for the build result. If a preview build fails, retry it in Amplify. The same source inputs are not automatically retried by an unrelated PR update.
+The production workflow reports that a build was requested; check Amplify for its build result. The preview workflow waits up to 15 minutes for the expected revision before recording success or failure on GitHub. It stamps `packages/website/docs/public/__preview.json` into each temporary preview branch; VitePress copies it to the site so a previous build returning HTTP 200 cannot count as the new deployment. The marker never enters `main`, and requires no AWS credentials or changes to the PR's build script.
+
+Unrelated follow-up commits reuse the existing preview and link its deployment to the new PR commit. Closing or retargeting the PR, or removing its website changes, marks its deployments inactive. If a build fails, retry it in Amplify and rerun the preview workflow to refresh its GitHub status. Unrelated updates alone do not retry Amplify builds.
 
 ## Setting up Amplify and moving the domain
 

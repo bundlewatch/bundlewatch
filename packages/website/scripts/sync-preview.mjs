@@ -1,6 +1,10 @@
 import { appendFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
+import { updatePreviewDeployment } from "./preview-deployment.mjs";
+
+const markerPath = "packages/website/docs/public/__preview.json";
+
 // Keep in sync with the push paths in .github/workflows/website.yml.
 const rootInputs = new Set([
   "packages/bundlewatch/package.json",
@@ -64,77 +68,114 @@ export async function syncPreview({ repository, pullNumber, api }) {
     api("GET", `${repo}/git/trees/${pr.head.sha}`),
     api("GET", `${repo}/git/trees/${pr.base.sha}`),
   ]);
-  let previewSha = pr.head.sha;
+  // VitePress copies public files to the deployed site. Stamp the preview
+  // ref here so this also works for PRs whose build script predates tracking.
+  // The marker never enters main and gives the deployment monitor an exact
+  // source revision to check instead of trusting a possibly stale HTTP 200.
+  const entries = [
+    {
+      path: markerPath,
+      mode: "100644",
+      type: "blob",
+      content: JSON.stringify({ sourceSha: pr.head.sha }),
+    },
+  ];
   if (githubTree(headTree)?.sha !== githubTree(baseTree)?.sha) {
-    const tree = await api("POST", `${repo}/git/trees`, {
-      base_tree: headTree.sha,
-      tree: [
-        { path: ".github", mode: "040000", type: "tree", sha: githubTree(baseTree)?.sha ?? null },
-      ],
+    entries.push({
+      path: ".github",
+      mode: "040000",
+      type: "tree",
+      sha: githubTree(baseTree)?.sha ?? null,
     });
-    const commit = await api("POST", `${repo}/git/commits`, {
-      message: `Website preview for #${pullNumber} at ${pr.head.sha}`,
-      tree: tree.sha,
-      parents: [pr.head.sha],
-    });
-    previewSha = commit.sha;
   }
-  if (existing?.object.sha === previewSha) return { branch, status: "unchanged" };
+  const previewTree = await api("POST", `${repo}/git/trees`, {
+    base_tree: headTree.sha,
+    tree: entries,
+  });
 
   if (existing) {
     // A PR can contain website changes followed by unrelated commits. Only
     // advance the preview when the website's actual inputs change again.
     const [before, after] = await Promise.all([
       api("GET", `${repo}/git/trees/${existing.object.sha}?recursive=1`),
-      api("GET", `${repo}/git/trees/${previewSha}?recursive=1`),
+      api("GET", `${repo}/git/trees/${previewTree.sha}?recursive=1`),
     ]);
     const inputs = (tree) =>
       JSON.stringify(
         tree.tree
-          .filter((entry) => entry.type !== "tree" && isWebsitePath(entry.path))
+          .filter(
+            (entry) =>
+              entry.type !== "tree" && entry.path !== markerPath && isWebsitePath(entry.path),
+          )
           .map(({ path, sha, mode }) => [path, sha, mode])
           .toSorted(([a], [b]) => a.localeCompare(b)),
       );
-    if (!before.truncated && !after.truncated && inputs(before) === inputs(after)) {
-      return { branch, status: "unchanged" };
+    if (
+      !before.truncated &&
+      !after.truncated &&
+      inputs(before) === inputs(after) &&
+      before.tree.some(({ path }) => path === markerPath)
+    ) {
+      const marker = await api("GET", `${repo}/contents/${markerPath}?ref=${existing.object.sha}`);
+      const { sourceSha } = JSON.parse(Buffer.from(marker.content, "base64").toString("utf8"));
+      if (typeof sourceSha !== "string" || !sourceSha)
+        throw new Error("Invalid preview revision marker");
+      return { branch, status: "unchanged", headSha: pr.head.sha, deployedSha: sourceSha };
     }
+  }
+  const { sha: previewSha } = await api("POST", `${repo}/git/commits`, {
+    message: `Website preview for #${pullNumber} at ${pr.head.sha}`,
+    tree: previewTree.sha,
+    parents: [pr.head.sha],
+  });
+  if (existing) {
     await api("PATCH", ref, { sha: previewSha, force: true });
   } else {
     // The PR head object is available in the base repository's Git network,
     // including fork PRs. No PR code is checked out or run by this script.
     await api("POST", `${repo}/git/refs`, { ref: `refs/heads/${branch}`, sha: previewSha });
   }
-  return { branch, status: "queued" };
+  return { branch, status: "queued", headSha: pr.head.sha, deployedSha: pr.head.sha };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const token = process.env.GH_TOKEN;
   const repository = process.env.GITHUB_REPOSITORY;
   if (!token || !repository) throw new Error("GH_TOKEN and GITHUB_REPOSITORY are required");
+  const appId = process.env.AMPLIFY_APP_ID;
+  if (!/^d[a-z0-9]+$/.test(appId ?? ""))
+    throw new Error("AMPLIFY_APP_ID must identify the Amplify app");
+  const api = async (method, path, body, allowMissing = false) => {
+    const response = await fetch(`https://api.github.com${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json",
+      },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+    if (allowMissing && response.status === 404) return null;
+    if (!response.ok) throw new Error(`GitHub ${method} ${path}: HTTP ${response.status}`);
+    return response.status === 204 ? null : response.json();
+  };
   const result = await syncPreview({
     repository,
     pullNumber: Number(process.env.PULL_NUMBER),
-    async api(method, path, body, allowMissing = false) {
-      const response = await fetch(`https://api.github.com${path}`, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28",
-          "Content-Type": "application/json",
-        },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-      });
-      if (allowMissing && response.status === 404) return null;
-      if (!response.ok) throw new Error(`GitHub ${method} ${path}: HTTP ${response.status}`);
-      return response.status === 204 ? null : response.json();
-    },
+    api,
   });
   let summary = `Website preview: ${result.status} (${result.branch}).\n`;
-  const appId = process.env.AMPLIFY_APP_ID;
   if (["queued", "unchanged"].includes(result.status) && /^d[a-z0-9]+$/.test(appId ?? "")) {
     summary += `\nPreview URL (available after Amplify finishes building): https://${result.branch}.${appId}.amplifyapp.com\n`;
   }
   console.log(summary);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
+  await updatePreviewDeployment({
+    repository,
+    result,
+    appId,
+    api,
+    logUrl: `${process.env.GITHUB_SERVER_URL}/${repository}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+  });
 }

@@ -5,10 +5,17 @@ import { isWebsitePath, syncPreview } from "./sync-preview.mjs";
 
 const repo = "/repos/bundlewatch/bundlewatch";
 const ref = `${repo}/git/refs/heads/pr-12`;
+const markerPath = "packages/website/docs/public/__preview.json";
 const file = (path, sha = "same") => ({ path, sha, type: "blob", mode: "100644" });
 const tree = (entries = [], truncated = false) => ({ tree: entries, truncated });
 
-function fixture({ pr = {}, existing = null, pages = [[]], trees = {} } = {}) {
+function fixture({
+  pr = {},
+  existing = null,
+  pages = [[]],
+  trees = {},
+  markerSha = "old-head",
+} = {}) {
   const calls = [];
   const api = async (method, path, body, allowMissing) => {
     calls.push({ method, path, body, allowMissing });
@@ -27,6 +34,9 @@ function fixture({ pr = {}, existing = null, pages = [[]], trees = {} } = {}) {
       return pages[Number(new URL(`https://api.github.com${path}`).searchParams.get("page")) - 1];
     }
     if (path.startsWith(`${repo}/git/trees/`)) return trees[path.split("/trees/")[1]] ?? tree();
+    if (path.startsWith(`${repo}/contents/${markerPath}?`)) {
+      return { content: Buffer.from(JSON.stringify({ sourceSha: markerSha })).toString("base64") };
+    }
     throw new Error(`Unexpected request: ${method} ${path}`);
   };
   return {
@@ -74,14 +84,17 @@ test("checks later pages and renames out of the website; mirrors the live PR hea
     ],
   });
   assert.equal((await f.run()).status, "queued");
-  assert.deepEqual(f.writes(), [
-    {
-      method: "POST",
-      path: `${repo}/git/refs`,
-      body: { ref: "refs/heads/pr-12", sha: "head" },
-      allowMissing: undefined,
-    },
-  ]);
+  assert.deepEqual(
+    f.writes().filter(({ path }) => path === `${repo}/git/refs`),
+    [
+      {
+        method: "POST",
+        path: `${repo}/git/refs`,
+        body: { ref: "refs/heads/pr-12", sha: "sanitized" },
+        allowMissing: undefined,
+      },
+    ],
+  );
 });
 
 test("closed, retargeted, and no-longer-relevant PRs remove only their own preview ref", async () => {
@@ -102,17 +115,27 @@ test("unrelated follow-up commits do not advance an existing preview", async () 
     pages: [[{ filename: "packages/website/docs/en/index.md" }]],
     trees: {
       "old?recursive=1": tree([
+        file(markerPath),
         file("packages/website/docs/en/index.md"),
         file("packages/core/index.ts", "old"),
       ]),
-      "head?recursive=1": tree([
+      "sanitized?recursive=1": tree([
+        file(markerPath, "new-marker"),
         file("packages/website/docs/en/index.md"),
         file("packages/core/index.ts", "new"),
       ]),
     },
   });
-  assert.equal((await f.run()).status, "unchanged");
-  assert.deepEqual(f.writes(), []);
+  assert.deepEqual(await f.run(), {
+    status: "unchanged",
+    branch: "pr-12",
+    headSha: "head",
+    deployedSha: "old-head",
+  });
+  assert.equal(
+    f.writes().some(({ path }) => path === ref),
+    false,
+  );
 });
 
 test("changed inputs and truncated trees advance previews, including force-pushed PRs", async () => {
@@ -123,13 +146,21 @@ test("changed inputs and truncated trees advance previews, including force-pushe
         pages: [[{ filename: "pnpm-lock.yaml" }]],
         trees: {
           "old?recursive=1": tree([file("pnpm-lock.yaml", "old")]),
-          "head?recursive=1": after,
+          "sanitized?recursive=1": after,
         },
       });
       assert.equal((await f.run()).status, "queued");
-      assert.deepEqual(f.writes(), [
-        { method: "PATCH", path: ref, body: { sha: "head", force: true }, allowMissing: undefined },
-      ]);
+      assert.deepEqual(
+        f.writes().filter(({ path }) => path === ref),
+        [
+          {
+            method: "PATCH",
+            path: ref,
+            body: { sha: "sanitized", force: true },
+            allowMissing: undefined,
+          },
+        ],
+      );
     }),
   );
 });
@@ -155,10 +186,27 @@ test("PR-supplied Actions definitions are replaced with the trusted base's defin
   const writes = f.writes();
   assert.deepEqual(writes[0].body, {
     base_tree: "head-tree",
-    tree: [{ path: ".github", mode: "040000", type: "tree", sha: "trusted" }],
+    tree: [
+      {
+        path: markerPath,
+        mode: "100644",
+        type: "blob",
+        content: JSON.stringify({ sourceSha: "head" }),
+      },
+      { path: ".github", mode: "040000", type: "tree", sha: "trusted" },
+    ],
   });
   assert.deepEqual(writes[1].body.parents, ["head"]);
   assert.deepEqual(writes[2].body, { ref: "refs/heads/pr-12", sha: "sanitized" });
+});
+
+test("existing previews without a revision marker are rebuilt once for deployment tracking", async () => {
+  const f = fixture({
+    existing: { object: { sha: "old" } },
+    pages: [[{ filename: "pnpm-lock.yaml" }]],
+  });
+  assert.equal((await f.run()).status, "queued");
+  assert.ok(f.writes().some(({ path }) => path === ref));
 });
 
 test("API errors fail the run instead of silently skipping deployment", async () => {
