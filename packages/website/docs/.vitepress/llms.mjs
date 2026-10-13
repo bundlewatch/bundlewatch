@@ -110,6 +110,7 @@ const toPlainMarkdown = (body, pagePath) => {
       if (/^\s*<img\b[^>]*>$/.test(line)) line = line.trim();
       line = line
         .replace(/^(#+ .*?) \{#[\w-]+\}$/, "$1")
+        .replace(/<a id="[^"]*"><\/a>/g, "")
         .replace(/<img\b[^>]*>/g, (img) => {
           const alt = /alt="([^"]*)"/.exec(img)?.[1] ?? "";
           const src = /src="([^"]*)"/.exec(img)?.[1] ?? "";

@@ -9,7 +9,7 @@ import pkg from "../../../../../packages/bundlewatch/package.json" with { type: 
 export const version = process.env.BUNDLEWATCH_VERSION || pkg.version;
 
 export const shared = defineConfig({
-  title: "BundleWatch",
+  title: "Bundlewatch",
 
   rewrites: {
     "en/:rest*": ":rest*",

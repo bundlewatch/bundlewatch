@@ -1,14 +1,14 @@
 ---
 title: 基准分支与跟踪分支
-description: Bundlewatch 如何选择对比的分支，以及哪些分支会保存基准。
+description: Bundlewatch 如何选择要对比的分支、哪些分支会保存基准，以及文件如何与基准匹配。
 ---
 
 # 基准分支与跟踪分支
 
-Bundlewatch 会将每次构建与一个基准进行对比：基准是为基准分支保存的最近一次结果。有两个设置控制这一行为：
+Bundlewatch 会将每次构建与一个基准对比：基准是为基准分支保存的最近一次结果。有两个设置控制这一行为：
 
-- **基准分支**（`ci.repoBranchBase`）是当前构建要对比的分支。
-- **跟踪分支**（`ci.trackBranches`）是构建时会保存新基准的分支。
+- 基准分支（`ci.repoBranchBase`）是当前构建要对比的分支。
+- 跟踪分支（`ci.trackBranches`）是构建时会保存新基准的分支。
 
 ## 基准分支 {#base-branch}
 
@@ -16,19 +16,19 @@ Bundlewatch 会使用以下第一个可用的值：
 
 1. 你的[配置](../reference/configuration.md#ci)中的 `ci.repoBranchBase`。
 2. `CI_BRANCH_BASE` 环境变量。
-3. Pull Request 的目标分支（如果你的 CI 提供）。GitHub Actions、GitLab、Travis 和 Drone 会提供。
+3. Pull Request 的目标分支，如果你的 CI 服务提供（[各 CI 服务的情况](./using-bundlewatch.md#supported-ci-providers)）。
 4. 在 GitHub Actions 中，仓库的默认分支。
 5. `master`。
 
-这意味着在 GitHub Actions 中无需任何配置：Pull Request 会与其目标分支对比，其他构建会与默认分支对比。
+因此在 GitHub Actions 中无需任何配置：Pull Request 会与其目标分支对比，其他构建会与默认分支对比。
 
-在其他 CI 服务上，非 Pull Request 的构建会与 `master` 对比；CircleCI 不提供目标分支，因此其 Pull Request 也会与 `master` 对比。如果你的主分支使用其他名称，请将 `CI_BRANCH_BASE` 设为该名称，例如 `main`。它会作用于每一次构建，因此在 GitLab、Travis 和 Drone 上，目标为其他分支的 Pull Request 也会与它对比。
+当前四项都不可用时，例如 GitLab CI 或 Travis CI 上的推送，以及 CircleCI 上的所有构建，构建会与 `master` 对比。如果你的主分支使用其他名称，或者你想与 `develop` 等分支对比，请设置 `CI_BRANCH_BASE`。它会作用于每一次构建，包括目标为其他分支的 Pull Request。
 
-如果你想对比其他分支（例如 `develop`），请设置 `CI_BRANCH_BASE` 环境变量。注意它会作用于每一次构建，包括目标分支不同的 Pull Request。
+## 文件如何匹配 {#how-files-are-matched}
 
-::: info 信息
-查看哪些 CI 变量会被自动检测，请参阅 [环境变量参考](../reference/configuration.md#environment-variables) 和 [CLI 源码](https://github.com/bundlewatch/bundlewatch/blob/main/packages/bundlewatch/src/ci.ts)。
-:::
+每个文件会与基准中同名的条目对比：名称是你的 glob 写出的路径，再经过 `normalizeFilenames` 处理。`./dist/app.js` 和 `dist/app.js` 是不同的名称，因此把 `./dist/*.js` 改成 `dist/*.js` 会让每个文件都显示为已移除和新增。对比体积时不会检查压缩方式，因此把某个文件从 gzip 改为 brotli 会显示为体积变化。
+
+这些差异会一直存在，直到某次跟踪分支的构建用新配置保存了基准。
 
 ## 跟踪分支 {#tracked-branches}
 
@@ -38,6 +38,8 @@ Bundlewatch 会使用以下第一个可用的值：
 - 它不是 Pull Request 构建，并且
 - 所有文件都能找到并读取。
 
+未通过 `maxSize` 检查的构建仍然会保存体积。
+
 要跟踪其他分支（例如 `staging`），请在 `package.json` 的 Bundlewatch 配置中添加 `trackBranches` 选项。该列表会替换默认列表，因此请列出所有你想跟踪的分支：
 
 ```json
@@ -45,7 +47,7 @@ Bundlewatch 会使用以下第一个可用的值：
   "bundlewatch": {
     "files": [
       {
-        "path": "myfolder/*.js",
+        "path": "./dist/*.js",
         "maxSize": "100kB"
       }
     ],
@@ -56,26 +58,14 @@ Bundlewatch 会使用以下第一个可用的值：
 }
 ```
 
-::: warning 1.0 中的变化
-在 1.0 之前，`trackBranches` 会与默认值按索引逐项合并，因此 `["main"]` 实际跟踪的是 `["main", "develop"]`。现在会原样使用你的列表。
+::: warning 每个分支一个基准
+每个分支只有一个基准。如果有多次 Bundlewatch 运行在同一个分支上保存基准，例如 monorepo 中每个包各运行一次，最后一次会覆盖其他几次，之后的对比会把其他运行的文件显示为已移除。请在一次运行中检查所有文件。
 :::
 
 ### Pull Request 构建 {#pull-request-builds}
 
 Pull Request 构建会与基准对比，但从不保存基准，即使 Pull Request 的分支名是被跟踪的名称，例如 fork 中的 `master`。
 
-只有 CI 服务专门为 Pull Request 运行的构建才算作 Pull Request 构建：
-
-| CI 服务          | 算作 Pull Request 构建的情况                 |
-| ---------------- | -------------------------------------------- |
-| GitHub Actions   | `pull_request` 和 `pull_request_target` 事件 |
-| GitLab           | 合并请求流水线                               |
-| Travis           | Pull Request 构建                            |
-| Drone            | `pull_request` 事件                          |
-| Netlify          | 部署预览                                     |
-| CircleCI         | 来自 fork 的 Pull Request 的构建             |
-| 通用 `CI_*` 变量 | `CI_EVENT=pull_request`                      |
+只有 CI 服务专门为 Pull Request 运行的构建才算作 Pull Request 构建：参见 [支持的 CI 服务](./using-bundlewatch.md#supported-ci-providers)。
 
 分支构建会继续保存基准，即使该分支有打开的 Pull Request。在 [JavaScript 配置文件](./using-a-config-file.md)中设置 `ci.isPullRequest` 可以覆盖这一检测。
-
-更多配置选项，请参阅 [配置参考](../reference/configuration.md)。

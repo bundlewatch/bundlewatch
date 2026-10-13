@@ -1,42 +1,13 @@
 ---
-title: Getting Started
+title: Getting started
 description: Set up Bundlewatch in your project, by hand or with a coding agent.
 ---
 
-# Getting Started
+# Getting started
 
-This guide sets up Bundlewatch in your project: install it, tell it which files to check, and run it in CI.
+<a id="requirements"></a>
 
-## Requirements
-
-- Node.js 22.17 or later.
-- The package ships ES module and CommonJS builds. In CommonJS code, use `require('bundlewatch').default`, see the [Node.js API](../reference/nodejs.md#commonjs).
-- TypeScript types are included.
-
-Upgrading from 0.x? See [Migrating to 1.0](./migrating-to-v1.md).
-
-## Set up with an AI agent
-
-Copy this prompt into your coding agent. It reads this documentation, measures your build, picks limits and adds the CI setup:
-
-```text:no-line-numbers
-Set up Bundlewatch (https://bundlewatch.io) in this repository, so CI fails when a built file gets too big, and pull requests show how much each file changed.
-
-Read https://bundlewatch.io/llms-full.txt first: it has the whole documentation. If this repository already uses bundlewatch 0.x, follow https://bundlewatch.io/guide/migrating-to-v1.md instead. Then:
-
-1. Find the production build command and run it. List the JavaScript and CSS files it outputs, with their gzip sizes.
-2. Add bundlewatch as a dev dependency, with the package manager this project already uses.
-3. Add a "bundlewatch" key to package.json, with one "files" entry per output. Use globs that still match when file names change between builds, and a "maxSize" about 10% above each file's current gzip size, rounded up to a whole kB. If file names contain content hashes, set "normalizeFilenames" so that a file keeps the same name across builds, and check the pattern against the actual file names.
-4. Build, run `npx bundlewatch`, and make sure every file passes.
-5. Run it in CI after the build:
-   - On GitHub Actions, add the workflow from https://bundlewatch.io/guide/using-bundlewatch#github-actions, adapted to this project's Node.js version, package manager, build command and default branch. It needs no secret.
-   - On another CI provider, add a step that runs `npx bundlewatch` after the build, and ask me to create a token at https://service.bundlewatch.io/setup-github and store it as the BUNDLEWATCH_GITHUB_TOKEN secret. Never commit a token.
-6. Summarize what you changed, the limits you chose, and what is left for me to do, such as making `bundlewatch` a required status check.
-```
-
-The whole documentation is also available as plain text for agents and LLMs: [`llms.txt`](https://bundlewatch.io/llms.txt) lists the pages, and [`llms-full.txt`](https://bundlewatch.io/llms-full.txt) contains all of them. Every page is available as Markdown too, by adding `.md` to its URL.
-
-Prefer to set it up yourself? Follow the steps below.
+Bundlewatch needs Node.js 22.17 or later. Upgrading from 0.x: see [Migrating to 1.0](./migrating-to-v1.md). To let a coding agent do the setup, copy [this prompt](#set-up-with-an-ai-agent).
 
 ## Installation
 
@@ -81,19 +52,62 @@ Build your project, then run:
 npx bundlewatch
 ```
 
-Each file is listed with its size. The command exits with code 1 when a file is over its `maxSize`, or when a path matches no files.
+The first run on your machine prints something like this:
 
-- **Choosing limits:** to see your current sizes, run `npx bundlewatch` before adding `maxSize`: a file without one has no limit, and is listed with its size. Then set each `maxSize` a little above the current size, so the check catches real increases without failing on every small change.
-- **Hashed file names:** if your file names contain content hashes, such as `main.3f2a1b.js`, set [`normalizeFilenames`](../reference/configuration.md#normalizefilenames). Otherwise each build's files look new, and there is nothing to compare them with.
+```text
+[WARNING] Some CI configuration options were not found (githubAccessToken, repoOwner, repoName, commitSha):
+    bundlewatch will be unable to report build status, or save comparison data
+    Learn more at: https://bundlewatch.io/
+
+Result breakdown at: https://service.bundlewatch.io/results?d=...
+
+PASS ./dist/app.js: 30.71KB < 100KB (gzip)
+
+bundlewatch PASS
+Everything is in check (+30.71KB, -0B)
+```
+
+The warning is expected on your machine: in CI, you provide the token, and Bundlewatch detects the other values on [supported providers](./using-bundlewatch.md#supported-ci-providers). The command exits with code 1 when a file is over its `maxSize`, or when a path matches no files.
+
+To choose limits, run `npx bundlewatch` before adding `maxSize`. A file without one has no limit, and shows as `PASS ./dist/app.js: 30.71KB < Infinity (gzip)`. Then set each `maxSize` a little above the current size, so the check catches real increases without failing on every small change.
+
+If your file names contain content hashes, such as `main.3f2a1b9c.js`, set [`normalizeFilenames`](../reference/configuration.md#normalizefilenames). Otherwise each build's files look new, and there is nothing to compare them with.
 
 See [Using a config file](./using-a-config-file.md) for other ways to configure Bundlewatch, and the [configuration reference](../reference/configuration.md) for every option.
 
 ## Running in CI
 
-To report results on your pull requests and compare them with your main branch, run Bundlewatch in CI after your build. On GitHub, use a [GitHub Actions workflow](./using-bundlewatch.md#github-actions); it doesn't need a token of its own. Other CI providers are covered in [Using Bundlewatch](./using-bundlewatch.md#other-ci-providers).
+Run Bundlewatch in CI after your build, so that it posts a status on each pull request and compares every file with the base branch:
+
+- On GitHub Actions, copy [this workflow](./using-bundlewatch.md#github-actions) to `.github/workflows/bundlewatch.yml`. It uses the token GitHub creates for each run, so you don't need to create one.
+- On another CI provider, [create a token](./using-bundlewatch.md#other-ci-providers), store it as the secret `BUNDLEWATCH_GITHUB_TOKEN`, and run `npx bundlewatch` after the build.
+
+Pull requests have nothing to compare with until a push to a [tracked branch](./diffing-against-branches-other-than-master.md#tracked-branches), such as `main`, saves a baseline. Until then the log shows `Unable to fetch fileDetails … code=404`.
+
+## Set up with an AI agent
+
+Copy this prompt into your coding agent. It reads this documentation, measures your build, picks limits and adds the CI setup:
+
+```text:no-line-numbers
+Set up Bundlewatch (https://bundlewatch.io) in this repository, so CI fails when a built file gets too big, and pull requests show how much each file changed.
+
+Read https://bundlewatch.io/llms-full.txt first: it has the whole documentation. If this repository already uses Bundlewatch 0.x, follow https://bundlewatch.io/guide/migrating-to-v1.md instead. Then:
+
+1. Find the production build command and run it. List the JavaScript and CSS files it outputs, with their gzip sizes.
+2. Add bundlewatch as a dev dependency, with the package manager this project already uses.
+3. Add a "bundlewatch" key to package.json, with one "files" entry per output. Use globs that match only files, not directories, and still match when file names change between builds, and a "maxSize" about 10% above each file's current gzip size, rounded up to a whole kB. If file names contain content hashes, set "normalizeFilenames" so that a file keeps the same name across builds. Check the pattern against the actual file names: it must remove only the hash, and no two files may end up with the same name.
+4. Build, run `npx bundlewatch`, and make sure every file passes.
+5. Run it in CI after the build:
+   - On GitHub Actions, add the workflow from https://bundlewatch.io/guide/using-bundlewatch#github-actions, adapted to this project's Node.js version, package manager, build command and default branch. It needs no secret.
+   - On another CI provider, add a step that runs `npx bundlewatch` after the build, and ask me to create a token at https://service.bundlewatch.io/setup-github and store it as the BUNDLEWATCH_GITHUB_TOKEN secret. Never commit a token.
+6. Summarize what you changed, the limits you chose, and what is left for me to do, such as making `bundlewatch` a required status check.
+```
+
+The whole documentation is also available as plain text for agents and LLMs: [`llms.txt`](https://bundlewatch.io/llms.txt) lists the pages, and [`llms-full.txt`](https://bundlewatch.io/llms-full.txt) contains all of them. Every page is available as Markdown too, by adding `.md` to its URL.
 
 ## Next steps
 
 - [GitHub statuses](./using-bundlewatch.md#github-statuses): block merges when a file is too big.
 - [Base and tracked branches](./diffing-against-branches-other-than-master.md): what each build is compared with.
 - [Configuration reference](../reference/configuration.md): every option and environment variable.
+- [Troubleshooting](./troubleshooting.md): what each log message means.

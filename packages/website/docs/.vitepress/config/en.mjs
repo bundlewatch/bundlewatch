@@ -28,7 +28,7 @@ export const en = defineConfig({
 
     footer: {
       message: "Released under the MIT License.",
-      copyright: `Copyright © 2018-present BundleWatch`,
+      copyright: `Copyright © 2018-present Bundlewatch`,
     },
   },
 });
@@ -37,7 +37,7 @@ function nav() {
   return [
     {
       text: "Guide",
-      link: "/guide/what-is-it",
+      link: "/guide/getting-started",
       activeMatch: "/guide/",
     },
     {
@@ -49,7 +49,7 @@ function nav() {
       text: version,
       items: [
         {
-          text: "Release Notes",
+          text: "Release notes",
           link: "https://github.com/bundlewatch/bundlewatch/releases",
           target: "_blank",
         },
@@ -68,25 +68,29 @@ function sidebarGuide() {
     {
       text: "Introduction",
       items: [
-        { text: "What is it?", link: "what-is-it" },
-        { text: "Getting Started", link: "getting-started" },
-        { text: "Migrating to 1.0", link: "migrating-to-v1" },
+        { text: "What is Bundlewatch?", link: "what-is-it" },
+        { text: "Getting started", link: "getting-started" },
       ],
     },
     {
       text: "How to use",
       items: [
-        { text: "Using Bundlewatch", link: "using-bundlewatch" },
+        { text: "Running in CI", link: "using-bundlewatch" },
         { text: "Using a config file", link: "using-a-config-file" },
         {
           text: "Base and tracked branches",
           link: "diffing-against-branches-other-than-master",
         },
         { text: "Using a custom server", link: "using-a-custom-server" },
+        { text: "Troubleshooting", link: "troubleshooting" },
       ],
     },
     {
-      text: "Config, API, and CLI reference",
+      text: "Upgrading",
+      items: [{ text: "Migrating to 1.0", link: "migrating-to-v1" }],
+    },
+    {
+      text: "Reference",
       base: "/reference/",
       link: "configuration",
     },
@@ -99,8 +103,8 @@ function sidebarReference() {
       text: "Reference",
       items: [
         { text: "Configuration", link: "configuration" },
+        { text: "Command line", link: "cli" },
         { text: "Node.js API", link: "nodejs" },
-        { text: "Command Line", link: "cli" },
       ],
     },
   ];

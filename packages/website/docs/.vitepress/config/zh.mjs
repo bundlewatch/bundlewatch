@@ -4,7 +4,7 @@ import { version } from "./shared.mjs";
 
 export const zh = defineConfig({
   lang: "zh-Hans",
-  description: "观测你的包裹大小",
+  description: "盯住你的 bundle 体积",
 
   themeConfig: {
     nav: nav(),
@@ -28,7 +28,7 @@ export const zh = defineConfig({
 
     footer: {
       message: "根据 MIT 许可证发布。",
-      copyright: `版权所有 © 2018-至今 BundleWatch`,
+      copyright: `版权所有 © 2018-至今 Bundlewatch`,
     },
   },
 });
@@ -37,7 +37,7 @@ function nav() {
   return [
     {
       text: "指南",
-      link: "/zh/guide/what-is-it",
+      link: "/zh/guide/getting-started",
       activeMatch: "/zh/guide/",
     },
     {
@@ -49,12 +49,12 @@ function nav() {
       text: version,
       items: [
         {
-          text: "Release Notes",
+          text: "更新日志",
           link: "https://github.com/bundlewatch/bundlewatch/releases",
           target: "_blank",
         },
         {
-          text: "Contributing",
+          text: "贡献指南",
           link: "https://github.com/bundlewatch/bundlewatch/blob/main/CONTRIBUTING.md",
           target: "_blank",
         },
@@ -68,25 +68,29 @@ function sidebarGuide() {
     {
       text: "介绍",
       items: [
-        { text: "这是什么？", link: "what-is-it" },
+        { text: "什么是 Bundlewatch？", link: "what-is-it" },
         { text: "快速开始", link: "getting-started" },
-        { text: "迁移到 1.0", link: "migrating-to-v1" },
       ],
     },
     {
       text: "如何使用",
       items: [
-        { text: "使用 Bundlewatch", link: "using-bundlewatch" },
+        { text: "在 CI 中运行", link: "using-bundlewatch" },
         { text: "使用配置文件", link: "using-a-config-file" },
         {
           text: "基准分支与跟踪分支",
           link: "diffing-against-branches-other-than-master",
         },
         { text: "使用自定义服务器", link: "using-a-custom-server" },
+        { text: "故障排查", link: "troubleshooting" },
       ],
     },
     {
-      text: "配置、API 和 CLI 参考",
+      text: "升级",
+      items: [{ text: "迁移到 1.0", link: "migrating-to-v1" }],
+    },
+    {
+      text: "参考",
       base: "/zh/reference/",
       link: "configuration",
     },
@@ -98,9 +102,9 @@ function sidebarReference() {
     {
       text: "参考",
       items: [
-        { text: "配置项", link: "configuration" },
-        { text: "Node.js API", link: "nodejs" },
+        { text: "配置", link: "configuration" },
         { text: "命令行", link: "cli" },
+        { text: "Node.js API", link: "nodejs" },
       ],
     },
   ];

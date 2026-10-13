@@ -1,13 +1,13 @@
 ---
 title: What is Bundlewatch?
-description: Learn what Bundlewatch is, how it works, and how it helps you keep your bundle size in check.
+description: What Bundlewatch checks after each build, and how it reports the results on pull requests.
 ---
 
 # What is Bundlewatch?
 
 Bundlewatch checks the size of your built browser assets, so files don't grow without anyone noticing. You list your files and how big they may get. Bundlewatch measures them after every build, fails the build when one is too big, and shows on each pull request how much every file changed.
 
-## Why use Bundlewatch?
+## What it catches {#why-use-bundlewatch}
 
 A sudden increase in size usually means something went wrong:
 
@@ -18,13 +18,15 @@ A sudden increase in size usually means something went wrong:
 
 ## How it works
 
-1. **Measure.** After your build, Bundlewatch measures each file the way browsers download it: compressed with gzip by default, or brotli, or uncompressed.
-2. **Check.** A file over its `maxSize`, or a path that matches no files, fails the run. The command exits with code 1, which fails your CI job.
-3. **Compare.** On CI, Bundlewatch fetches the sizes saved for the base branch, usually the one you're merging into, from the Bundlewatch service. This _baseline_ shows how much each file changed.
-4. **Report.** The result appears as a `bundlewatch` status on the commit, with a link to a page that breaks it down file by file.
-5. **Save.** Builds of tracked branches, such as `main`, save their sizes as the new baseline that later pull requests are compared with.
+1. After your build, Bundlewatch measures each file the way browsers download it: compressed with gzip by default, or brotli, or uncompressed.
+2. A file over its `maxSize`, or a path that matches no files, fails the run. The command exits with code 1, which fails your CI job.
+3. On CI, Bundlewatch fetches the sizes saved for the base branch, usually the one you're merging into, from the Bundlewatch service. This _baseline_ shows how much each file changed.
+4. The result appears as a `bundlewatch` status on the commit, with a link to a page that breaks it down file by file.
+5. Builds of tracked branches, such as `main`, save their sizes as the new baseline that later pull requests are compared with.
 
-The service at `service.bundlewatch.io` is free. Bundlewatch sends it file names and sizes, the repository, branch and commit, and your GitHub token so it can check your access. It never sends the files themselves. You can also [run your own](./using-a-custom-server.md), or none at all: without a service, Bundlewatch still checks `maxSize`.
+The service at `service.bundlewatch.io` is free. Bundlewatch sends it file names and sizes, the repository, branch and commit, and your GitHub token so it can check your access. It never sends the files themselves.
+
+Anyone with a results link can open the page: see [Results links](./using-bundlewatch.md#results-links). You can also [run your own](./using-a-custom-server.md), or none at all: without a service, Bundlewatch still checks `maxSize`.
 
 ## Blocking merges
 
@@ -32,4 +34,4 @@ To stop pull requests that make a file too big from being merged, make `bundlewa
 
 ---
 
-Ready to try it? See [Getting Started](./getting-started.md), or let your coding agent [set it up for you](./getting-started.md#set-up-with-an-ai-agent).
+Next: [Getting started](./getting-started.md), or [set it up with a coding agent](./getting-started.md#set-up-with-an-ai-agent).

@@ -5,37 +5,24 @@ description: Run Bundlewatch from Node.js, with its result format, TypeScript ty
 
 # Node.js API
 
-The API can be used as below, for detail information on the different params, [see configuration](/reference/configuration.md). It requires Node.js 22.17 or later. The package ships ES module and CommonJS builds, with [TypeScript types](#typescript).
+`bundlewatch(config)` takes the same options as the [configuration](./configuration.md), and detects the `ci` values from the environment like the CLI does. It doesn't read package.json or a config file. The package requires Node.js 22.17 or later, and ships ES module and CommonJS builds with [TypeScript types](#typescript).
 
 ```js
 import bundlewatch, { STATUSES } from 'bundlewatch'
 
 const results = await bundlewatch({
-  files: [
-    {
-      path: './myfolder/*.js',
-      maxSize: '100kb',
-    },
-  ],
-  bundlewatchServiceHost: 'https://service.bundlewatch.io', // Can be a custom service
-  ci: {
-    // Detected from your CI environment unless you set them
-    githubAccessToken: process.env.BUNDLEWATCH_GITHUB_TOKEN,
-    repoBranchBase: 'main', // Branch PR is being merged into
-    trackBranches: ['main', 'develop'],
-  },
-  defaultCompression: 'gzip',
+  files: [{ path: './dist/*.js', maxSize: '100kB' }],
 })
 
-console.log(results)
-
-// Status strings can also be accessed from the api
+console.log(results.summary)
 if (results.status === STATUSES.FAIL) {
   process.exitCode = 1
 }
 ```
 
 Like the CLI, the API posts GitHub statuses and compares with and saves baselines when the `ci` details are available. It also logs the same `[INFO]`, `[WARNING]` and `[ERROR]` lines to the console, but doesn't print the results or set the exit code: that's up to you.
+
+Unlike the CLI, it accepts an empty `files`. Nothing is measured and the result is `'pass'`, but a tracked-branch build with a token still saves, which replaces the baseline with an empty one.
 
 ## CommonJS
 
@@ -57,7 +44,7 @@ const { STATUSES } = require('bundlewatch')
   status: 'fail',
   fullResults: [
     {
-      filePath: './myfolder/test-file-1.jpg',
+      filePath: './dist/app.js',
       message: '30.71KB < 100KB (gzip)',
       status: 'pass',
       size: 31448,
@@ -65,7 +52,7 @@ const { STATUSES } = require('bundlewatch')
       maxSize: 102400
     },
     {
-      filePath: './myfolder/test-file-2.jpg',
+      filePath: './dist/vendor.js',
       message: '198.6KB > 100KB (gzip)',
       status: 'fail',
       size: 203368,
@@ -78,24 +65,24 @@ const { STATUSES } = require('bundlewatch')
 }
 ```
 
-| Field         | Description                                                                                                                                                                                             |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status`      | `'pass'` or `'fail'`, also available as `STATUSES.PASS` and `STATUSES.FAIL`. `'warn'` (`STATUSES.WARN`) is reserved: no check produces it.                                                              |
-| `summary`     | A one-line summary, e.g. `'maxSize check failed'`                                                                                                                                                       |
-| `url`         | The [results page](../guide/using-bundlewatch.md#results-links): a short link when the service accepts the token for writing, a long one otherwise. `undefined` when `bundlewatchServiceHost` is `null` |
-| `fullResults` | One entry per file                                                                                                                                                                                      |
+| Field         | Description                                                                                                                                                                                                                                                                    |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `status`      | `'pass'` or `'fail'`, also available as `STATUSES.PASS` and `STATUSES.FAIL`. `'warn'` (`STATUSES.WARN`) is reserved: no check produces it.                                                                                                                                     |
+| `summary`     | A one-line summary, e.g. `'maxSize check failed'`                                                                                                                                                                                                                              |
+| `url`         | The [results page](../guide/using-bundlewatch.md#results-links): a short link when the service accepts the token for writing, a long one otherwise. `undefined` when `bundlewatchServiceHost` is `null`                                                                        |
+| `fullResults` | One entry per distinct path: each measured file, each path that matched nothing or couldn't be read, and each baseline file missing from this build. Files that end up with the same name after [`normalizeFilenames`](./configuration.md#normalizefilenames) share one entry. |
 
 Each entry in `fullResults` has:
 
-| Field            | Description                                                                                                   |
-| ---------------- | ------------------------------------------------------------------------------------------------------------- |
-| `filePath`       | The file path, after `normalizeFilenames`                                                                     |
-| `status`         | `'pass'`, `'fail'`, or `'removed'` for a file that is in the baseline but no longer exists                    |
-| `message`        | The result as text. Missing on error entries.                                                                 |
-| `error`          | Only on error entries, e.g. when a path matches no files. They have no sizes, and their `status` is `'fail'`. |
-| `size`           | Size in bytes, after compression. `0` for removed files.                                                      |
-| `baseBranchSize` | Size in the baseline, in bytes. `0` when there is no baseline.                                                |
-| `maxSize`        | Limit in bytes. `Infinity` when not set; `0` for removed files.                                               |
+| Field            | Description                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `filePath`       | The file path, after `normalizeFilenames`. Error entries have the glob that matched nothing, or the path that couldn't be read. |
+| `status`         | `'pass'`, `'fail'`, or `'removed'` (`STATUSES.REMOVED`) for a file that is in the baseline but no longer exists                 |
+| `message`        | The result as text. Missing on error entries.                                                                                   |
+| `error`          | Only on error entries, e.g. when a path matches no files. They have no sizes, and their `status` is `'fail'`.                   |
+| `size`           | Size in bytes, after compression. `0` for removed files.                                                                        |
+| `baseBranchSize` | Size in the baseline, in bytes. `0` when there is no baseline.                                                                  |
+| `maxSize`        | Limit in bytes. `Infinity` when not set; `0` for removed files.                                                                 |
 
 ## TypeScript
 
@@ -124,6 +111,10 @@ const results = await bundlewatch(config)
 
 When the configuration is invalid, `bundlewatch()` rejects with a `ValidationError`, which the package also exports. As in 0.x, its `type` is `'ValidationError'`.
 
+A file over its limit doesn't reject: the result's `status` is `'fail'`. `bundlewatch()` rejects when it can't post a GitHub status, because GitHub can't be reached or doesn't answer within 5 seconds. The error's message is the code, such as `ECONNABORTED`, and if this happens after the pending status, it first tries to set `bundlewatch` to error.
+
+Errors from the Bundlewatch service never reject: they're logged. A failed lookup leaves the result without a comparison, and a failed short link leaves `url` as the long link.
+
 ```js
 import bundlewatch, { ValidationError } from 'bundlewatch'
 
@@ -135,8 +126,8 @@ try {
 } catch (error) {
   if (error instanceof ValidationError) {
     console.error(error.message) // config.compression must be a valid type
+  } else {
+    throw error
   }
 }
 ```
-
-The CLI uses this API itself, see the [bundlewatch CLI source](https://github.com/bundlewatch/bundlewatch/tree/main/packages/bundlewatch).
