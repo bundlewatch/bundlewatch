@@ -64,7 +64,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment: service-production
+    environment:
+      name: service-production
+      url: https://service.bundlewatch.io
     permissions:
       id-token: write
     steps:
