@@ -114,7 +114,10 @@ Resources:
                   - amplify:GetBranch
                   - amplify:CreateDeployment
                   - amplify:StartDeployment
-                Resource: !Sub ${App.Arn}/branches/main
+                Resource:
+                  - !Sub ${App.Arn}/branches/main
+                  # Deployment APIs also authorize against child resources such as deployments/*.
+                  - !Sub ${App.Arn}/branches/main/*
               - Effect: Allow
                 Action:
                   - amplify:GetJob
