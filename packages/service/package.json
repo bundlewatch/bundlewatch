@@ -11,7 +11,7 @@
     "build": "tsdown",
     "dev": "node --watch src/dev-server.ts",
     "typecheck": "tsc",
-    "test": "node --test \"src/**/*.test.ts\""
+    "test": "node --test \"src/**/*.test.ts\" \"infra/protection/*.test.mjs\""
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "3.1149.0",

@@ -9,7 +9,15 @@ Description: >-
   changes with the execution role, which can't create IAM roles: the
   function's role is defined here, with exactly the access it needs.
 
+Metadata:
+  AWSToolsMetrics:
+    AWSAgentToolkit: aws-cloudformation@3
+
 Parameters:
+  ProtectionStateTableName:
+    Type: String
+    Default: bundlewatch-protection-state
+    Description: State table of the separately administrator-deployed protection stack.
   GitHubRepository:
     Type: String
     Default: bundlewatch/bundlewatch
@@ -101,6 +109,9 @@ Resources:
 
   DeployRole:
     Type: AWS::IAM::Role
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: Read-only protection state lets CI refuse deployments during shutdown.
     Properties:
       Description: Assumed by GitHub Actions to deploy the bundlewatch service.
       MaxSessionDuration: 3600
@@ -158,10 +169,15 @@ Resources:
                 Condition:
                   StringEquals:
                     iam:PassedToService: cloudformation.amazonaws.com
+              - Effect: Allow
+                Action: dynamodb:GetItem
+                Resource: !Sub arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ProtectionStateTableName}
 
   ExecutionRole:
     Type: AWS::IAM::Role
     Metadata:
+      com.aws.cloudformation.Context:
+        must: [Application deployments cannot change or delete reserved concurrency.]
       cfn-lint:
         config:
           ignore_checks:
@@ -189,6 +205,13 @@ Resources:
               # bundlewatch-service-prod-expressRouter.
               - Effect: Allow
                 Action: lambda:*
+                Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ServiceStackName}-ServiceFunction-*
+              # Concurrency belongs exclusively to infra/protection.yaml. A
+              # normal application deployment must never clear the shutoff.
+              - Effect: Deny
+                Action:
+                  - lambda:PutFunctionConcurrency
+                  - lambda:DeleteFunctionConcurrency
                 Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ServiceStackName}-ServiceFunction-*
               # Only API Gateway may invoke it: no public function URL, and no
               # permission for any other principal.

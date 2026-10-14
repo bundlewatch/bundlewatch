@@ -1,0 +1,511 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Independently deployed BundleWatch spending protection. Owns concurrency,
+  durable shutdown state, account-wide budget and notifications. Application
+  deployments must not own concurrency or reset the state table.
+Metadata:
+  AWSToolsMetrics:
+    AWSAgentToolkit: aws-cloudformation@3
+  com.aws.cloudformation.Context:
+    must:
+      - Deploy separately with administrator credentials; application CI cannot modify this stack.
+      - Do not delete the retained state table or reset its service item during shutdown.
+      - Traffic shutdown starts disabled until normal activity is reviewed.
+
+Parameters:
+  ServiceStackName:
+    Type: String
+    Default: bundlewatch-service
+  ServiceFunctionName:
+    Type: String
+    Description: Current ServiceFunction output; update after a deliberate replacement.
+  LegacyFunctionName:
+    Type: String
+    Description: Legacy backend to protect; supply the deployment-specific function name.
+  StoreTableName:
+    Type: String
+    Description: Existing baseline table to apply throughput limits to.
+  CodeBucket:
+    Type: String
+  CodeKey:
+    Type: String
+    Description: Immutable ZIP containing index.mjs and controller.mjs.
+  ApiStages:
+    Type: String
+    Default: '[]'
+    Description: JSON list of protected stages with type (HTTP or REST), api, name, and optional fields.
+  ApiStageArns:
+    Type: CommaDelimitedList
+    Description: Exact API Gateway stage ARNs matching ApiStages (no account component).
+  AlertEmail:
+    Type: String
+    Description: Deployment-specific operational and budget notification recipient.
+  MonthlyBudget:
+    Type: Number
+    MinValue: 1
+  WarningAmount:
+    Type: Number
+    MinValue: 1
+  ServiceConcurrency:
+    Type: Number
+    MinValue: 1
+  LegacyConcurrency:
+    Type: Number
+    MinValue: 1
+  AutomaticTrafficShutdown:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['false', 'true']
+    Description: Start alert-only; enable after reviewing normal traffic.
+  InvocationThreshold:
+    Type: Number
+    MinValue: 1
+    Description: Combined invocations per five minutes.
+  DurationThreshold:
+    Type: Number
+    MinValue: 1
+    Description: Combined execution milliseconds per five minutes, sustained for 3 periods.
+
+Conditions:
+  AutoTrip: !Equals [!Ref AutomaticTrafficShutdown, 'true']
+  HasApiStages: !Not [!Equals [!Ref ApiStages, '[]']]
+
+Resources:
+  StateTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: Durable latch and pre-shutdown concurrency snapshots, independent of application deployments.
+        must:
+          [Never replace or clear during an incident; only the serialized controller writes state.]
+    Properties:
+      TableName: !Sub ${AWS::StackName}-state
+      BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled: true
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  NotificationKey:
+    Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource: '*'
+          - Effect: Allow
+            Principal:
+              Service: [budgets.amazonaws.com, cloudwatch.amazonaws.com]
+            Action: [kms:Decrypt, kms:GenerateDataKey*]
+            Resource: '*'
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+
+  AlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      KmsMasterKeyId: !GetAtt NotificationKey.Arn
+
+  EmailSubscription:
+    Type: AWS::SNS::Subscription
+    # Send confirmation only after the rest of the protection is provisioned.
+    DependsOn:
+      [
+        Budget,
+        ControllerErrorAlarm,
+        TripSubscription,
+        AlertTopicPolicy,
+        InvocationAlarm,
+        DurationAlarm,
+        ReconcilePermission,
+      ]
+    Properties:
+      TopicArn: !Ref AlertTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  TripTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      KmsMasterKeyId: !GetAtt NotificationKey.Arn
+
+  AlertTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: [!Ref AlertTopic]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: CloudWatchAlerts
+            Effect: Allow
+            Principal:
+              Service: cloudwatch.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref AlertTopic
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${AWS::StackName}-*
+
+  TripTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics: [!Ref TripTopic]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: BudgetShutdown
+            Effect: Allow
+            Principal:
+              Service: budgets.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref TripTopic
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnEquals:
+                aws:SourceArn: !Sub arn:${AWS::Partition}:budgets::${AWS::AccountId}:budget/${AWS::StackName}
+          - Sid: TrafficShutdown
+            Effect: Allow
+            Principal:
+              Service: cloudwatch.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref TripTopic
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:${AWS::StackName}-*
+
+  Budget:
+    Type: AWS::Budgets::Budget
+    DependsOn: TripTopicPolicy
+    Properties:
+      Budget:
+        BudgetName: !Ref AWS::StackName
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: !Ref MonthlyBudget
+          Unit: USD
+        CostTypes:
+          IncludeCredit: false
+          IncludeRefund: false
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            ThresholdType: ABSOLUTE_VALUE
+            Threshold: !Ref WarningAmount
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref AlertEmail
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            ThresholdType: ABSOLUTE_VALUE
+            Threshold: !Ref MonthlyBudget
+          Subscribers:
+            - SubscriptionType: SNS
+              Address: !Ref TripTopic
+            - SubscriptionType: EMAIL
+              Address: !Ref AlertEmail
+
+  ControllerRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: Read budget independently of notification delivery and reconcile only explicitly listed API stages.
+        must:
+          [
+            Stage ARNs must match ApiStages; never grant API deletion or broad account administration.,
+          ]
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: controller
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: budgets:ViewBudget
+                Resource: !Sub arn:${AWS::Partition}:budgets::${AWS::AccountId}:budget/${AWS::StackName}
+              - !If
+                - HasApiStages
+                - Effect: Allow
+                  Action: [apigateway:GET, apigateway:PATCH]
+                  Resource: !Ref ApiStageArns
+                - !Ref AWS::NoValue
+              - Effect: Allow
+                Action: sqs:SendMessage
+                Resource: !GetAtt FailedEvents.Arn
+              - Effect: Allow
+                Action: cloudformation:ListStackResources
+                Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ServiceStackName}/*
+              - Effect: Allow
+                Action: [lambda:GetFunctionConcurrency, lambda:PutFunctionConcurrency]
+                Resource:
+                  - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ServiceFunctionName}
+                  - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ServiceStackName}-ServiceFunction-*
+                  - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${LegacyFunctionName}
+              - Effect: Allow
+                Action: [dynamodb:GetItem, dynamodb:PutItem]
+                Resource: !GetAtt StateTable.Arn
+              - Effect: Allow
+                Action: [dynamodb:DescribeTable, dynamodb:UpdateTable]
+                Resource: !Sub arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${StoreTableName}
+              - Effect: Allow
+                Action: sns:Publish
+                Resource: !Ref AlertTopic
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !GetAtt NotificationKey.Arn
+              - Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents]
+                Resource: !Sub ${ControllerLogs.Arn}
+
+  ControllerLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /bundlewatch/${AWS::StackName}
+      RetentionInDays: 30
+
+  Controller:
+    Type: AWS::Lambda::Function
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: One serialized writer controls the durable latch and all protected functions.
+        must:
+          [
+            Reserved concurrency must remain exactly 1; no public endpoint; never target this function for shutdown.,
+          ]
+    Properties:
+      Runtime: nodejs24.x
+      Architectures: [arm64]
+      Handler: index.handler
+      Code:
+        S3Bucket: !Ref CodeBucket
+        S3Key: !Ref CodeKey
+      Role: !GetAtt ControllerRole.Arn
+      MemorySize: 128
+      Timeout: 60
+      ReservedConcurrentExecutions: 1
+      LoggingConfig:
+        LogGroup: !Ref ControllerLogs
+      DeadLetterConfig:
+        TargetArn: !GetAtt FailedEvents.Arn
+      Environment:
+        Variables:
+          STATE_TABLE: !Ref StateTable
+          SERVICE_STACK: !Ref ServiceStackName
+          SERVICE_FUNCTION: !Ref ServiceFunctionName
+          ACCOUNT_ID: !Ref AWS::AccountId
+          BUDGET_NAME: !Ref AWS::StackName
+          API_STAGES: !Ref ApiStages
+          LEGACY_FUNCTION: !Ref LegacyFunctionName
+          STORE_TABLE: !Ref StoreTableName
+          SERVICE_CONCURRENCY: !Ref ServiceConcurrency
+          LEGACY_CONCURRENCY: !Ref LegacyConcurrency
+          TRIP_TOPIC: !Ref TripTopic
+          ALERT_TOPIC: !Ref AlertTopic
+
+  TripPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Controller
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref TripTopic
+      SourceAccount: !Ref AWS::AccountId
+
+  TripSubscription:
+    Type: AWS::SNS::Subscription
+    DependsOn: TripPermission
+    Properties:
+      TopicArn: !Ref TripTopic
+      Protocol: lambda
+      Endpoint: !GetAtt Controller.Arn
+
+  Reconcile:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: rate(1 minute)
+      State: ENABLED
+      Targets:
+        - Id: Controller
+          Arn: !GetAtt Controller.Arn
+          Input: '{"action":"reconcile"}'
+
+  ReconcilePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Controller
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt Reconcile.Arn
+      SourceAccount: !Ref AWS::AccountId
+
+  InvocationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${AWS::StackName}-invocations
+      AlarmDescription: Combined current and legacy invocations; provisional threshold, initially alert-only.
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: !Ref InvocationThreshold
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertTopic
+        - !If [AutoTrip, !Ref TripTopic, !Ref AWS::NoValue]
+      Metrics:
+        - Id: total
+          Expression: FILL(current,0)+FILL(legacy,0)
+          ReturnData: true
+        - Id: current
+          ReturnData: false
+          MetricStat:
+            Period: 300
+            Stat: Sum
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Invocations
+              Dimensions: [{ Name: FunctionName, Value: !Ref ServiceFunctionName }]
+        - Id: legacy
+          ReturnData: false
+          MetricStat:
+            Period: 300
+            Stat: Sum
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Invocations
+              Dimensions: [{ Name: FunctionName, Value: !Ref LegacyFunctionName }]
+
+  DurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${AWS::StackName}-duration
+      AlarmDescription: Sustained total execution time; provisional threshold, initially alert-only.
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: !Ref DurationThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertTopic
+        - !If [AutoTrip, !Ref TripTopic, !Ref AWS::NoValue]
+      Metrics:
+        - Id: total
+          Expression: FILL(current,0)+FILL(legacy,0)
+          ReturnData: true
+        - Id: current
+          ReturnData: false
+          MetricStat:
+            Period: 300
+            Stat: Sum
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Duration
+              Dimensions: [{ Name: FunctionName, Value: !Ref ServiceFunctionName }]
+        - Id: legacy
+          ReturnData: false
+          MetricStat:
+            Period: 300
+            Stat: Sum
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Duration
+              Dimensions: [{ Name: FunctionName, Value: !Ref LegacyFunctionName }]
+
+  ControllerErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${AWS::StackName}-controller-errors
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions: [{ Name: FunctionName, Value: !Ref Controller }]
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertTopic]
+
+  FailedEvents:
+    Type: AWS::SQS::Queue
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: Retain exhausted asynchronous events without emailing on every scheduled failure.
+        must: [Inspect and replay unresolved traffic events before their 14-day retention expires.]
+    Properties:
+      SqsManagedSseEnabled: true
+      MessageRetentionPeriod: 1209600
+
+  FailedEventsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: Alert once on transition rather than sending a failure email every minute.
+    Properties:
+      AlarmName: !Sub ${AWS::StackName}-failed-events
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions: [{ Name: QueueName, Value: !GetAtt FailedEvents.QueueName }]
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertTopic]
+
+  ControllerHeartbeatAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: Detect a disabled schedule, missing permissions, or controller throttled to zero.
+        must: [Keep independent of controller writes so a stopped controller is observable.]
+    Properties:
+      AlarmName: !Sub ${AWS::StackName}-controller-heartbeat
+      Namespace: AWS/Lambda
+      MetricName: Invocations
+      Dimensions: [{ Name: FunctionName, Value: !Ref Controller }]
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlertTopic]
+
+Outputs:
+  ControllerName:
+    Value: !Ref Controller
+  StateTableName:
+    Value: !Ref StateTable
+  AlertTopicArn:
+    Value: !Ref AlertTopic
+  FailedEventsQueueUrl:
+    Value: !Ref FailedEvents

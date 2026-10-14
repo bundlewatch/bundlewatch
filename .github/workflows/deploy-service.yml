@@ -95,6 +95,17 @@ jobs:
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
+      - name: Require running protection state
+        env:
+          PROTECTION_STATE_TABLE: ${{ vars.PROTECTION_STATE_TABLE || 'bundlewatch-protection-state' }}
+        run: |
+          state=$(aws dynamodb get-item --table-name "$PROTECTION_STATE_TABLE" \
+            --key '{"id":{"S":"service"}}' --consistent-read \
+            --query 'Item.state.S' --output text)
+          echo "$state" | jq -e '.status == "running"' > /dev/null || {
+            echo 'Protection is uninitialized or shut down. Restore explicitly before deploying.'
+            exit 1
+          }
       - name: Deploy
         working-directory: ${{ runner.temp }}/service
         env:
