@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import { after, before, beforeEach, describe, test } from 'node:test';
 
 import {
@@ -16,6 +17,7 @@ import { PAGE_CSS } from './static/page-styles.ts';
 import { MemoryBaselineStore } from './stores/baseline-store.ts';
 import { DynamoResultsStore } from './stores/dynamodb-results-store.ts';
 import { MemoryResultsStore } from './stores/results-store.ts';
+import { recordingClient } from './test-helpers/fake-dynamodb.ts';
 import {
   type FakeGitHub,
   type FakeRoutes,
@@ -25,20 +27,23 @@ import {
 import { CAPTURED_LINK_DATA, CLI_0X_LINK_DATA } from './test-helpers/results-links.ts';
 
 const NOW = Date.UTC(2026, 9, 12);
+const SHA = '3b63e5c0a5d1f0e6c9f1b0e2d6a7c8b9e0f1a2b3';
+// Of no known kind, so logs call it `other`.
+const TOKEN = 'tok-0123456789abcdefghijklmnopqrstuvwxyz';
 const CREDENTIALS = {
   repoOwner: 'o',
   repoName: 'r',
-  commitSha: 'abc',
-  githubAccessToken: 'tok',
+  commitSha: SHA,
+  githubAccessToken: TOKEN,
 };
 const ALLOWED: FakeRoutes = {
   'GET /repos/o/r': { body: { permissions: { push: true } } },
-  'GET /repos/o/r/statuses/abc': { body: [] },
+  [`GET /repos/o/r/statuses/${SHA}`]: { body: [] },
 };
 // Can read the repository, but not write to it.
 const DENIED: FakeRoutes = {
   'GET /repos/o/r': { body: { permissions: { push: false } } },
-  'GET /repos/o/r/statuses/abc': { body: [] },
+  [`GET /repos/o/r/statuses/${SHA}`]: { body: [] },
 };
 
 let github: FakeGitHub;
@@ -201,7 +206,7 @@ describe('POST /store', () => {
     assert.equal(
       await response.text(),
       JSON.stringify({
-        commitSha: 'abc',
+        commitSha: SHA,
         fileDetailsByPath: storeBody.fileDetailsByPath,
         repoBranch: 'main',
         repoName: 'r',
@@ -214,17 +219,23 @@ describe('POST /store', () => {
       repoBranch: 'main',
       repoOwner: 'o',
       repoName: 'r',
-      commitSha: 'abc',
+      commitSha: SHA,
       fileDetailsByPath: storeBody.fileDetailsByPath,
       timestamp: String(NOW),
     });
     assert.deepEqual(githubRequests(), ['GET /repos/o/r']);
-    assert.equal(github.requests[0]?.headers.authorization, 'Bearer tok');
+    assert.equal(github.requests[0]?.headers.authorization, `Bearer ${TOKEN}`);
   });
 
   for (const [name, body] of [
     ['no token', { ...storeBody, githubAccessToken: undefined }],
     ['no commitSha', { ...storeBody, commitSha: '' }],
+    ['a commitSha that is not hex', { ...storeBody, commitSha: 'main' }],
+    ['a commitSha shorter than 7 digits', { ...storeBody, commitSha: 'abc' }],
+    ['an owner GitHub would refuse', { ...storeBody, repoOwner: 'o/x' }],
+    ['a repository name GitHub would refuse', { ...storeBody, repoName: 'r r' }],
+    ['a token shorter than any GitHub issues', { ...storeBody, githubAccessToken: 'tok' }],
+    ['a token with a space', { ...storeBody, githubAccessToken: `${TOKEN} ${TOKEN}` }],
     ['a non-object body', 'true'],
     ['an empty body', undefined],
   ] as const) {
@@ -353,7 +364,7 @@ describe('POST /store/lookup', () => {
     github.reset(DENIED);
     const response = await call('POST', '/store/lookup', lookupBody);
     assert.equal(response.status, 200);
-    assert.deepEqual(githubRequests(), ['GET /repos/o/r/statuses/abc']);
+    assert.deepEqual(githubRequests(), [`GET /repos/o/r/statuses/${SHA}`]);
   });
 
   test('401 when the token cannot read the commit statuses', async () => {
@@ -504,7 +515,7 @@ const resultsPayload = createResultsPayload(
     repoName: 'r',
     repoCurrentBranch: 'feature',
     repoBranchBase: 'main',
-    commitSha: 'abc',
+    commitSha: SHA,
   },
 );
 const createBody = { ...CREDENTIALS, payload: resultsPayload };
@@ -663,6 +674,23 @@ describe('POST /results and GET /r/{id}', () => {
       (await readJson(response)).errors.details[0]?.message,
       '"payload.results.summary" is required',
     );
+  });
+
+  test('413 for results DynamoDB could not store, before writing', async () => {
+    const { client, commands } = recordingClient(() => ({}));
+    const { call } = setup({ resultsStore: new DynamoResultsStore(client, 'results') });
+    // Random bytes don't compress; as base64 this is about 530 KB.
+    const summary = randomBytes(400 * 1024).toString('base64');
+    const response = await call('POST', '/results', {
+      ...createBody,
+      payload: {
+        ...resultsPayload,
+        results: { ...resultsPayload.results, summary },
+      },
+    });
+    assert.equal(response.status, 413);
+    assert.deepEqual(await response.json(), { error: 'Results too large' });
+    assert.equal(commands.length, 0);
   });
 
   test('413 over 1 MB', async () => {
@@ -839,7 +867,7 @@ describe('write authorization modes', () => {
         },
       ],
     );
-    assert.doesNotMatch(warnings.join(), /tok"/);
+    assert.ok(!warnings.join().includes(TOKEN));
   });
 
   for (const failure of [{ status: 503 }, { status: 429 }, { delayMs: 6500 }]) {
@@ -870,7 +898,7 @@ describe('write authorization modes', () => {
   test('report mode preserves legacy check failures', async () => {
     github.reset({
       ...ALLOWED,
-      'GET /repos/o/r/statuses/abc': { status: 503 },
+      [`GET /repos/o/r/statuses/${SHA}`]: { status: 503 },
     });
     const { call, baselineStore } = setup({
       config: { writeAuthorization: 'report' },
@@ -901,8 +929,84 @@ describe('write authorization modes', () => {
   });
 });
 
+describe('authorization cache', () => {
+  test('asks GitHub once a minute for the same token and request', async () => {
+    const { call, setNow } = setup();
+    assert.equal((await call('POST', '/store', storeBody)).status, 200);
+    assert.equal((await call('POST', '/store', storeBody)).status, 200);
+    assert.deepEqual(githubRequests(), ['GET /repos/o/r']);
+    setNow(NOW + 60_001);
+    assert.equal((await call('POST', '/store', storeBody)).status, 200);
+    assert.deepEqual(githubRequests(), ['GET /repos/o/r', 'GET /repos/o/r']);
+  });
+
+  test('remembers refusals, and logs them once', async () => {
+    github.reset(DENIED);
+    const { call, warnings } = setup();
+    assert.equal((await call('POST', '/store', storeBody)).status, 401);
+    const asked = github.requests.length;
+    assert.ok(asked > 0);
+    assert.equal((await call('POST', '/store', storeBody)).status, 401);
+    assert.equal(github.requests.length, asked);
+    assert.equal(warnings.filter((line) => line.includes('not-allowed')).length, 1);
+  });
+
+  test('keys on the token, the repository, the commit and the access', async () => {
+    const { call } = setup();
+    await call('POST', '/store', storeBody);
+    await call('POST', '/store/lookup', { ...CREDENTIALS, repoBranch: 'main' });
+    await call('POST', '/store', { ...storeBody, githubAccessToken: `${TOKEN}-2` });
+    await call('POST', '/store', { ...storeBody, commitSha: SHA.toUpperCase() });
+    await call('POST', '/store', { ...storeBody, repoName: 'r2' });
+    assert.deepEqual(githubRequests(), [
+      'GET /repos/o/r',
+      `GET /repos/o/r/statuses/${SHA}`,
+      'GET /repos/o/r',
+      'GET /repos/o/r',
+      'GET /repos/o/r2',
+      `GET /repos/o/r2/statuses/${SHA}`,
+    ]);
+  });
+
+  test('in report mode, logs a disagreement once', async () => {
+    github.reset(DENIED);
+    const { call, warnings } = setup({ config: { writeAuthorization: 'report' } });
+    assert.equal((await call('POST', '/store', storeBody)).status, 200);
+    assert.equal((await call('POST', '/store', storeBody)).status, 200);
+    assert.equal(warnings.length, 1);
+    assert.deepEqual(githubRequests(), [
+      'GET /repos/o/r',
+      `GET /repos/o/r/statuses/${SHA}`,
+      'GET /installation/repositories?per_page=100',
+    ]);
+  });
+
+  test('does not remember GitHub failures', async () => {
+    github.reset({ ...ALLOWED, 'GET /repos/o/r': { status: 503 } });
+    const { call } = setup();
+    assert.equal((await call('POST', '/store', storeBody)).status, 503);
+    github.reset(ALLOWED);
+    assert.equal((await call('POST', '/store', storeBody)).status, 200);
+    assert.deepEqual(githubRequests(), ['GET /repos/o/r']);
+  });
+
+  test('forgets the oldest decisions beyond a thousand', async () => {
+    const { call } = setup();
+    for (let i = 0; i <= 1000; i++) {
+      // oxlint-disable-next-line no-await-in-loop -- Each call must land before the next.
+      await call('POST', '/store', { ...storeBody, githubAccessToken: `${TOKEN}-${i}` });
+    }
+    assert.equal(github.requests.length, 1001);
+    // The oldest remaining decision is still there; the first was dropped.
+    await call('POST', '/store', { ...storeBody, githubAccessToken: `${TOKEN}-1` });
+    assert.equal(github.requests.length, 1001);
+    await call('POST', '/store', { ...storeBody, githubAccessToken: `${TOKEN}-0` });
+    assert.equal(github.requests.length, 1002);
+  });
+});
+
 describe('POST /analyze', () => {
-  const statusesPath = 'POST /repos/o/r/statuses/abc';
+  const statusesPath = `POST /repos/o/r/statuses/${SHA}`;
   const analyzeBody = {
     ...CREDENTIALS,
     repoBranch: 'feature',
@@ -946,7 +1050,7 @@ describe('POST /analyze', () => {
       repoName: 'r',
       repoCurrentBranch: 'feature',
       repoBranchBase: 'main',
-      commitSha: 'abc',
+      commitSha: SHA,
     });
     assert.equal(stored?.payload.results.fullResults[0]?.baseBranchSize, 1024);
   });

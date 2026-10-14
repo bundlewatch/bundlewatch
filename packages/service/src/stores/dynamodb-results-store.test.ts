@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import { describe, test } from 'node:test';
 import { gunzipSync } from 'node:zlib';
 
@@ -10,7 +11,7 @@ import {
 
 import { recordingClient } from '../test-helpers/fake-dynamodb.ts';
 import { DynamoResultsStore, fromResultsItem, toResultsItem } from './dynamodb-results-store.ts';
-import type { StoredResults } from './results-store.ts';
+import { ResultsTooLargeError, type StoredResults } from './results-store.ts';
 
 const results: StoredResults = {
   id: 'AbCdEf123456GhIjKl7890',
@@ -77,6 +78,20 @@ describe('DynamoResultsStore', () => {
       });
     });
     assert.equal(await new DynamoResultsStore(client, 'results').create(results), false);
+  });
+
+  test('create refuses, before writing, a payload over 350 KB compressed', async () => {
+    const { client, commands } = recordingClient(() => ({}));
+    const summary = randomBytes(400 * 1024).toString('base64');
+    const big = {
+      ...results,
+      payload: { ...results.payload, results: { ...results.payload.results, summary } },
+    };
+    await assert.rejects(
+      new DynamoResultsStore(client, 'results').create(big),
+      ResultsTooLargeError,
+    );
+    assert.equal(commands.length, 0);
   });
 
   test('create rethrows other errors', async () => {

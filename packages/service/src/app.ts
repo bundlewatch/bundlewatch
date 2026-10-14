@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 import {
   analyze,
@@ -23,7 +23,7 @@ import { FONT_FILES } from './static/fonts.ts';
 import { LOGO_SVG } from './static/logo.ts';
 import { PAGE_CSS } from './static/page-styles.ts';
 import type { BaselineStore } from './stores/baseline-store.ts';
-import type { ResultsStore } from './stores/results-store.ts';
+import { ResultsTooLargeError, type ResultsStore } from './stores/results-store.ts';
 import {
   type ResultsData,
   ValidationError,
@@ -82,6 +82,17 @@ const GITHUB_UNREACHABLE = {
 // 413; bigger baselines now fit, up to what DynamoDB can store.
 const MAX_BASELINE_BYTES = 350 * 1024;
 const OAUTH_STATE_COOKIE = 'bundlewatch_oauth_state';
+// Checked before asking GitHub: owner and repository names as GitHub
+// allows them, a commit SHA, and a token of plausible length.
+const OWNER_NAME = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/;
+const REPO_NAME = /^[A-Za-z0-9._-]{1,100}$/;
+const COMMIT_SHA = /^[0-9a-f]{7,40}$/i;
+const TOKEN = /^[\x21-\x7e]{20,255}$/;
+// Decisions are kept this long per function instance: the lookup, save
+// and short link of one CI run share a token. A revoked token works for
+// at most this long.
+const AUTHORIZATION_CACHE_MS = 60_000;
+const AUTHORIZATION_CACHE_SIZE = 1000;
 
 /** The kind of token, from its prefix, for logs. Never log the token. */
 const tokenKind = (token: string): string => {
@@ -172,6 +183,30 @@ export const createApp = (deps: AppDeps): App => {
   const notFoundPage = (): Response =>
     htmlPage(404, renderResultsNotFoundPage({ serverCommitSha: config.commitSha }));
 
+  // Authorization decisions by a hash of the token and the request. The
+  // map is in insertion order, so the first entry is the oldest.
+  const decisions = new Map<string, { access: RepoAccess; expiresAt: number }>();
+  const remembered = (key: string): RepoAccess | undefined => {
+    const entry = decisions.get(key);
+    if (!entry) {
+      return undefined;
+    }
+    if (entry.expiresAt <= now()) {
+      decisions.delete(key);
+      return undefined;
+    }
+    return entry.access;
+  };
+  const remember = (key: string, access: RepoAccess): void => {
+    decisions.set(key, { access, expiresAt: now() + AUTHORIZATION_CACHE_MS });
+    if (decisions.size > AUTHORIZATION_CACHE_SIZE) {
+      const oldest = decisions.keys().next().value;
+      if (oldest !== undefined) {
+        decisions.delete(oldest);
+      }
+    }
+  };
+
   // Runs before validation, as in 0.x: a body without these is a 401.
   const authorize = async (body: unknown, need: 'read' | 'write' = 'write'): Promise<void> => {
     const owner = textField(body, 'repoOwner');
@@ -179,6 +214,14 @@ export const createApp = (deps: AppDeps): App => {
     const commitSha = textField(body, 'commitSha');
     const token = textField(body, 'githubAccessToken');
     if (!owner || !repo || !commitSha || !token) {
+      throw new HttpError(json(401, NOT_ALLOWED));
+    }
+    if (
+      !OWNER_NAME.test(owner) ||
+      !REPO_NAME.test(repo) ||
+      !COMMIT_SHA.test(commitSha) ||
+      !TOKEN.test(token)
+    ) {
       throw new HttpError(json(401, NOT_ALLOWED));
     }
     const check = (access: 'read' | 'write'): Promise<RepoAccess> =>
@@ -195,13 +238,14 @@ export const createApp = (deps: AppDeps): App => {
       repo: `${owner}/${repo}`,
       token: tokenKind(token),
     };
-    let access: RepoAccess;
-    try {
-      if (need === 'read') {
-        access = await check('read');
-      } else if (writeAuthorization === 'enforce') {
-        access = await check('write');
-      } else {
+    const decide = async (): Promise<RepoAccess> => {
+      try {
+        if (need === 'read') {
+          return await check('read');
+        }
+        if (writeAuthorization === 'enforce') {
+          return await check('write');
+        }
         // Report mode: 0.x decides; disagreements are logged so the
         // stricter check can be reviewed before it's enforced.
         const [strict, legacy] = await Promise.allSettled([check('write'), check('read')]);
@@ -224,30 +268,41 @@ export const createApp = (deps: AppDeps): App => {
             }),
           );
         }
-        access = legacy.value;
+        return legacy.value;
+      } catch (error) {
+        if (error instanceof GitHubUnavailableError) {
+          logger.error(
+            JSON.stringify({
+              event: 'github-unavailable',
+              ...log,
+              error: error.message,
+            }),
+          );
+          throw new HttpError(json(503, GITHUB_UNREACHABLE));
+        }
+        throw error;
       }
-    } catch (error) {
-      if (error instanceof GitHubUnavailableError) {
-        logger.error(
+    };
+    // The token is hashed with what it is used for, and never kept.
+    const key = createHash('sha256')
+      .update([need, owner, repo, commitSha, token].join('\n'))
+      .digest('base64url');
+    let access = remembered(key);
+    if (!access) {
+      access = await decide();
+      remember(key, access);
+      if (!access.allowed) {
+        logger.warn(
           JSON.stringify({
-            event: 'github-unavailable',
+            event: 'not-allowed',
             ...log,
-            error: error.message,
+            need,
+            via: access.via,
           }),
         );
-        throw new HttpError(json(503, GITHUB_UNREACHABLE));
       }
-      throw error;
     }
     if (!access.allowed) {
-      logger.warn(
-        JSON.stringify({
-          event: 'not-allowed',
-          ...log,
-          need,
-          via: access.via,
-        }),
-      );
       throw new HttpError(json(401, NOT_ALLOWED));
     }
   };
@@ -349,7 +404,15 @@ export const createApp = (deps: AppDeps): App => {
         }),
       );
     }
-    const link = await shortLink(url, `${repoOwner}/${repoName}`, payload);
+    let link: { id: string; url: string };
+    try {
+      link = await shortLink(url, `${repoOwner}/${repoName}`, payload);
+    } catch (error) {
+      if (error instanceof ResultsTooLargeError) {
+        throw new HttpError(json(413, { error: 'Results too large' }));
+      }
+      throw error;
+    }
     return json(201, link, { location: link.url });
   };
 

@@ -12,8 +12,19 @@ export type StoredResults = {
   payload: ResultsData;
 };
 
+/** The payload is too big for the store, even compressed. */
+export class ResultsTooLargeError extends Error {
+  constructor() {
+    super('Results too large to store');
+    this.name = 'ResultsTooLargeError';
+  }
+}
+
 export type ResultsStore = {
-  /** Returns false, without writing, if the id is already taken. */
+  /**
+   * Returns false, without writing, if the id is already taken. Throws
+   * `ResultsTooLargeError` for a payload the store can't hold.
+   */
   create(results: StoredResults): Promise<boolean>;
   get(id: string): Promise<StoredResults | undefined>;
 };

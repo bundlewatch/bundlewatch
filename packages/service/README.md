@@ -81,6 +81,7 @@ Stores a results page and returns a short link to it. The CLI calls this when it
   - `results`: `status` and `summary` (non-empty strings), and `fullResults`, an array of `{ filePath, status }` (required, non-empty) with optional `size`, `baseBranchSize`, `maxSize` (number or `null`; `null` means unlimited), `error`, `message` and `compression`.
   - Any other key is a `422`.
 - No other top-level keys are accepted.
+- A `payload` over 350 KB once compressed is a `413`, before anything is written.
 - `payload.details.repoOwner` and `repoName`, when present, must name the repository the token was checked against (case-insensitively). Otherwise it's a `422`.
 
 Response:
@@ -97,7 +98,7 @@ location: https://service.bundlewatch.io/r/GUr7mjtjzlIQoB88G1l2At
 
 ### Authorization
 
-Every route marked "Auth" needs a GitHub token for the repository. The check runs before validation, as in 0.x. A missing `repoOwner`, `repoName`, `commitSha` or `githubAccessToken` is a `401`.
+Every route marked "Auth" needs a GitHub token for the repository. The check runs before validation, as in 0.x. A missing `repoOwner`, `repoName`, `commitSha` or `githubAccessToken` is a `401`, and so are names GitHub doesn't allow or a `commitSha` that isn't a hex SHA, without asking GitHub.
 
 **Reading** (`/store/lookup`) uses the 0.x check: the token must be able to read the commit's statuses (`GET /repos/{owner}/{repo}/statuses/{commitSha}`).
 
@@ -114,6 +115,8 @@ The stricter check:
    - Other tokens get a `401` or `403` here. A user without push access is refused. A response without `permissions` goes to the 0.x check.
    - If the list can't be read in time, the 0.x check decides.
 3. If `GET /repos/{owner}/{repo}` answers `403` or `404`, for example for a `repo:status` OAuth token on a private repository, the 0.x check decides.
+
+Decisions are kept for a minute per function instance, under a hash of the token and the request, so the lookup, save and short link of one CI run ask GitHub once. A revoked token works for at most a minute.
 
 All GitHub requests of one check share a 6-second budget; installation listing stops with 2 seconds reserved for the statuses fallback. 0.x CLIs wait 10 seconds for the service. Network errors, timeouts, rate limits and GitHub `5xx` answers from the deciding check are a `503`; errors in the report-only shadow check are logged without rejecting the request.
 
@@ -222,6 +225,7 @@ Items are written with `attribute_not_exists(id)`, and a taken id is retried wit
 - Results links where a file has no `maxSize` render. 0.x CLIs pack `Infinity` there and the 0.x schema rejected it with a `422`, so those links never rendered. Unlimited sizes show as "No limit". Empty `details` strings are accepted too.
 - Malformed `d` is a `400`, not a `500`.
 - `422` bodies leave out Joi's `_original`, which echoed the request including the token.
+- Names GitHub doesn't allow or a `commitSha` that isn't a hex SHA are a `401` without asking GitHub. Decisions are cached for a minute per function instance.
 - Bodies up to 1 MB are accepted (0.x: 100 kB).
 - Pages make no third-party requests: inline SVG icons replace Material Icons, the Google Fonts import is gone, and the logo and favicon come from bundlewatch.io. HTML responses carry a Content-Security-Policy.
 - Unknown routes are JSON `404`s.

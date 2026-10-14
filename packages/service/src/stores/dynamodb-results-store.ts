@@ -9,11 +9,14 @@ import {
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 
 import type { ResultsData } from '../validators.ts';
-import type { ResultsStore, StoredResults } from './results-store.ts';
+import { type ResultsStore, ResultsTooLargeError, type StoredResults } from './results-store.ts';
 
 // Items: { id: S, repo: S, createdAt: S, expiresAt?: N, payload: B }.
 // `payload` is gzip-compressed JSON: results of large projects compress
 // about tenfold, which keeps them well below DynamoDB's 400 KB item limit.
+
+// Refused before the write, with the same margin as baselines.
+const MAX_PAYLOAD_BYTES = 350 * 1024;
 
 export const toResultsItem = (results: StoredResults): Record<string, AttributeValue> =>
   marshall(
@@ -45,11 +48,15 @@ export class DynamoResultsStore implements ResultsStore {
   }
 
   async create(results: StoredResults): Promise<boolean> {
+    const item = toResultsItem(results);
+    if ((item.payload?.B?.byteLength ?? 0) > MAX_PAYLOAD_BYTES) {
+      throw new ResultsTooLargeError();
+    }
     try {
       await this.#client.send(
         new PutItemCommand({
           TableName: this.#tableName,
-          Item: toResultsItem(results),
+          Item: item,
           ConditionExpression: 'attribute_not_exists(#id)',
           ExpressionAttributeNames: { '#id': 'id' },
         }),

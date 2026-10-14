@@ -228,6 +228,7 @@ Request:
 - In default report mode, the independent 0.x check decides even when the stricter check errors or times out; failures of the shadow check are logged as `write-authorization-check-failed`. Errors from the 0.x check, and strict errors in enforce mode, remain 503s.
 - The installation listing leaves the last two seconds of the six-second check budget for the statuses fallback; it never resets the total deadline.
 - Old CLIs send the same request bodies, so they keep working. In enforce mode, tokens without write access to a public repository are refused.
+- 1.0 refuses, without asking GitHub, names GitHub doesn't allow and a `commitSha` that isn't a hex SHA. Decisions are cached for a minute per function instance, so a revoked token works for at most that long.
 - Tokens issued by the existing OAuth app (client id `04fcf325dd26ca2a159f`, scope `repo:status`) must still be accepted. Do not delete or rotate that OAuth app.
 
 ### `GET /results?d=<data>`: results page (HTML)
