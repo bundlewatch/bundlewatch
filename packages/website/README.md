@@ -14,7 +14,7 @@ bash packages/website/scripts/build.sh       # the production build, with the la
 node packages/website/scripts/check-deployment.mjs <url>  # check a deployed copy of the site
 ```
 
-The build fails on dead internal links. Fix the link rather than ignoring it.
+The build fails on dead internal links, including links to a heading that doesn't exist, such as `./using-bundlewatch.md#github-action`. Fix the link rather than ignoring it.
 
 ## Structure
 
@@ -25,16 +25,19 @@ docs/
       index.mjs        # combines the shared config and the locales
       shared.mjs       # site-wide settings: rewrites, clean URLs, search, markdown plugins
       en.mjs           # English nav, sidebar and "Edit this page" link
-      fr.mjs       # French nav, sidebar and theme labels
+      fr.mjs           # French nav, sidebar and theme labels
       zh.mjs           # Chinese nav, sidebar and "Edit this page" link
     llms.mjs           # writes llms.txt, llms-full.txt and a Markdown copy of each page
+    check-anchors.mjs  # fails the build on links to headings that don't exist
     theme/
-      index.mjs        # default theme, plus tabs, medium-zoom, HeroLogo and HomeResults
+      index.mjs        # default theme, plus tabs, medium-zoom, HeroLogo, HomeResults and NotFound
       custom.css       # theme overrides (plain CSS with native nesting)
+      logo-layers.mjs  # the three layers of public/logo-large.svg, for HeroLogo and NotFound
       HeroLogo.vue     # the home page's logo: assembles on the first load, then lifts the layer under the pointer
       HomeResults.vue  # the change table from a results page on the home page, from its `results` frontmatter
+      NotFound.vue     # the 404 page: the logo without its bottom layer, and the missing path
   en/                  # English pages, served at / (rewritten from en/)
-  fr/              # French translation, served at /fr/
+  fr/                  # French translation, served at /fr/
   zh/                  # Chinese translation, served at /zh/
   public/              # copied as-is to the site root: images, logos, favicon
   _assets/             # old images, not used by the site (see below)

@@ -25,6 +25,10 @@
 
 .dark {
   --vp-sidebar-bg-color: #1e1e20;
+
+  /* Inline code in dark mode: the same crimson, lightened, on a dark tint of it. */
+  --vp-code-bg: #33202a;
+  --vp-code-color: #f4a0b4;
 }
 
 .VPLink.link.VPNavBarMenuLink {
@@ -143,8 +147,10 @@ html[lang="en-US"] {
   mix-blend-mode: lighten;
 }
 
-/* The home page logo's dashed guide in dark mode. It lives here because a scoped :global(.dark)
-   rule compiles to a bare .dark selector, which every svg path on the page would inherit. */
-.dark .HeroLogo .ghost path {
+/* The dashed outlines of the home page logo and the 404 page's logo in dark mode. They live here
+   because a scoped :global(.dark) rule compiles to a bare .dark selector, which every svg path on
+   the page would inherit. */
+.dark .HeroLogo .ghost path,
+.dark .NotFound .missing {
   stroke: #dcdcf2;
 }
