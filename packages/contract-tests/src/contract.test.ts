@@ -409,6 +409,25 @@ const tenByteProject = (maxSize: number | string): string =>
   });
 
 describe('documented differences (MIGRATION.md)', () => {
+  for (const [name, bundlewatch] of [
+    ['without package.json configuration', undefined],
+    ['before package.json configuration', { files: [{ path: './missing.js' }] }],
+  ] as const) {
+    test(`discovers a standalone config file ${name}`, async () => {
+      const cwd = createProject({
+        'package.json': JSON.stringify({ bundlewatch }),
+        'bundlewatch.config.mjs': `export default ${JSON.stringify({
+          files: [{ path: './images/*.jpg', maxSize: '1MB' }],
+          bundlewatchServiceHost: null,
+        })}`,
+      });
+      const { legacy, next } = await both(cwd, []);
+      assert.equal(legacy.status, 1);
+      assert.equal(next.status, 0);
+      assert.ok(next.stdout.includes('bundlewatch PASS'));
+    });
+  }
+
   test('a run with missing files does not try to save a baseline', async () => {
     const cwd = createProject({
       'package.json': JSON.stringify({

@@ -5,7 +5,7 @@ description: Every BundleWatch option, its default, and the environment variable
 
 # Configuration reference
 
-Set these options under the `bundlewatch` key of package.json, or in a [config file](../guide/using-a-config-file.md). The command line requires `files`; every other option has a default.
+Set these options in a [config file](../guide/using-a-config-file.md), such as `bundlewatch.config.mjs`, and run `npx bundlewatch`. The command line requires `files`; every other option has a default. Configuration under the `bundlewatch` key in [package.json](../guide/using-a-config-file.md#package-json) is also supported.
 
 Your configuration is merged with the defaults below. Arrays, such as `files` and `ci.trackBranches`, replace the default value instead of being merged with it.
 
@@ -52,7 +52,7 @@ Set it to a `RegExp`, or to a string that BundleWatch turns into one. Write a pa
 | `./dist/main.3f2a1b9c.js`         | `/^.*(\.[a-f0-9]+)\.\w+$/` | `./dist/main.js`         |
 | `./dist/assets/index-BdF3x9Qa.js` | `/^.*?(-[\w-]{8})\.\w+$/`  | `./dist/assets/index.js` |
 
-In package.json, write the pattern as a string without the slashes, and double each backslash: `"normalizeFilenames": "^.*(\\.[a-f0-9]+)\\.\\w+$"`.
+In JSON, write the pattern as a string without the slashes, and double each backslash: `"normalizeFilenames": "^.*(\\.[a-f0-9]+)\\.\\w+$"`.
 
 ::: warning
 Check the result against your real file names. The second pattern also turns `./dist/app-polyfill.js` into `./dist/app.js`. `/^.+?(\..+?)\.\w+$/`, an older example, turns `./.next/static/chunks/main-abc123.js` into `./.js`.

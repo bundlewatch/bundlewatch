@@ -11,7 +11,7 @@ const SITE = "https://bundlewatch.io";
 const SUMMARY =
   "BundleWatch checks the size of built browser assets in CI. It fails the build when a file is over its maxSize, compares each file with the last sizes saved for the base branch, and reports the result as a GitHub commit status with a link to a results page.";
 
-const DETAILS = `Install it with \`npm install --save-dev bundlewatch\`, list the files to check under a \`bundlewatch\` key in package.json, and run \`npx bundlewatch\` after the build. It requires Node.js 22.17 or later. On GitHub Actions, pass the workflow's token as \`BUNDLEWATCH_GITHUB_TOKEN\` and grant \`statuses: write\`.`;
+const DETAILS = `Install it with \`npm install --save-dev bundlewatch\`, create \`bundlewatch.config.mjs\` with a default-exported configuration object containing a \`files\` array, and run \`npx bundlewatch\` after the build. It searches for \`bundlewatch.config.*\` from the current directory up to the nearest \`package.json\`, checking config files before falling back to the package’s \`bundlewatch\` key. Use \`--config\` for a custom filename or location. It requires Node.js 22.17 or later. On GitHub Actions, pass the workflow's token as \`BUNDLEWATCH_GITHUB_TOKEN\` and grant \`statuses: write\`.`;
 
 const OPTIONAL = [
   ["Source code and issues", "https://github.com/bundlewatch/bundlewatch"],

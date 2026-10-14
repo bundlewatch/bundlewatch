@@ -22,20 +22,22 @@ Exécutez-la avec `npx bundlewatch` (ou l’équivalent de votre gestionnaire de
 | `-V, --version`               | Affiche le numéro de version                                                                                                                                                                                                                                                                                                                            |
 | `-h, --help`                  | Affiche l’aide                                                                                                                                                                                                                                                                                                                                          |
 
+`--max-size`, `--compression` et `--normalize` ne s’appliquent qu’aux motifs glob fournis en ligne de commande. Avec un fichier trouvé automatiquement, `--config` ou la clé `bundlewatch` de package.json, ces options sont ignorées sans avertissement.
+
 Les options fonctionnent comme en 0.x, qui utilisait commander : une option prend l’argument suivant comme valeur, sauf s’il commence par `-`. `--max-size=3kb` fonctionne aussi. Un `--max-size` sans valeur, par exemple en fin de commande, signifie qu’il n’y a aucune limite. Les options inconnues affichent une erreur et renvoient le code de sortie 1.
 
 ## Exemples {#examples}
 
-Lire la configuration dans `package.json` :
+Rechercher automatiquement un fichier de configuration (recommandé) :
 
 ```bash
-bundlewatch
+npx bundlewatch
 ```
 
-Lire la configuration dans un fichier :
+Si aucun fichier de configuration n’est trouvé, la même commande lit la clé `bundlewatch` de `package.json`. Pour utiliser un fichier précis :
 
 ```bash
-bundlewatch --config internals/bundlewatch.config.js
+npx bundlewatch --config internals/bundlewatch.config.mjs
 ```
 
 Utiliser la ligne de commande :
@@ -50,9 +52,10 @@ Bundlewatch utilise la première source disponible dans cet ordre :
 
 1. Les motifs glob de fichiers en ligne de commande, avec `--max-size`, `--compression` et `--normalize`.
 2. Le fichier indiqué par `--config`.
-3. La clé `bundlewatch` du `package.json` le plus proche. Il peut s’agir d’un objet de configuration ou d’un tableau utilisé comme `files`.
+3. Un fichier `bundlewatch.config.*` trouvé automatiquement. La recherche part du répertoire courant et inclut ses parents jusqu’au `package.json` le plus proche ; consultez les [noms et limites de recherche](../guide/using-a-config-file.md#config-discovery).
+4. La clé `bundlewatch` du `package.json` le plus proche. Il peut s’agir d’un objet de configuration ou d’un tableau utilisé comme `files`.
 
-Si plusieurs sources sont présentes, Bundlewatch journalise un avertissement et ignore les autres. S’il n’en trouve aucune, il affiche « Configuration missing » et renvoie le code de sortie 1.
+Une option `--config` ou une configuration `package.json` inutilisée déclenche un avertissement. La recherche automatique n’a pas lieu si des motifs glob ou `--config` sont fournis. Un fichier sélectionné impossible à charger ou une configuration invalide fait échouer l’exécution sans utiliser une autre source. S’il n’en trouve aucune, il affiche « Configuration missing » et renvoie le code de sortie 1.
 
 ## Codes de sortie {#exit-codes}
 

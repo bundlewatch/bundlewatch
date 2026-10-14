@@ -12,7 +12,7 @@ import { VERSION } from './version.ts';
 const HELP = `Usage: bundlewatch [options] <filePathGlobs ...>
 
 Options:
-  --config [configFilePath]    file to read configuration from, if used all options are blown away
+  --config [configFilePath]    file to read instead of automatic configuration discovery
   --max-size [maxSize]         maximum size threshold (e.g. 3kb)
   --compression [compression]  specify which compression algorithm to use
   --normalize [regex]          normalize filenames via regex, any match will be removed
@@ -21,11 +21,11 @@ Options:
 
   Examples:
 
-   Read configuration from package.json
+   Find bundlewatch.config.* or fall back to package.json
      $ bundlewatch
 
-   Read configuration from file
-     $ bundlewatch --config internals/bundlewatch.config.js
+   Read configuration from a specific file
+     $ bundlewatch --config internals/bundlewatch.config.mjs
 
    Use command line
      $ bundlewatch --max-size 100KB ./src/*.js /lib/*.js

@@ -7,20 +7,24 @@ description: How to run your own BundleWatch service and configure your project 
 
 The BundleWatch service stores the baselines your builds are compared with, creates short results links and renders the results pages. You can run your own instance instead of using `https://service.bundlewatch.io`.
 
-Point BundleWatch at your service in package.json:
+Point BundleWatch at your service in `bundlewatch.config.mjs`:
 
-```json
-{
-  "bundlewatch": {
-    "files": [
-      {
-        "path": "./dist/*.js",
-        "maxSize": "100kB"
-      }
-    ],
-    "bundlewatchServiceHost": "https://bundlewatch.example.com"
-  }
+```js [bundlewatch.config.mjs]
+export default {
+  files: [
+    {
+      path: './dist/*.js',
+      maxSize: '100kB',
+    },
+  ],
+  bundlewatchServiceHost: 'https://bundlewatch.example.com',
 }
+```
+
+Run with this configuration:
+
+```bash
+npx bundlewatch
 ```
 
 See [bundlewatchServiceHost](../reference/configuration.md#bundlewatchservicehost) for the URL format, and to run without a service.

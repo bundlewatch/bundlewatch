@@ -35,18 +35,17 @@ bun add bundlewatch --dev
 
 ## Configuration
 
-Tell BundleWatch which files to check, and how big they may get, in your `package.json`:
+Create `bundlewatch.config.mjs` in your project root to tell BundleWatch which files to check, and how big they may get:
 
-```json
-{
-  "bundlewatch": {
-    "files": [
-      {
-        "path": "./dist/*.js",
-        "maxSize": "100kB"
-      }
-    ]
-  }
+```js [bundlewatch.config.mjs]
+/** @type {import('bundlewatch').BundlewatchConfig} */
+export default {
+  files: [
+    {
+      path: './dist/*.js',
+      maxSize: '100kB',
+    },
+  ],
 }
 ```
 
@@ -55,6 +54,8 @@ Build your project, then run:
 ```bash
 npx bundlewatch
 ```
+
+BundleWatch finds `bundlewatch.config.mjs` automatically. Use `--config <path>` for a custom filename or location; see [config discovery](./using-a-config-file.md#config-discovery).
 
 The first run on your machine prints something like this:
 
@@ -99,7 +100,7 @@ Read https://bundlewatch.io/llms-full.txt first: it has the whole documentation.
 
 1. Find the production build command and run it. List the JavaScript and CSS files it outputs, with their gzip sizes.
 2. Add bundlewatch as a dev dependency, with the package manager this project already uses.
-3. Add a "bundlewatch" key to package.json, with one "files" entry per output. Use globs that match only files, not directories, and still match when file names change between builds, and a "maxSize" about 10% above each file's current gzip size, rounded up to a whole kB. If file names contain content hashes, set "normalizeFilenames" so that a file keeps the same name across builds. Check the pattern against the actual file names: it must remove only the hash, and no two files may end up with the same name.
+3. Create bundlewatch.config.mjs in the project root with a default-exported configuration object and one "files" entry per output. Use globs that match only files, not directories, and still match when file names change between builds, and a "maxSize" about 10% above each file's current gzip size, rounded up to a whole kB. If file names contain content hashes, set "normalizeFilenames" so that a file keeps the same name across builds. Check the pattern against the actual file names: it must remove only the hash, and no two files may end up with the same name.
 4. Build, run `npx bundlewatch`, and make sure every file passes.
 5. Run it in CI after the build:
    - On GitHub Actions, add the workflow from https://bundlewatch.io/guide/using-bundlewatch#github-actions, adapted to this project's Node.js version, package manager, build command and default branch. It needs no secret.

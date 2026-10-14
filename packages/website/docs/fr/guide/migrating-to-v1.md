@@ -5,7 +5,7 @@ description: Les changements à connaître pour passer de Bundlewatch 0.x à 1.0
 
 # Migrer vers la version 1.0 {#migrating-to-1-0}
 
-La plupart des installations ne nécessitent aucune modification. Votre configuration, les options de la CLI, les variables d’environnement, les noms des statuts GitHub et les codes de sortie fonctionnent comme auparavant. Cette page liste tous les changements de comportement. [CONTRACT.md](https://github.com/bundlewatch/bundlewatch/blob/main/CONTRACT.md) détaille ce qui reste compatible.
+La plupart des installations ne nécessitent aucune modification, mais les fichiers de configuration trouvés automatiquement peuvent désormais avoir priorité sur `package.json`. Consultez les [fichiers de configuration](#config-files) avant la mise à jour. Les options de la CLI, les variables d’environnement, les noms des statuts GitHub et les codes de sortie restent pris en charge. Cette page liste tous les changements de comportement. [CONTRACT.md](https://github.com/bundlewatch/bundlewatch/blob/main/CONTRACT.md) détaille ce qui reste compatible.
 
 La version 1.0 est une nouvelle version majeure : les plages `^0.x` et `~0.x` ne l’incluent donc pas. Rien ne change tant que vous ne mettez pas à jour. La plupart des indications qui suivent s’appliquent aussi si vous venez de la version 0.3.x.
 
@@ -19,10 +19,10 @@ Mets à jour bundlewatch vers la version 1.0 dans ce dépôt.
 Lis https://bundlewatch.io/guide/migrating-to-v1.md pour les changements et https://bundlewatch.io/llms-full.txt pour toute la documentation. Ensuite :
 
 1. Mets à jour bundlewatch vers la dernière version 1.x avec le gestionnaire de paquets du projet. Node.js 22.17 ou une version ultérieure est nécessaire : mets à jour la version utilisée en CI si elle est plus ancienne.
-2. Vérifie la configuration à l’aide de la section "Things to check" du guide de migration. Un "maxSize" numérique est désormais appliqué : si un fichier dépasse maintenant une limite qui n’était jamais vérifiée auparavant, ne relève pas la limite ; signale-le-moi.
+2. Vérifie la configuration à l’aide de la section "Things to check" du guide de migration. Recherche les fichiers bundlewatch.config.* qui ont désormais priorité sur la clé bundlewatch de package.json et conserve les fichiers et limites vérifiés par chaque commande existante. Un "maxSize" numérique est désormais appliqué : si un fichier dépasse maintenant une limite qui n’était jamais vérifiée auparavant, ne relève pas la limite ; signale-le-moi.
 3. Sur GitHub Actions, passe au GITHUB_TOKEN du workflow comme décrit dans le guide et supprime les contournements rendus inutiles par la version 1.0, comme CI_BRANCH_BASE défini uniquement pour éviter la comparaison avec master, ou CI_COMMIT_SHA défini avec le dernier commit de la branche source de la pull request.
 4. Supprime la dépendance brotli-size si rien d’autre ne l’utilise.
-5. Lance le build, exécute `npx bundlewatch` et résume les modifications, les changements de comportement et ce qu’il me reste à faire, par exemple supprimer un secret de jeton devenu inutile.
+5. Lance le build, puis exécute `npx bundlewatch` en conservant les motifs glob ou les arguments `--config <chemin>` existants. Vérifie que la commande contrôle les fichiers et limites prévus. Résume les modifications, les changements de comportement et ce qu’il me reste à faire, par exemple supprimer un secret de jeton devenu inutile.
 ```
 
 ## Prérequis {#requirements}
@@ -37,6 +37,7 @@ Lis https://bundlewatch.io/guide/migrating-to-v1.md pour les changements et http
 
 ## Points à vérifier {#things-to-check}
 
+- Un fichier `bundlewatch.config.*` trouvé automatiquement a désormais priorité sur la clé `bundlewatch` de `package.json`. Vérifiez les fichiers et limites que chaque commande existante doit utiliser. Si un fichier est réservé à une commande `--config` distincte, donnez-lui un nom absent de la liste de recherche et adaptez cette commande pour qu’une exécution sans argument continue à utiliser `package.json`. Consultez les [fichiers de configuration](#config-files).
 - **Un `maxSize` numérique est désormais appliqué.** Une valeur comme `102400` était auparavant ignorée sans avertissement et le contrôle réussissait toujours. Si un fichier dépasse une limite numérique, Bundlewatch le signale désormais et échoue. `0` signifie toujours qu’il n’y a aucune limite.
 - **`trackBranches` et `files` remplacent les valeurs par défaut.** Avant la version 1.0, les tableaux de votre configuration étaient fusionnés avec les valeurs par défaut index par index : `trackBranches: ['main']` suivait en réalité `['main', 'develop']`. Votre liste est désormais utilisée telle quelle.
 - **La branche de base sur GitHub Actions**, pour les builds qui ne sont pas des pull requests, comme les push, est désormais la branche par défaut du dépôt au lieu de `master` (voir ci-dessous). Si vous avez défini `CI_BRANCH_BASE` uniquement pour contourner la valeur par défaut `master`, vous pouvez la supprimer.
@@ -126,6 +127,7 @@ La compression Brotli fonctionne sans installer `brotli-size`, que vous pouvez s
 
 ### Fichiers de configuration {#config-files}
 
+- Bundlewatch recherche désormais les fichiers `bundlewatch.config.*` avant de se rabattre sur `package.json`. Il cherche depuis le répertoire courant jusqu’au répertoire du `package.json` le plus proche inclus, en vérifiant `.mjs`, `.js`, `.cjs`, `.mts`, `.ts`, `.cts` et `.json` dans cet ordre dans chaque répertoire. Le premier fichier est utilisé ; sans paquet, la recherche continue jusqu’à la racine du système de fichiers. Une configuration invalide fait échouer l’exécution sans utiliser une autre source. `--config` remplace la recherche automatique.
 - `--config` accepte les chemins absolus.
 - Les fichiers `.mjs` et les configurations n’ayant que des exports nommés sont chargés avec `import()`.
 - Les fichiers `.ts`, `.mts` et `.cts` fonctionnent sur les versions de Node.js qui exécutent TypeScript nativement (22.18 et ultérieures).

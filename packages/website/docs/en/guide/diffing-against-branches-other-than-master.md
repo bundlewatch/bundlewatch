@@ -40,22 +40,26 @@ By default, BundleWatch tracks `master`, `main` and `develop`, plus the reposito
 
 A build that fails its `maxSize` check still saves its sizes.
 
-To track other branches, such as `staging`, add the `trackBranches` option to your BundleWatch config in `package.json`. The list replaces the default one, so include every branch you want to track:
+To track other branches, such as `staging`, add the `trackBranches` option to `ci` in `bundlewatch.config.mjs`. The list replaces the default one, so include every branch you want to track:
 
-```json
-{
-  "bundlewatch": {
-    "files": [
-      {
-        "path": "./dist/*.js",
-        "maxSize": "100kB"
-      }
-    ],
-    "ci": {
-      "trackBranches": ["main", "develop", "staging"]
-    }
-  }
+```js [bundlewatch.config.mjs]
+export default {
+  files: [
+    {
+      path: './dist/*.js',
+      maxSize: '100kB',
+    },
+  ],
+  ci: {
+    trackBranches: ['main', 'develop', 'staging'],
+  },
 }
+```
+
+Run with this configuration:
+
+```bash
+npx bundlewatch
 ```
 
 ::: warning One baseline per branch

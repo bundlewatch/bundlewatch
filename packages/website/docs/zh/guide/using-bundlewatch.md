@@ -7,6 +7,8 @@ description: 在 GitHub Actions 或其他 CI 服务上运行 BundleWatch，以�
 
 在 CI 中于构建之后运行 BundleWatch。有了 GitHub token，它会在提交上发布 `bundlewatch` 状态，并将每个文件与[基准分支](./diffing-against-branches-other-than-master.md#base-branch)对比。你的仓库需要托管在 GitHub 上；CI 可以在任何地方。
 
+下面的 CI 示例使用[快速开始](./getting-started.md#configuration)中的 `bundlewatch.config.mjs`。BundleWatch 会自动找到它。使用自定义文件名或搜索范围之外的文件时，请在命令中添加 `--config <路径>`。
+
 ## GitHub Actions {#github-actions}
 
 在 GitHub Actions 中，BundleWatch 可以使用 GitHub 为每次工作流运行创建的 token，因此无需生成或保存 token。添加一个工作流，例如 `.github/workflows/bundlewatch.yml`：

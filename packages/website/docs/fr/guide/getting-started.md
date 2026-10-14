@@ -26,7 +26,7 @@ Lis d’abord https://bundlewatch.io/llms-full.txt : ce fichier contient toute l
 
 1. Trouve la commande de build de production et exécute-la. Liste les fichiers JavaScript et CSS qu’elle génère, avec leur taille après compression gzip.
 2. Ajoute bundlewatch aux dépendances de développement avec le gestionnaire de paquets déjà utilisé par ce projet.
-3. Ajoute une clé "bundlewatch" à package.json, avec une entrée "files" par fichier généré. Utilise des motifs glob qui restent valides lorsque les noms de fichiers changent entre les builds, et un "maxSize" environ 10 % supérieur à la taille gzip actuelle de chaque fichier, arrondi au kB supérieur. Si les noms de fichiers contiennent des empreintes de contenu, configure "normalizeFilenames" pour que chaque fichier garde le même nom d’un build à l’autre et vérifie le motif sur les noms réels.
+3. Crée bundlewatch.config.mjs à la racine du projet avec un objet de configuration exporté par défaut et une entrée "files" par fichier généré. Utilise des motifs glob qui restent valides lorsque les noms de fichiers changent entre les builds, et un "maxSize" environ 10 % supérieur à la taille gzip actuelle de chaque fichier, arrondi au kB supérieur. Si les noms de fichiers contiennent des empreintes de contenu, configure "normalizeFilenames" pour que chaque fichier garde le même nom d’un build à l’autre et vérifie le motif sur les noms réels.
 4. Lance le build, exécute `npx bundlewatch` et vérifie que tous les fichiers passent les contrôles.
 5. Exécute la commande en CI après le build :
    - Sur GitHub Actions, ajoute le workflow de https://bundlewatch.io/guide/using-bundlewatch#github-actions en l’adaptant à la version de Node.js, au gestionnaire de paquets, à la commande de build et à la branche par défaut du projet. Aucun secret n’est nécessaire.
@@ -60,18 +60,17 @@ yarn add bundlewatch --dev
 
 ## Configuration {#configuration}
 
-Dans votre `package.json`, indiquez à Bundlewatch les fichiers à vérifier et leur taille maximale :
+Créez `bundlewatch.config.mjs` à la racine du projet pour indiquer à Bundlewatch les fichiers à vérifier et leur taille maximale :
 
-```json
-{
-  "bundlewatch": {
-    "files": [
-      {
-        "path": "./dist/*.js",
-        "maxSize": "100kB"
-      }
-    ]
-  }
+```js [bundlewatch.config.mjs]
+/** @type {import('bundlewatch').BundlewatchConfig} */
+export default {
+  files: [
+    {
+      path: './dist/*.js',
+      maxSize: '100kB',
+    },
+  ],
 }
 ```
 
@@ -80,6 +79,8 @@ Lancez le build de votre projet, puis exécutez :
 ```bash
 npx bundlewatch
 ```
+
+Bundlewatch trouve automatiquement `bundlewatch.config.mjs`. Utilisez `--config <chemin>` pour un autre nom ou emplacement ; consultez la [recherche de configuration](./using-a-config-file.md#config-discovery).
 
 Chaque fichier est affiché avec sa taille. La commande renvoie le code de sortie 1 lorsqu’un fichier dépasse son `maxSize` ou qu’un chemin ne correspond à aucun fichier.
 

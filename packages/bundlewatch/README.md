@@ -14,13 +14,12 @@ Requires Node.js 22.17 or later.
 npm install --save-dev bundlewatch
 ```
 
-Add your files to `package.json`:
+Create `bundlewatch.config.mjs` in your project root:
 
-```json
-{
-  "bundlewatch": {
-    "files": [{ "path": "./dist/*.js", "maxSize": "100kB" }]
-  }
+```js
+/** @type {import('bundlewatch').BundlewatchConfig} */
+export default {
+  files: [{ path: './dist/*.js', maxSize: '100kB' }],
 }
 ```
 

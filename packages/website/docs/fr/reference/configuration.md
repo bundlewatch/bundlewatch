@@ -5,10 +5,9 @@ description: Toutes les options de Bundlewatch, leurs valeurs par défaut et les
 
 # Référence de configuration {#configuration-reference}
 
-Seul le tableau `files`, avec au moins un `path`, est obligatoire.
-`bundlewatch.config.mjs`
+Définissez ces options dans un [fichier de configuration](../guide/using-a-config-file.md), tel que `bundlewatch.config.mjs`, puis exécutez `npx bundlewatch`. Seul le tableau `files`, avec au moins un `path`, est obligatoire. La configuration sous la clé `bundlewatch` de [package.json](../guide/using-a-config-file.md#package-json) reste prise en charge.
 
-```js
+```js [bundlewatch.config.mjs]
 export default {
   files: [
     {

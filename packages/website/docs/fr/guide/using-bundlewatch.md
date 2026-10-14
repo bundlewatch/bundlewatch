@@ -33,6 +33,8 @@ Bundlewatch peut publier son statut directement sur vos pull requests GitHub.
     <img alt="Aperçu du statut du build" data-zoomable src="/build-status-preview.png" width="700px">
 </div>
 
+Les exemples CI ci-dessous utilisent `bundlewatch.config.mjs` du guide [Premiers pas](./getting-started.md#configuration). Bundlewatch le trouve automatiquement. Pour un nom personnalisé ou un fichier hors du chemin de recherche, ajoutez `--config <chemin>` à la commande.
+
 ## GitHub Actions (recommandé) {#github-actions}
 
 Sur GitHub Actions, Bundlewatch peut utiliser le jeton que GitHub crée pour chaque exécution du workflow : aucun jeton à générer ni à stocker. Ajoutez un workflow tel que `.github/workflows/bundlewatch.yml` :

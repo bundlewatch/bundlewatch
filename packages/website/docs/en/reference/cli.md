@@ -22,7 +22,7 @@ Run it with `npx bundlewatch` (or your package manager's equivalent) after [inst
 | `-V, --version`               | Output the version number                                                                                                                                                                                                                                                          |
 | `-h, --help`                  | Output usage information                                                                                                                                                                                                                                                           |
 
-- `--max-size`, `--compression` and `--normalize` only apply to file globs given on the command line. With `--config` or the `bundlewatch` key in package.json, they're ignored without a warning.
+- `--max-size`, `--compression` and `--normalize` only apply to file globs given on the command line. With a discovered config file, `--config`, or the `bundlewatch` key in package.json, they're ignored without a warning.
 - An option takes the next argument as its value, unless that argument starts with `-`. Put the value right after the option, or write `--max-size=3kb`: in `bundlewatch --max-size ./dist/*.js`, the first file becomes the size.
 - Without a value: with file globs, `--max-size` means no limit, and `--compression` or `--normalize` stops the run with an error. Without file globs, `--config` stops the run with an error.
 - `--` ends the options: every argument after it is a glob.
@@ -30,16 +30,16 @@ Run it with `npx bundlewatch` (or your package manager's equivalent) after [inst
 
 ## Examples
 
-Read configuration from `package.json`:
+Discover a config file (recommended):
 
 ```bash
 npx bundlewatch
 ```
 
-Read configuration from a file:
+If no config file is discovered, the same command reads the `bundlewatch` key in `package.json`. To use a specific file instead:
 
 ```bash
-npx bundlewatch --config internals/bundlewatch.config.js
+npx bundlewatch --config internals/bundlewatch.config.mjs
 ```
 
 Use the command line:
@@ -56,9 +56,10 @@ BundleWatch uses the first of these it finds:
 
 1. File globs on the command line, with `--max-size`, `--compression` and `--normalize`.
 2. The file given with `--config`.
-3. The `bundlewatch` key in the nearest `package.json`. It can be a config object, or an array that is used as `files`.
+3. A discovered `bundlewatch.config.*` file. Search starts in the current directory and includes parents up to the nearest `package.json`; see [config discovery](../guide/using-a-config-file.md#config-discovery) for filenames and search boundaries.
+4. The `bundlewatch` key in the nearest `package.json`. It can be a config object, or an array that is used as `files`.
 
-If more than one is present, BundleWatch logs a warning and ignores the others. If none is found, it prints `[ERROR] Configuration missing` and exits with code 1.
+An unused `--config` option or `package.json` configuration triggers a warning. Discovery is skipped when globs or `--config` are supplied. If a selected config file cannot be loaded or is invalid, the run fails without falling back. If none is found, it prints `[ERROR] Configuration missing` and exits with code 1.
 
 ## Exit codes
 

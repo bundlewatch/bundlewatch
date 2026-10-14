@@ -35,18 +35,17 @@ bun add bundlewatch --dev
 
 ## 配置 {#configuration}
 
-在 `package.json` 中告诉 BundleWatch 要检查哪些文件，以及它们最大允许多大：
+在项目根目录创建 `bundlewatch.config.mjs`，告诉 BundleWatch 要检查哪些文件，以及它们最大允许多大：
 
-```json
-{
-  "bundlewatch": {
-    "files": [
-      {
-        "path": "./dist/*.js",
-        "maxSize": "100kB"
-      }
-    ]
-  }
+```js [bundlewatch.config.mjs]
+/** @type {import('bundlewatch').BundlewatchConfig} */
+export default {
+  files: [
+    {
+      path: './dist/*.js',
+      maxSize: '100kB',
+    },
+  ],
 }
 ```
 
@@ -55,6 +54,8 @@ bun add bundlewatch --dev
 ```bash
 npx bundlewatch
 ```
+
+BundleWatch 会自动找到 `bundlewatch.config.mjs`。使用自定义文件名或位置时，可以通过 `--config <路径>` 指定；参见[配置查找](./using-a-config-file.md#config-discovery)。
 
 在你自己的机器上第一次运行时，输出类似这样：
 
@@ -99,7 +100,7 @@ Everything is in check (+30.71KB, -0B)
 
 1. 找到生产构建命令并运行它。列出它输出的 JavaScript 和 CSS 文件，以及它们的 gzip 体积。
 2. 使用这个项目已在使用的包管理器，将 bundlewatch 添加为开发依赖。
-3. 在 package.json 中添加 "bundlewatch" 键，每个输出文件对应一个 "files" 条目。使用只匹配文件、不匹配目录，并且在不同构建之间文件名变化时仍能匹配的 glob，并将每个文件的 "maxSize" 设为比当前 gzip 体积高约 10%，向上取整到整数 kB。如果文件名包含内容 hash，请设置 "normalizeFilenames"，使同一个文件在不同构建中保持相同的名称。用实际的文件名检验该模式：它只能移除 hash，并且不能有两个文件最终得到相同的名称。
+3. 在项目根目录创建 bundlewatch.config.mjs，默认导出一个配置对象，每个输出文件对应一个 "files" 条目。使用只匹配文件、不匹配目录，并且在不同构建之间文件名变化时仍能匹配的 glob，并将每个文件的 "maxSize" 设为比当前 gzip 体积高约 10%，向上取整到整数 kB。如果文件名包含内容 hash，请设置 "normalizeFilenames"，使同一个文件在不同构建中保持相同的名称。用实际的文件名检验该模式：它只能移除 hash，并且不能有两个文件最终得到相同的名称。
 4. 构建，运行 `npx bundlewatch`，并确保每个文件都通过检查。
 5. 在 CI 中于构建之后运行它：
    - 在 GitHub Actions 上，添加 https://bundlewatch.io/guide/using-bundlewatch#github-actions 中的工作流，并根据这个项目的 Node.js 版本、包管理器、构建命令和默认分支进行调整。它不需要任何 secret。

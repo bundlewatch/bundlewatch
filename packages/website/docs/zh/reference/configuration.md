@@ -5,7 +5,7 @@ description: BundleWatch 的所有选项及其默认值，以及 BundleWatch 读
 
 # 配置参考
 
-把这些选项写在 package.json 的 `bundlewatch` 键下，或写在[配置文件](../guide/using-a-config-file.md)中。命令行要求设置 `files`；其他选项都有默认值。
+将这些选项写在[配置文件](../guide/using-a-config-file.md)中，例如 `bundlewatch.config.mjs`，然后运行 `npx bundlewatch`。命令行要求设置 `files`；其他选项都有默认值。也支持将配置写在 [package.json](../guide/using-a-config-file.md#package-json) 的 `bundlewatch` 键下。
 
 你的配置会与下面的默认值合并。`files` 和 `ci.trackBranches` 等数组会替换默认值，而不是与之合并。
 
@@ -52,7 +52,7 @@ Brotli 使用 Node 内置的 `zlib`，无需额外安装包。
 | `./dist/main.3f2a1b9c.js`         | `/^.*(\.[a-f0-9]+)\.\w+$/` | `./dist/main.js`         |
 | `./dist/assets/index-BdF3x9Qa.js` | `/^.*?(-[\w-]{8})\.\w+$/`  | `./dist/assets/index.js` |
 
-在 package.json 中，请把模式写成不带斜杠的字符串，并把每个反斜杠写两次：`"normalizeFilenames": "^.*(\\.[a-f0-9]+)\\.\\w+$"`。
+在 JSON 中，请把模式写成不带斜杠的字符串，并把每个反斜杠写两次：`"normalizeFilenames": "^.*(\\.[a-f0-9]+)\\.\\w+$"`。
 
 ::: warning
 请用你真实的文件名检验结果。第二个模式也会把 `./dist/app-polyfill.js` 变成 `./dist/app.js`。旧示例中的 `/^.+?(\..+?)\.\w+$/` 会把 `./.next/static/chunks/main-abc123.js` 变成 `./.js`。
