@@ -100,7 +100,7 @@ Pull requests from forks get a read-only token, so BundleWatch cannot post a sta
 
 Get a token from [service.bundlewatch.io/setup-github](https://service.bundlewatch.io/setup-github), store it as the `BUNDLEWATCH_GITHUB_TOKEN` secret in your CI, and run `npx bundlewatch` after your build.
 
-BundleWatch detects the repository, commit and branch on supported CI providers. If a value is missing, set `CI_REPO_OWNER`, `CI_REPO_NAME`, `CI_COMMIT_SHA` or `CI_BRANCH`. See [supported CI providers and environment variables](https://bundlewatch.io/guide/using-bundlewatch#supported-ci-providers).
+BundleWatch detects the repository, commit and branch on supported CI providers. If a value is missing, set `CI_REPO_OWNER`, `CI_REPO_NAME`, `CI_COMMIT_SHA` or `CI_BRANCH`. When your provider cannot detect the base branch, set `CI_BRANCH_BASE` to the branch to compare with; otherwise comparisons use `master`. See [supported CI providers and environment variables](https://bundlewatch.io/guide/using-bundlewatch#supported-ci-providers).
 
 ### Viewing the results breakdown
 
