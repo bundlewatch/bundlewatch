@@ -1,4 +1,4 @@
-import type { Compression } from '@bundlewatch/core';
+import { type Compression, isValidPrefix, PREFIX_RULE } from '@bundlewatch/core';
 
 import { getCiVars } from './ci.ts';
 import { ValidationError } from './errors.ts';
@@ -27,6 +27,8 @@ export type CiConfig = {
 };
 
 export type BundlewatchConfig = {
+  /** Independent application namespace: 1-64 lowercase ASCII letters, digits, _ or -. */
+  prefix?: string | undefined;
   files?: FileConfig[] | undefined;
   defaultCompression?: Compression | undefined;
   /** Removes matching capture groups from file names, e.g. content hashes. */
@@ -37,6 +39,7 @@ export type BundlewatchConfig = {
 };
 
 export type ResolvedConfig = {
+  prefix?: string | undefined;
   files: FileConfig[];
   defaultCompression: Compression;
   normalizeFilenames: RegExp | null;
@@ -148,6 +151,9 @@ export const resolveConfig = (customConfig: BundlewatchConfig = {}): ResolvedCon
     ci: Record<string, unknown>;
   };
 
+  if (config.prefix !== undefined && !isValidPrefix(config.prefix)) {
+    throw new ValidationError(`config.prefix ${PREFIX_RULE}`);
+  }
   if (!Array.isArray(config.files)) {
     throw new ValidationError('config.files must be an Array');
   }

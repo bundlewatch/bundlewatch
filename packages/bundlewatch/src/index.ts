@@ -36,6 +36,7 @@ const bundlewatch = async (customConfig?: BundlewatchConfig): Promise<Bundlewatc
   const config = resolveConfig(customConfig);
   const github = new GitHubStatusReporter({
     ...config.ci,
+    prefix: config.prefix,
     apiUrl: process.env.GITHUB_API_URL || undefined,
     userAgent: USER_AGENT,
     logger,

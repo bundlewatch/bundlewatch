@@ -30,8 +30,9 @@ beforeEach(() => {
   posted.length = 0;
 });
 
-const reporter = (): GitHubStatusReporter =>
+const reporter = (prefix?: string): GitHubStatusReporter =>
   new GitHubStatusReporter({
+    prefix,
     repoOwner: 'o',
     repoName: 'r',
     commitSha: 'sha',
@@ -42,6 +43,43 @@ const reporter = (): GitHubStatusReporter =>
   });
 
 describe('GitHubStatusReporter', () => {
+  for (const prefix of [undefined, 'storefront', 'admin']) {
+    test(`${prefix ?? 'legacy'}: all states, path suffixes, collisions and limits`, async () => {
+      const status = reporter(prefix);
+      const name = prefix === undefined ? 'bundlewatch' : `${prefix}/bundlewatch`;
+      await status.start({ message: 'pending' });
+      await status.pass({ message: 'success', url: 'https://test/results' });
+      await status.fail({ message: 'failure' });
+      await status.error({ message: 'x'.repeat(150) });
+      assert.deepEqual(
+        posted.map(({ body }) => [body.state, body.context]),
+        [
+          ['pending', name],
+          ['success', name],
+          ['failure', name],
+          ['error', name],
+        ],
+      );
+      assert.equal((posted[3]?.body.description as string | undefined)?.length, 140);
+      const suffix = 'build/static/js/vendors~main.chunk.js';
+      await status.fail({ message: 'a', filePath: `apps/one/${suffix}` });
+      await status.fail({ message: 'b', filePath: `apps/two/${suffix}` });
+      await status.fail({ message: 'a again', filePath: `apps/one/${suffix}` });
+      await status.fail({ message: 'short', filePath: 'a.js' });
+      await status.fail({ message: 'last', filePath: 'b.js' });
+      await status.fail({ message: 'skipped', filePath: 'c.js' });
+      assert.deepEqual(
+        posted.slice(4).map(({ body }) => body.context),
+        [
+          `${name} *${suffix}`,
+          `${name} *${suffix} (2)`,
+          `${name} *${suffix}`,
+          `${name} a.js`,
+          `${name} b.js`,
+        ],
+      );
+    });
+  }
   test('authenticates like 0.x', async () => {
     await reporter().start({ message: 'Checking bundlewatch...' });
     assert.equal(posted[0]?.authorization, 'token secret');

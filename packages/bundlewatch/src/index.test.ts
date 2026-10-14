@@ -41,6 +41,41 @@ const statuses = (requests: RecordedRequest[]): unknown[] =>
   requests.filter((request) => request.path.startsWith('/repos/')).map((request) => request.body);
 
 describe('bundlewatch Node API', () => {
+  test('a prefixed run reports pending and error when the service cannot isolate baselines', async () => {
+    const server = await startFakeServer({
+      'POST /repos/*': () => ({ status: 201, body: {} }),
+      'POST /store': () => ({ status: 200, body: {} }),
+    });
+    try {
+      await assert.rejects(
+        withEnv({ GITHUB_API_URL: server.url }, () =>
+          bundlewatch({
+            prefix: 'storefront',
+            files: [{ path: './test-file-1.jpg' }],
+            bundlewatchServiceHost: server.url,
+            ci: { ...CI, repoCurrentBranch: 'main' },
+          }),
+        ),
+        /Cannot confirm prefix support/,
+      );
+      assert.deepEqual(
+        (statuses(server.requests) as Record<string, unknown>[]).map(({ state, context }) => [
+          state,
+          context,
+        ]),
+        [
+          ['pending', 'storefront/bundlewatch'],
+          ['error', 'storefront/bundlewatch'],
+        ],
+      );
+      assert.equal(
+        server.requests.some(({ path: requestPath }) => requestPath.startsWith('/store')),
+        false,
+      );
+    } finally {
+      await server.close();
+    }
+  });
   test('works with basic options', async () => {
     const result = await withEnv({}, () =>
       bundlewatch({

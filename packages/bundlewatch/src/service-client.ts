@@ -7,6 +7,7 @@ import {
   isFileError,
   postJson as requestJson,
   type ResultsDetails,
+  validatePrefix,
 } from '@bundlewatch/core';
 
 import type { ResolvedConfig } from './config.ts';
@@ -14,6 +15,7 @@ import { logger } from './logger.ts';
 import { USER_AGENT } from './version.ts';
 
 type RepoAuth = {
+  prefix?: string | undefined;
   repoOwner: string | undefined;
   repoName: string | undefined;
   commitSha: string | undefined;
@@ -36,6 +38,8 @@ class HttpError extends Error {
   }
 }
 
+class PrefixSupportError extends Error {}
+
 const errorCode = (error: unknown): string => {
   if (error instanceof HttpError) return String(error.status);
   const cause = (error as { cause?: { code?: string } })?.cause;
@@ -54,13 +58,18 @@ const postJson = async (url: string, body: unknown, timeout: number): Promise<un
 export class ServiceClient {
   readonly #host: string | null;
   readonly #ci: ResolvedConfig['ci'];
+  readonly #prefix: string | undefined;
+  #prefixSupport: Promise<void> | undefined;
 
   constructor({
     bundlewatchServiceHost,
     ci,
-  }: Pick<ResolvedConfig, 'bundlewatchServiceHost' | 'ci'>) {
+    prefix,
+  }: Pick<ResolvedConfig, 'bundlewatchServiceHost' | 'ci' | 'prefix'>) {
+    validatePrefix(prefix);
     this.#host = bundlewatchServiceHost;
     this.#ci = ci;
+    this.#prefix = prefix;
   }
 
   get enabled(): boolean {
@@ -71,7 +80,63 @@ export class ServiceClient {
   /** Fields every service request carries; the service checks the token against the repo. */
   #request(): RepoAuth {
     const { repoOwner, repoName, commitSha, githubAccessToken } = this.#ci;
-    return { repoOwner, repoName, commitSha, githubAccessToken };
+    return {
+      repoOwner,
+      repoName,
+      commitSha,
+      githubAccessToken,
+      ...(this.#prefix === undefined ? {} : { prefix: this.#prefix }),
+    };
+  }
+
+  get #storePath(): string {
+    // Old instances cannot treat a prefixed write as a legacy write during rollout.
+    return this.#prefix === undefined ? '/store' : '/store/prefixed';
+  }
+
+  #prefixError(): PrefixSupportError {
+    return new PrefixSupportError(
+      `Cannot confirm prefix support at ${withoutCredentials(this.#host ?? '')} for prefix "${this.#prefix}". ` +
+        'Deploy a service supporting baselinePrefix: 1 to every instance before enabling prefix, ' +
+        'or set bundlewatchServiceHost to an upgraded service. Check that POST /capabilities and /store/prefixed routes are reachable. ' +
+        'Legacy baseline fallback is disabled.',
+    );
+  }
+
+  async #baselineRequest(suffix: string, body: unknown): Promise<unknown> {
+    const url = `${this.#host}${this.#storePath}${suffix}`;
+    if (this.#prefix === undefined) return postJson(url, body, 10_000);
+    const response = await requestJson(url, body, { 'user-agent': USER_AGENT }, 10_000);
+    // Older API gateways can reject unknown routes with 403 or 405 instead of 404.
+    if (response.status === 403 || response.status === 405) throw this.#prefixError();
+    // A supporting service echoes the namespace, including on a missing baseline.
+    // A route missing on an old instance must stop the run, not look like an empty baseline.
+    let data: { prefix?: unknown } | null = null;
+    if ((response.status >= 200 && response.status < 300) || response.status === 404) {
+      try {
+        data = JSON.parse(response.data);
+      } catch {
+        throw this.#prefixError();
+      }
+      if (data?.prefix !== this.#prefix) throw this.#prefixError();
+    }
+    if (response.status < 200 || response.status >= 300) throw new HttpError(response.status);
+    return data;
+  }
+
+  /** Check before either baseline operation; never fall back to the legacy namespace. */
+  async #requirePrefixSupport(): Promise<void> {
+    if (this.#prefix === undefined) return;
+    this.#prefixSupport ??= (async () => {
+      try {
+        const data = await postJson(`${this.#host}/capabilities`, {}, 5000);
+        if ((data as { baselinePrefix?: unknown } | null)?.baselinePrefix === 1) return;
+      } catch {
+        // Do not expose URL credentials or turn this into a best-effort lookup.
+      }
+      throw this.#prefixError();
+    })();
+    await this.#prefixSupport;
   }
 
   async getBaseline(): Promise<FileDetailsByPath> {
@@ -79,15 +144,16 @@ export class ServiceClient {
     if (!this.enabled || !repoBranchBase) {
       return {};
     }
+    await this.#requirePrefixSupport();
     logger.info('Retrieving comparison');
     try {
-      const data = (await postJson(
-        `${this.#host}/store/lookup`,
-        { ...this.#request(), repoBranch: repoBranchBase },
-        10_000,
-      )) as { fileDetailsByPath?: FileDetailsByPath };
+      const data = (await this.#baselineRequest('/lookup', {
+        ...this.#request(),
+        repoBranch: repoBranchBase,
+      })) as { fileDetailsByPath?: FileDetailsByPath };
       return data?.fileDetailsByPath ?? {};
     } catch (error) {
+      if (error instanceof PrefixSupportError) throw error;
       logger.debug(error);
       logger.error(
         `Unable to fetch fileDetails for baseBranch=${repoBranchBase} from ${withoutCredentials(this.#host ?? '')}/store code=${errorCode(error)}`,
@@ -114,18 +180,16 @@ export class ServiceClient {
       return;
     }
 
+    await this.#requirePrefixSupport();
     logger.info('Saving results');
     try {
-      await postJson(
-        `${this.#host}/store`,
-        {
-          ...this.#request(),
-          repoBranch: repoCurrentBranch,
-          fileDetailsByPath: fileDetailsByPath as Record<string, FileDetails>,
-        },
-        10_000,
-      );
+      await this.#baselineRequest('', {
+        ...this.#request(),
+        repoBranch: repoCurrentBranch,
+        fileDetailsByPath: fileDetailsByPath as Record<string, FileDetails>,
+      });
     } catch (error) {
+      if (error instanceof PrefixSupportError) throw error;
       logger.debug(error);
       logger.error(
         `Unable to save fileDetails for currentBranch=${repoCurrentBranch} code=${errorCode(error)}`,
@@ -144,6 +208,7 @@ export class ServiceClient {
     }
     const { repoOwner, repoName, repoCurrentBranch, repoBranchBase, commitSha } = this.#ci;
     const details: ResultsDetails = {
+      ...(this.#prefix === undefined ? {} : { prefix: this.#prefix }),
       repoOwner,
       repoName,
       repoCurrentBranch,

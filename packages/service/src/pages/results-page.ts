@@ -36,6 +36,7 @@ export type FileView = {
 };
 
 export type ReportView = {
+  prefix?: string | undefined;
   status: string;
   summary: string;
   repo: { slug: string; url: string } | undefined;
@@ -106,6 +107,7 @@ export const toReportView = ({ details, results }: ResultsData): ReportView => {
   const { totalAdded, totalRemoved, percentageChange } = getOverallDifference(results.fullResults);
   return {
     status: results.status,
+    ...(details.prefix === undefined ? {} : { prefix: details.prefix }),
     summary: results.summary,
     repo: repoUrl ? { slug: `${repoOwner}/${repoName}`, url: repoUrl } : undefined,
     branch: repoCurrentBranch,
@@ -208,6 +210,7 @@ const lede = (view: ReportView): SafeHtml | '' => {
 const crumbs = (view: ReportView): SafeHtml | '' => {
   const parts: SafeHtml[] = [];
   if (view.repo) parts.push(html`<a href="${view.repo.url}">${view.repo.slug}</a>`);
+  if (view.prefix) parts.push(html`<span>Application: <b>${view.prefix}</b></span>`);
   if (view.branch) {
     parts.push(html`<b>${view.branch}</b>${view.baseBranch && html` into ${view.baseBranch}`}`);
   }
@@ -389,7 +392,7 @@ export const renderResultsPage = ({
   let files: SafeHtml | '' = '';
   if (view.files.length > 0) files = view.hasBaseline ? changes(view) : sizes(view);
   return page({
-    title: `${headline(view)} | BundleWatch`,
+    title: `${view.prefix ? `${view.prefix} | ` : ''}${headline(view)} | BundleWatch`,
     // The GitHub status's own words.
     description: view.summary,
     stylesheet: '/static/results-styles.css',

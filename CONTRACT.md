@@ -269,6 +269,24 @@ Request:
 
 ## 3. Data
 
+### Optional application prefixes
+
+`prefix` requires BundleWatch 1.1.0 or later in the CLI and Node API. Older clients silently ignore the option and continue using the shared unprefixed baseline and `bundlewatch` status, even against an upgraded service. Prefix-enabled applications must not downgrade below 1.1.0.
+
+Without `prefix`, all status names, request bodies, storage keys and results payloads below retain their existing behavior. Old clients continue working with the updated service.
+
+The CLI configuration and Node API accept a top-level `prefix`: 1–64 lowercase ASCII letters, digits, hyphens or underscores, starting with a letter or digit. Empty, null, uppercase, whitespace, slash-containing and non-string values are invalid. Validation is shared with the service; values are never normalized.
+
+- Status contexts prepend `<prefix>/` to the existing context, including per-file failures. Suffix formatting, truncation, collision handling and the five-context limit stay unchanged.
+- Baseline identity is repository + prefix + branch. Prefixed DynamoDB `repo` keys are `owner/name/prefix`, with `repoBranch` unchanged and a `prefix` string attribute. Unprefixed `repo` keys remain `owner/name`, byte for byte. There is no fallback or migration between these namespaces.
+- Before either baseline operation, a prefixed client requires `POST /capabilities` to return `{ "baselinePrefix": 1 }`. It then uses `/store/prefixed/lookup` and `/store/prefixed`, which require a prefix and reuse existing authorization and storage handlers. Responses echo the prefix, including a missing baseline's `404 { prefix }`. Missing support or a mismatched echo is a fatal, actionable error. Dedicated routes prevent an old service instance from overwriting a legacy baseline during mixed deployments. Unprefixed clients use their original routes without probing.
+- Original `/store`, `/store/lookup` and `/analyze` routes also accept an optional prefix. The latter applies it to baseline lookup, statuses and results, and still never saves baselines. PR clients compare against the prefixed base branch and never save baselines.
+- Results metadata adds optional `details.prefix` to long and short links. `POST /results` accepts a matching top-level `prefix`. Results pages display it. Legacy links and payloads continue to render.
+
+Deploy the updated service to all instances first, then upgrade clients and enable prefixes. Existing baselines need no migration; seed each new namespace with a tracked base-branch build. Keep the capable service while prefixed clients are active. Authentication and repository authorization do not change. See [service rollout details](packages/service/README.md#application-prefixes-and-rollout).
+
+### Legacy baseline format
+
 - DynamoDB table `bundlewatch-service-store-table-prod`, region `us-east-1`, `DeletionPolicy: Retain`.
 - Keys: hash key `repo` (`owner/name`), range key `repoBranch`. The table holds only the latest item per branch, and each save overwrites it.
 - Local secondary index `timestamp` (KEYS_ONLY). The timestamp is stored as a string of epoch milliseconds.

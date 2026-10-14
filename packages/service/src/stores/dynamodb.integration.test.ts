@@ -75,4 +75,58 @@ describe('DynamoDB stores', { skip: !endpoint && 'set DYNAMODB_ENDPOINT to run' 
     });
     assert.equal(await store.get('BBBBBBBBBBBBBBBBBBBBBB'), undefined);
   });
+
+  test('prefixes isolate identical paths and branches without changing legacy keys', async () => {
+    const store = new DynamoBaselineStore(client, storeTable);
+    const path = 'dist/assets/app.js';
+    const variants = [undefined, 'storefront', 'admin'];
+    await Promise.all(
+      variants.map(async (prefix, index) => {
+        await store.save({
+          repo: 'owner/monorepo',
+          repoBranch: 'release/apps',
+          ...(prefix === undefined ? {} : { prefix }),
+          fileDetailsByPath: { [path]: { size: index + 1, maxSize: null, compression: 'gzip' } },
+          timestamp: '1700000000000',
+        });
+      }),
+    );
+    await Promise.all(
+      variants.map(async (prefix, index) => {
+        const baseline = await store.get('owner/monorepo', 'release/apps', prefix);
+        assert.equal(baseline?.repo, 'owner/monorepo');
+        assert.equal(baseline?.prefix, prefix);
+        assert.deepEqual(baseline?.fileDetailsByPath, {
+          [path]: { size: index + 1, maxSize: null, compression: 'gzip' },
+        });
+        const { Item } = await client.send(
+          new GetItemCommand({
+            TableName: storeTable,
+            Key: {
+              repo: { S: prefix === undefined ? 'owner/monorepo' : `owner/monorepo/${prefix}` },
+              repoBranch: { S: 'release/apps' },
+            },
+          }),
+        );
+        assert.ok(Item);
+        assert.deepEqual(Item.prefix, prefix === undefined ? undefined : { S: prefix });
+        assert.deepEqual(Item.fileDetailsByPath, {
+          S: JSON.stringify(baseline?.fileDetailsByPath),
+        });
+      }),
+    );
+    assert.equal(await store.get('owner/monorepo', 'release/apps', 'another-app'), undefined);
+    const results = new DynamoResultsStore(client, resultsTable);
+    const report = {
+      id: 'PREFIXweb001',
+      repo: 'owner/monorepo',
+      createdAt: new Date(0).toISOString(),
+      payload: {
+        details: { prefix: 'storefront' },
+        results: { status: 'pass', summary: 'ok', fullResults: [] },
+      },
+    };
+    assert.equal(await results.create(report), true);
+    assert.deepEqual((await results.get(report.id))?.payload, report.payload);
+  });
 });

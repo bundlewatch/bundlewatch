@@ -110,6 +110,14 @@ Click the status's **Details** link, or open the results link printed in the bui
   <img src="https://bundlewatch.io/build-results-preview.png" width="700" alt="BundleWatch results showing file sizes, limits and changes compared with main">
 </div>
 
+## Multiple applications in one repository
+
+**Requires BundleWatch 1.1.0 or later**, for both the CLI and Node API. Use a dependency such as `"bundlewatch": "^1.1.0"` and ensure CI runs that installed version. Older versions silently ignore `prefix` and share the unprefixed baseline and `bundlewatch` GitHub status. Do not downgrade a prefix-enabled application below 1.1.0.
+
+Set `prefix: 'storefront'` in the storefront frontend's config and `prefix: 'admin'` in the admin frontend's config. Run BundleWatch from each application's directory. Their statuses become `storefront/bundlewatch` and `admin/bundlewatch`, and baselines stay independent even with identical branches and measured paths. Results pages display the prefix.
+
+Prefixes contain 1–64 lowercase ASCII letters, digits, hyphens or underscores and start with a letter or digit. Omit `prefix` to keep existing names and baselines. Deploy a prefix-capable service to every instance before enabling the option in clients; unsupported services stop prefixed runs without falling back to legacy baselines. See the [configuration reference and two-application example](https://bundlewatch.io/reference/configuration#prefix).
+
 ## Node.js API
 
 ```js

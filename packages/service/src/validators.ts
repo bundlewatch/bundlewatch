@@ -1,4 +1,4 @@
-import { parseBytes } from '@bundlewatch/core';
+import { isValidPrefix, parseBytes, PREFIX_RULE } from '@bundlewatch/core';
 import type { FileDetails, LookupRequest, ResultsDetails, StoreRequest } from '@bundlewatch/core';
 
 // Ports of the 0.x Joi schemas (@hapi/joi 17.1.1). Joi's defaults are part
@@ -53,6 +53,7 @@ export type AnalyzeRequest = LookupRequest & {
 
 /** Body of `POST /results`. */
 export type CreateResultsRequest = {
+  prefix?: string | undefined;
   repoOwner: string;
   repoName: string;
   commitSha: string;
@@ -134,6 +135,16 @@ const optionalString = (value: unknown, path: Path, allowEmpty = false): string 
 
 const requiredString = (value: unknown, path: Path): string =>
   optionalString(required(value, path), path) as string;
+
+const optionalPrefix = (value: unknown, path: Path): string | undefined => {
+  if (value === undefined || isValidPrefix(value)) return value;
+  throw invalid(path, 'string.pattern.base', PREFIX_RULE);
+};
+
+const prefixField = (body: Obj): { prefix?: string } => {
+  const prefix = optionalPrefix(get(body, 'prefix'), ['prefix']);
+  return prefix === undefined ? {} : { prefix };
+};
 
 const NUMERIC = /^\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?\s*$/i;
 // What bytes.format produced, e.g. "100KB" or "1.5MB".
@@ -225,14 +236,14 @@ const repoFields = (body: Obj): LookupRequest => {
   for (const key of REPO_KEYS) {
     fields[key] = requiredString(get(body, key), [key]);
   }
-  return fields as LookupRequest;
+  return { ...fields, ...prefixField(body) } as LookupRequest;
 };
 
 /** `POST /store/lookup`. */
 export const validateLookupRequest = (value: unknown): LookupRequest => {
   const body = expectObject(value, []);
   const request = repoFields(body);
-  rejectUnknownKeys(body, REPO_KEYS, []);
+  rejectUnknownKeys(body, [...REPO_KEYS, 'prefix'], []);
   return request;
 };
 
@@ -243,7 +254,7 @@ export const validateStoreRequest = (value: unknown): StoreRequest => {
     ...repoFields(body),
     fileDetailsByPath: fileDetailsByPath(get(body, 'fileDetailsByPath'), ['fileDetailsByPath']),
   };
-  rejectUnknownKeys(body, [...REPO_KEYS, 'fileDetailsByPath'], []);
+  rejectUnknownKeys(body, [...REPO_KEYS, 'prefix', 'fileDetailsByPath'], []);
   return request;
 };
 
@@ -251,6 +262,7 @@ export const validateStoreRequest = (value: unknown): StoreRequest => {
 export const validateAnalyzeRequest = (value: unknown): AnalyzeRequest => {
   const body = expectObject(value, []);
   const request = {
+    ...prefixField(body),
     commitSha: requiredString(get(body, 'commitSha'), ['commitSha']),
     githubAccessToken: requiredString(get(body, 'githubAccessToken'), ['githubAccessToken']),
     bundlewatchServiceHost: requiredString(get(body, 'bundlewatchServiceHost'), [
@@ -264,7 +276,7 @@ export const validateAnalyzeRequest = (value: unknown): AnalyzeRequest => {
       'currentBranchFileDetails',
     ]),
   };
-  rejectUnknownKeys(body, Object.keys(request), []);
+  rejectUnknownKeys(body, [...Object.keys(request), 'prefix'], []);
   return request;
 };
 
@@ -283,7 +295,8 @@ const details = (value: unknown, path: Path): ResultsDetails => {
     // Display-only, so empty strings are allowed (0.x returned 422).
     converted[key] = optionalString(get(object, key), [...path, key], true);
   }
-  rejectUnknownKeys(object, DETAILS_KEYS, path);
+  converted.prefix = optionalPrefix(get(object, 'prefix'), [...path, 'prefix']);
+  rejectUnknownKeys(object, [...DETAILS_KEYS, 'prefix'], path);
   return inOriginalOrder(object, converted);
 };
 
@@ -344,12 +357,16 @@ export const validateResultsPayload = (value: unknown, path: Path = []): Results
 export const validateCreateResultsRequest = (value: unknown): CreateResultsRequest => {
   const body = expectObject(value, []);
   const request = {
+    ...prefixField(body),
     repoOwner: requiredString(get(body, 'repoOwner'), ['repoOwner']),
     repoName: requiredString(get(body, 'repoName'), ['repoName']),
     commitSha: requiredString(get(body, 'commitSha'), ['commitSha']),
     githubAccessToken: requiredString(get(body, 'githubAccessToken'), ['githubAccessToken']),
     payload: validateResultsPayload(required(get(body, 'payload'), ['payload']), ['payload']),
   };
-  rejectUnknownKeys(body, Object.keys(request), []);
+  rejectUnknownKeys(body, [...Object.keys(request), 'prefix'], []);
+  if (request.prefix !== request.payload.details.prefix) {
+    throw invalid(['payload', 'details', 'prefix'], 'any.only', 'must match the request prefix');
+  }
   return request;
 };

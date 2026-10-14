@@ -162,6 +162,12 @@ const font: Handler = async (_request, _url, [name]) => {
   });
 };
 
+const requireRoutePrefix = (url: URL, prefix: string | undefined): void => {
+  if (url.pathname.startsWith('/store/prefixed') && prefix === undefined) {
+    throw new HttpError(json(422, { errors: { details: [{ message: '"prefix" is required' }] } }));
+  }
+};
+
 export const createApp = (deps: AppDeps): App => {
   const { baselineStore, resultsStore, config } = deps;
   const logger = deps.logger ?? console;
@@ -268,19 +274,21 @@ export const createApp = (deps: AppDeps): App => {
     return { id, url: `${publicBase(url)}/r/${id}` };
   };
 
-  const saveBaseline: Handler = async (request) => {
+  const saveBaseline: Handler = async (request, url) => {
     const body = await readJsonBody(request);
     await authorize(body);
-    const { commitSha, fileDetailsByPath, repoBranch, repoName, repoOwner } = validate(
+    const { commitSha, fileDetailsByPath, repoBranch, repoName, repoOwner, prefix } = validate(
       validateStoreRequest,
       body,
     );
+    requireRoutePrefix(url, prefix);
     if (Buffer.byteLength(JSON.stringify(fileDetailsByPath)) > MAX_BASELINE_BYTES) {
       throw new HttpError(json(413, { error: 'Baseline too large' }));
     }
     const timestamp = now();
     await baselineStore.save({
       repo: `${repoOwner}/${repoName}`,
+      ...(prefix === undefined ? {} : { prefix }),
       repoBranch,
       repoOwner,
       repoName,
@@ -290,6 +298,7 @@ export const createApp = (deps: AppDeps): App => {
     });
     // What 0.x sent: its dynamoose model as constructed, before saving.
     return json(200, {
+      ...(prefix === undefined ? {} : { prefix }),
       commitSha,
       fileDetailsByPath,
       repoBranch,
@@ -299,17 +308,21 @@ export const createApp = (deps: AppDeps): App => {
     });
   };
 
-  const lookupBaseline: Handler = async (request) => {
+  const lookupBaseline: Handler = async (request, url) => {
     const body = await readJsonBody(request);
     // Reading a baseline keeps the 0.x check, so read-only tokens still
     // get comparisons.
     await authorize(body, 'read');
-    const { repoOwner, repoName, repoBranch } = validate(validateLookupRequest, body);
-    const baseline = await baselineStore.get(`${repoOwner}/${repoName}`, repoBranch);
+    const { repoOwner, repoName, repoBranch, prefix } = validate(validateLookupRequest, body);
+    requireRoutePrefix(url, prefix);
+    const baseline = await baselineStore.get(`${repoOwner}/${repoName}`, repoBranch, prefix);
     if (!baseline) {
-      return new Response(null, { status: 404 });
+      return prefix === undefined ? new Response(null, { status: 404 }) : json(404, { prefix });
     }
-    return json(200, { fileDetailsByPath: baseline.fileDetailsByPath });
+    return json(200, {
+      ...(prefix === undefined ? {} : { prefix }),
+      fileDetailsByPath: baseline.fileDetailsByPath,
+    });
   };
 
   const showLongLink: Handler = async (_request, url) => {
@@ -480,8 +493,10 @@ export const createApp = (deps: AppDeps): App => {
       commitSha,
       githubAccessToken,
       currentBranchFileDetails,
+      prefix,
     } = validate(validateAnalyzeRequest, body);
     const reporter = new GitHubStatusReporter({
+      prefix,
       repoOwner,
       repoName,
       commitSha,
@@ -497,13 +512,14 @@ export const createApp = (deps: AppDeps): App => {
     }
     try {
       const repo = `${repoOwner}/${repoName}`;
-      const baseline = await baselineStore.get(repo, baseBranchName);
+      const baseline = await baselineStore.get(repo, baseBranchName, prefix);
       const results = analyze({
         currentBranchFileDetails,
         baseBranchFileDetails: baseline?.fileDetailsByPath ?? {},
         baseBranchName,
       });
       const details = {
+        ...(prefix === undefined ? {} : { prefix }),
         repoOwner,
         repoName,
         repoCurrentBranch: repoBranch,
@@ -541,9 +557,16 @@ export const createApp = (deps: AppDeps): App => {
   };
 
   const routes: Route[] = [
+    {
+      method: 'POST',
+      path: '/capabilities',
+      handle: async () => json(200, { baselinePrefix: 1 }, { 'cache-control': 'no-store' }),
+    },
     { method: 'GET', path: '/', handle: home },
     { method: 'POST', path: '/store', handle: saveBaseline },
     { method: 'POST', path: '/store/lookup', handle: lookupBaseline },
+    { method: 'POST', path: '/store/prefixed', handle: saveBaseline },
+    { method: 'POST', path: '/store/prefixed/lookup', handle: lookupBaseline },
     { method: 'GET', path: '/results', handle: showLongLink },
     { method: 'POST', path: '/results', handle: createShortLink },
     { method: 'GET', path: /^\/r\/([^/]+)$/, handle: showShortLink },

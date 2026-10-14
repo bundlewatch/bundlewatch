@@ -1,3 +1,4 @@
+// oxlint-disable no-await-in-loop -- Isolation tests observe shared state between sequential requests.
 import assert from 'node:assert/strict';
 import { after, before, beforeEach, describe, test } from 'node:test';
 
@@ -192,6 +193,201 @@ const storeBody = {
     'dist/b.js': { size: 50, maxSize: 1024, compression: 'brotli' },
   },
 };
+
+describe('application prefixes', () => {
+  test('dedicated routes require a prefix and use the same isolated storage', async () => {
+    const { call, baselineStore } = setup();
+    assert.equal((await call('POST', '/store/prefixed', storeBody)).status, 422);
+    assert.equal(
+      (await call('POST', '/store/prefixed/lookup', { ...CREDENTIALS, repoBranch: 'main' })).status,
+      422,
+    );
+    assert.equal(await baselineStore.get('o/r', 'main'), undefined);
+    const missing = await call('POST', '/store/prefixed/lookup', {
+      ...CREDENTIALS,
+      repoBranch: 'main',
+      prefix: 'storefront',
+    });
+    assert.equal(missing.status, 404);
+    assert.deepEqual(await missing.json(), { prefix: 'storefront' });
+    assert.equal(
+      (await call('POST', '/store/prefixed', { ...storeBody, prefix: 'storefront' })).status,
+      200,
+    );
+    assert.deepEqual(
+      (await baselineStore.get('o/r', 'main', 'storefront'))?.fileDetailsByPath,
+      storeBody.fileDetailsByPath,
+    );
+    assert.equal(await baselineStore.get('o/r', 'main'), undefined);
+  });
+  test('advertises support without repository credentials', async () => {
+    const response = await setup().call('POST', '/capabilities', {});
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { baselinePrefix: 1 });
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.deepEqual(githubRequests(), []);
+  });
+
+  test('isolates identical paths and branches from each other and from legacy baselines', async () => {
+    const { call } = setup();
+    const variants = [{}, { prefix: 'storefront' }, { prefix: 'admin' }];
+    for (const [index, fields] of variants.entries()) {
+      const missing = await call('POST', '/store/lookup', {
+        ...CREDENTIALS,
+        repoBranch: 'main',
+        ...fields,
+      });
+      assert.equal(missing.status, 404, 'never falls back to another application');
+      const saved = await call('POST', '/store', {
+        ...storeBody,
+        ...fields,
+        fileDetailsByPath: {
+          'dist/assets/app.js': { size: index + 1, maxSize: null, compression: 'gzip' },
+        },
+      });
+      assert.equal(saved.status, 200);
+      assert.equal(
+        ((await saved.json()) as { prefix?: string }).prefix,
+        (fields as { prefix?: string }).prefix,
+      );
+    }
+    // Updating the storefront cannot change the admin or legacy namespace.
+    await call('POST', '/store', {
+      ...storeBody,
+      prefix: 'storefront',
+      fileDetailsByPath: {
+        'dist/assets/app.js': { size: 20, maxSize: null, compression: 'gzip' },
+      },
+    });
+    for (const [index, fields] of variants.entries()) {
+      const response = await call('POST', '/store/lookup', {
+        ...CREDENTIALS,
+        repoBranch: 'main',
+        ...fields,
+      });
+      assert.equal(response.status, 200);
+      assert.deepEqual(await response.json(), {
+        ...fields,
+        fileDetailsByPath: {
+          'dist/assets/app.js': {
+            size: index === 1 ? 20 : index + 1,
+            maxSize: null,
+            compression: 'gzip',
+          },
+        },
+      });
+    }
+  });
+
+  test('invalid prefixes cannot read or write baselines or results', async (t) => {
+    const { call, baselineStore, resultsStore } = setup();
+    await call('POST', '/store', storeBody);
+    const save = t.mock.method(baselineStore, 'save');
+    const create = t.mock.method(resultsStore, 'create');
+    const baseline = await baselineStore.get('o/r', 'main');
+    for (const prefix of [
+      '',
+      null,
+      0,
+      false,
+      {},
+      [],
+      'Storefront',
+      'a/b',
+      'a\n',
+      '-a',
+      'a'.repeat(65),
+    ]) {
+      for (const path of [
+        '/store',
+        '/store/lookup',
+        '/store/prefixed',
+        '/store/prefixed/lookup',
+        '/results',
+        '/analyze',
+      ]) {
+        const body =
+          path === '/store' || path === '/store/prefixed'
+            ? { ...storeBody, prefix }
+            : path.endsWith('/lookup')
+              ? { ...CREDENTIALS, repoBranch: 'main', prefix }
+              : path === '/results'
+                ? {
+                    ...CREDENTIALS,
+                    prefix,
+                    payload: {
+                      details: { prefix },
+                      results: { status: 'pass', summary: 'ok', fullResults: [] },
+                    },
+                  }
+                : {
+                    ...CREDENTIALS,
+                    prefix,
+                    repoBranch: 'main',
+                    baseBranchName: 'main',
+                    bundlewatchServiceHost: 'https://test',
+                    currentBranchFileDetails: {},
+                  };
+        const response = await call('POST', path, body);
+        assert.equal(response.status, 422, `${path}: ${JSON.stringify(prefix)}`);
+      }
+    }
+    assert.deepEqual(await baselineStore.get('o/r', 'main'), baseline);
+    assert.equal(await baselineStore.get('o/r', 'main', 'storefront'), undefined);
+    assert.equal(save.mock.callCount(), 0);
+    assert.equal(create.mock.callCount(), 0);
+  });
+
+  for (const prefix of [undefined, 'storefront', 'admin']) {
+    test(`${prefix ?? 'legacy'} results round-trip through short and long links`, async () => {
+      const { call, resultsStore } = setup();
+      const fields = prefix === undefined ? {} : { prefix };
+      const payload = createResultsPayload(
+        { status: 'pass', summary: 'ok', fullResults: [] },
+        {
+          repoOwner: 'o',
+          repoName: 'r',
+          ...fields,
+        },
+      );
+      const response = await call('POST', '/results', { ...CREDENTIALS, ...fields, payload });
+      assert.equal(response.status, 201);
+      const { id } = await readJson(response);
+      assert.deepEqual((await resultsStore.get(id))?.payload, payload);
+      const long = new URL(createResultsUrl({ host: 'https://service.test', ...payload }));
+      for (const link of [`/r/${id}`, `${long.pathname}${long.search}`]) {
+        const page = await call('GET', link);
+        assert.equal(page.status, 200);
+        const text = await page.text();
+        if (prefix) {
+          assert.ok(text.includes(`Application: <b>${prefix}</b>`));
+          assert.ok(text.includes(`<title>${prefix} | `));
+        } else assert.doesNotMatch(text, /Application:/);
+      }
+    });
+  }
+
+  test('results metadata must match the request prefix', async () => {
+    const { call } = setup();
+    const response = await call('POST', '/results', {
+      ...CREDENTIALS,
+      prefix: 'storefront',
+      payload: {
+        details: { prefix: 'admin' },
+        results: { status: 'pass', summary: 'ok', fullResults: [] },
+      },
+    });
+    assert.equal(response.status, 422);
+  });
+
+  test('prefixes do not change repository authorization', async () => {
+    github.reset(DENIED);
+    const { call } = setup();
+    for (const prefix of ['storefront', 'admin']) {
+      assert.equal((await call('POST', '/store', { ...storeBody, prefix })).status, 401);
+    }
+  });
+});
 
 describe('POST /store', () => {
   test('saves the baseline and answers like 0.x', async () => {
@@ -913,6 +1109,48 @@ describe('POST /analyze', () => {
       'dist/b.js': { size: 100, maxSize: null, compression: 'gzip' },
     },
   };
+
+  for (const prefix of ['storefront', 'admin']) {
+    test(`${prefix}: server analysis uses the prefixed base branch, statuses and metadata`, async () => {
+      github.reset({ ...ALLOWED, [statusesPath]: { status: 201, body: {} } });
+      const { call, baselineStore, resultsStore } = setup();
+      for (const [index, namespace] of [undefined, 'storefront', 'admin'].entries()) {
+        await baselineStore.save({
+          repo: 'o/r',
+          repoBranch: 'main',
+          prefix: namespace,
+          fileDetailsByPath: {
+            'dist/a.js': { size: (index + 1) * 100, maxSize: 1024, compression: 'gzip' },
+          },
+        });
+      }
+      const response = await call('POST', '/analyze', { ...analyzeBody, prefix });
+      assert.equal(response.status, 202);
+      const statuses = github.requests
+        .filter(({ method }) => method === 'POST')
+        .map(({ body }) => JSON.parse(body));
+      assert.deepEqual(
+        statuses.map(({ state, context }) => [state, context]),
+        [
+          ['pending', `${prefix}/bundlewatch`],
+          ['failure', `${prefix}/bundlewatch`],
+          ['failure', `${prefix}/bundlewatch dist/a.js`],
+        ],
+      );
+      const id = new URL(statuses[1].target_url).pathname.split('/').at(-1)!;
+      const stored = await resultsStore.get(id);
+      assert.equal(stored?.payload.details.prefix, prefix);
+      assert.equal(
+        stored?.payload.results.fullResults[0]?.baseBranchSize,
+        prefix === 'storefront' ? 200 : 300,
+      );
+      assert.equal(
+        await baselineStore.get('o/r', 'feature', prefix),
+        undefined,
+        'analysis never saves a baseline',
+      );
+    });
+  }
 
   test('analyzes against the baseline and reports statuses with a short link', async () => {
     github.reset({ ...ALLOWED, [statusesPath]: { status: 201, body: {} } });

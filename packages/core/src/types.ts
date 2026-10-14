@@ -42,6 +42,7 @@ export type AnalyzeResult = {
 
 /** Repository details shown on the results page. All optional. */
 export type ResultsDetails = {
+  prefix?: string | undefined;
   repoOwner?: string | undefined;
   repoName?: string | undefined;
   repoCurrentBranch?: string | undefined;
@@ -57,6 +58,7 @@ export type ResultsPayload = {
 
 /** Body of `POST /store/lookup`. */
 export type LookupRequest = {
+  prefix?: string | undefined;
   repoOwner: string;
   repoName: string;
   repoBranch: string;
