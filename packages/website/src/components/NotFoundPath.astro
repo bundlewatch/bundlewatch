@@ -1,0 +1,55 @@
+---
+// The 404 page names the path that has no page: Amplify serves the same 404.html for every one.
+---
+
+<script>
+  for (const element of document.querySelectorAll("[data-missing-path]")) {
+    element.textContent = decodeURI(location.pathname);
+  }
+</script>
+
+<style is:global>
+  /* Its translations would be /fr/404/ and /zh/404/: the page links to the French and Chinese
+     documentation instead. */
+  html:has(.MissingLayer) starlight-lang-select {
+    display: none;
+  }
+
+  .MissingLayer {
+    width: 220px;
+    height: 220px;
+    overflow: visible;
+    isolation: isolate;
+  }
+
+  .MissingLayer .missing {
+    fill: none;
+    stroke: #000051;
+    stroke-opacity: 0.55;
+    stroke-width: 1.5px;
+    stroke-dasharray: 3 4;
+    vector-effect: non-scaling-stroke;
+  }
+
+  :root[data-theme="dark"] .MissingLayer .missing {
+    stroke: #dcdcf2;
+  }
+
+  /* The CLI's error line, as BundleWatch prints it. */
+  .hero .tagline .cli {
+    display: block;
+    margin-bottom: 1rem;
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-white);
+    overflow-wrap: anywhere;
+  }
+
+  .hero .tagline .cli .error {
+    color: var(--sl-color-text-accent);
+  }
+
+  .hero .tagline a {
+    color: var(--sl-color-text-accent);
+  }
+</style>

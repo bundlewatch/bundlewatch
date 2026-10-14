@@ -7,11 +7,11 @@
     "pnpm-lock.yaml",
     "**/dist/**",
     "**/__fixtures__/**",
-    "packages/website/docs/.vitepress/cache/**"
+    "packages/website/.astro/**"
   ],
   "overrides": [
     {
-      "files": ["packages/website/**/*.{mjs,js,ts,vue,css}"],
+      "files": ["packages/website/**/*.{mjs,js,ts,css}"],
       "options": {
         "singleQuote": false
       }

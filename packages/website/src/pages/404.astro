@@ -1,0 +1,36 @@
+---
+// The page Amplify serves, with a 404 status, for every path that has no page, in every language.
+// It's a page of its own rather than src/content/docs/404.md, which would also get French and
+// Chinese copies at /fr/404/ and /zh/404/. components/Hero.astro adds the requested path.
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+
+import { missingLayerSvg } from "../components/hero-logo.mjs";
+---
+
+<StarlightPage
+  frontmatter={{
+    title: "Page not found",
+    description: "There is no page at this address.",
+    template: "splash",
+    editUrl: false,
+    pagefind: false,
+    hero: {
+      title: "Page not found",
+      tagline:
+        '<span class="cli"><span class="error">[ERROR]</span> There is no matching file for ' +
+        '<span data-missing-path>this address</span></span>' +
+        "Check the address, or start from the guide. The documentation is also in " +
+        '<a href="/fr/">Français</a> and <a href="/zh/">简体中文</a>.',
+      image: { html: missingLayerSvg("The BundleWatch logo, missing its bottom layer") },
+      actions: [
+        {
+          text: "Get started",
+          link: "/guide/getting-started/",
+          variant: "primary",
+          icon: "right-arrow",
+        },
+        { text: "Configuration", link: "/reference/configuration/", variant: "secondary" },
+      ],
+    },
+  }}
+/>

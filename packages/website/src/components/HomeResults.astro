@@ -1,0 +1,41 @@
+---
+// The change table of a results page, between the hero and the features: one image per theme.
+const { src, darkSrc, alt, caption } = Astro.props;
+---
+
+<figure class="HomeResults">
+  <img class="on-light" src={src} alt={alt} width="900" height="245" />
+  <img class="on-dark" src={darkSrc} alt={alt} width="900" height="245" />
+  <figcaption set:html={caption} />
+</figure>
+
+<style>
+  figure {
+    margin: 0 auto 3rem;
+    max-width: 900px;
+  }
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  /* One image per theme. Blending lets the page show through the image's background, which
+     matches it. */
+  .on-light {
+    mix-blend-mode: multiply;
+  }
+  .on-dark,
+  :global([data-theme="dark"]) .on-light {
+    display: none;
+  }
+  :global([data-theme="dark"]) .on-dark {
+    display: block;
+    mix-blend-mode: lighten;
+  }
+  figcaption {
+    margin-top: 1rem;
+    font-size: var(--sl-text-sm);
+    text-align: center;
+    color: var(--sl-color-gray-2);
+  }
+</style>

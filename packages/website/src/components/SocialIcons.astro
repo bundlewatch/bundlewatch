@@ -1,0 +1,58 @@
+---
+// The latest release, with links to the release notes and the contributing
+// guide, next to the GitHub icon. scripts/build.sh sets BUNDLEWATCH_VERSION
+// from the release tags; other builds show the version in package.json.
+import Default from "@astrojs/starlight/components/SocialIcons.astro";
+import pkg from "../../../bundlewatch/package.json" with { type: "json" };
+
+const version = process.env.BUNDLEWATCH_VERSION || pkg.version;
+const labels = {
+  "en-US": ["Release notes", "Contributing"],
+  fr: ["Notes de version", "Contribuer"],
+  "zh-CN": ["更新日志", "贡献指南"],
+};
+const [releases, contributing] = labels[Astro.locals.starlightRoute.lang] ?? labels["en-US"];
+---
+
+<details class="version">
+  <summary>{version}</summary>
+  <ul>
+    <li><a href="https://github.com/bundlewatch/bundlewatch/releases">{releases}</a></li>
+    <li>
+      <a href="https://github.com/bundlewatch/bundlewatch/blob/main/CONTRIBUTING.md">{contributing}</a>
+    </li>
+  </ul>
+</details>
+<Default />
+
+<style>
+  .version {
+    position: relative;
+    font-size: var(--sl-text-sm);
+  }
+  summary {
+    cursor: pointer;
+    color: var(--sl-color-gray-2);
+  }
+  ul {
+    position: absolute;
+    inset-inline-start: 0;
+    z-index: 1;
+    margin: 0.5rem 0 0;
+    padding: 0.5rem 0;
+    list-style: none;
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.5rem;
+    white-space: nowrap;
+  }
+  a {
+    display: block;
+    padding: 0.25rem 1rem;
+    color: var(--sl-color-white);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--sl-color-text-accent);
+  }
+</style>

@@ -38,7 +38,7 @@ Add your files to `package.json`:
 
 Run `npx bundlewatch` after your build.
 
-To report results on pull requests, see [GitHub Actions setup](https://bundlewatch.io/guide/using-bundlewatch#github-actions). The [documentation](https://bundlewatch.io) also covers other CI providers, configuration files, the Node.js API and [migrating from 0.x](https://bundlewatch.io/guide/migrating-to-v1).
+To report results on pull requests, see [GitHub Actions setup](https://bundlewatch.io/guide/using-bundlewatch/#github-actions). The [documentation](https://bundlewatch.io) also covers other CI providers, configuration files, the Node.js API and [migrating from 0.x](https://bundlewatch.io/guide/migrating-to-v1/).
 
 ## Repository layout
 

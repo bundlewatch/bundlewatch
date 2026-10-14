@@ -1,0 +1,133 @@
+---
+title: Getting started
+description: Set up BundleWatch in your project, by hand or with a coding agent.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+<a id="requirements"></a>
+
+BundleWatch needs Node.js 22.17 or later. Upgrading from 0.x: see [Migrating to 1.0](./migrating-to-v1.md). To let a coding agent do the setup, copy [this prompt](#set-up-with-an-ai-agent).
+
+## Installation
+
+Install BundleWatch as a dev dependency:
+
+<Tabs syncKey="package-manager">
+
+<TabItem label="npm">
+
+```bash
+npm install bundlewatch --save-dev
+```
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+```bash
+pnpm add bundlewatch --save-dev
+```
+
+</TabItem>
+
+<TabItem label="Yarn">
+
+```bash
+yarn add bundlewatch --dev
+```
+
+</TabItem>
+
+<TabItem label="Bun">
+
+```bash
+bun add bundlewatch --dev
+```
+
+</TabItem>
+
+</Tabs>
+
+## Configuration
+
+Tell BundleWatch which files to check, and how big they may get, in your `package.json`:
+
+```json
+{
+  "bundlewatch": {
+    "files": [
+      {
+        "path": "./dist/*.js",
+        "maxSize": "100kB"
+      }
+    ]
+  }
+}
+```
+
+Build your project, then run:
+
+```bash
+npx bundlewatch
+```
+
+The first run on your machine prints something like this:
+
+```text
+[WARNING] Some CI configuration options were not found (githubAccessToken, repoOwner, repoName, commitSha):
+    bundlewatch will be unable to report build status, or save comparison data
+    Learn more at: https://bundlewatch.io/
+
+Result breakdown at: https://service.bundlewatch.io/results?d=...
+
+PASS ./dist/app.js: 30.71KB < 100KB (gzip)
+
+bundlewatch PASS
+Everything is in check (+30.71KB, -0B)
+```
+
+The warning is expected on your machine: in CI, you provide the token, and BundleWatch detects the other values on [supported providers](./using-bundlewatch.md#supported-ci-providers). The command exits with code 1 when a file is over its `maxSize`, or when a path matches no files.
+
+To choose limits, run `npx bundlewatch` before adding `maxSize`. A file without one has no limit, and shows as `PASS ./dist/app.js: 30.71KB < Infinity (gzip)`. Then set each `maxSize` a little above the current size, so the check catches real increases without failing on every small change.
+
+If your file names contain content hashes, such as `main.3f2a1b9c.js`, set [`normalizeFilenames`](../reference/configuration.md#normalizefilenames). Otherwise each build's files look new, and there is nothing to compare them with.
+
+See [Using a config file](./using-a-config-file.md) for other ways to configure BundleWatch, and the [configuration reference](../reference/configuration.md) for every option.
+
+## Running in CI
+
+Run BundleWatch in CI after your build, so that it posts a status on each pull request and compares every file with the base branch:
+
+- On GitHub Actions, copy [this workflow](./using-bundlewatch.md#github-actions) to `.github/workflows/bundlewatch.yml`. It uses the token GitHub creates for each run, so you don't need to create one.
+- On another CI provider, [create a token](./using-bundlewatch.md#other-ci-providers), store it as the secret `BUNDLEWATCH_GITHUB_TOKEN`, and run `npx bundlewatch` after the build.
+
+Pull requests have nothing to compare with until a push to a [tracked branch](./diffing-against-branches-other-than-master.md#tracked-branches), such as `main`, saves a baseline. Until then the log shows `Unable to fetch fileDetails … code=404`.
+
+## Set up with an AI agent
+
+Copy this prompt into your coding agent. It reads this documentation, measures your build, picks limits and adds the CI setup:
+
+```text showLineNumbers=false
+Set up BundleWatch (https://bundlewatch.io) in this repository, so CI fails when a built file gets too big, and pull requests show how much each file changed.
+
+Read https://bundlewatch.io/llms-full.txt first: it has the whole documentation. If this repository already uses BundleWatch 0.x, follow https://bundlewatch.io/guide/migrating-to-v1.md instead. Then:
+
+1. Find the production build command and run it. List the JavaScript and CSS files it outputs, with their gzip sizes.
+2. Add bundlewatch as a dev dependency, with the package manager this project already uses.
+3. Add a "bundlewatch" key to package.json, with one "files" entry per output. Use globs that match only files, not directories, and still match when file names change between builds, and a "maxSize" about 10% above each file's current gzip size, rounded up to a whole kB. If file names contain content hashes, set "normalizeFilenames" so that a file keeps the same name across builds. Check the pattern against the actual file names: it must remove only the hash, and no two files may end up with the same name.
+4. Build, run `npx bundlewatch`, and make sure every file passes.
+5. Run it in CI after the build:
+   - On GitHub Actions, add the workflow from https://bundlewatch.io/guide/using-bundlewatch/#github-actions, adapted to this project's Node.js version, package manager, build command and default branch. It needs no secret.
+   - On another CI provider, add a step that runs `npx bundlewatch` after the build, and ask me to create a token at https://service.bundlewatch.io/setup-github and store it as the BUNDLEWATCH_GITHUB_TOKEN secret. Never commit a token.
+6. Summarize what you changed, the limits you chose, and what is left for me to do, such as making `bundlewatch` a required status check.
+```
+
+The whole documentation is also available as plain text for agents and LLMs: [`llms.txt`](https://bundlewatch.io/llms.txt) lists the pages, and [`llms-full.txt`](https://bundlewatch.io/llms-full.txt) contains all of them. Every page is available as Markdown too, by adding `.md` to its URL.
+
+## Next steps
+
+- [GitHub statuses](./using-bundlewatch.md#github-statuses): block merges when a file is too big.
+- [Base and tracked branches](./diffing-against-branches-other-than-master.md): what each build is compared with.
+- [Configuration reference](../reference/configuration.md): every option and environment variable.
+- [Troubleshooting](./troubleshooting.md): what each log message means.

@@ -10,11 +10,7 @@
     "builtin": true,
     "node": true
   },
-  "ignorePatterns": [
-    "**/dist/**",
-    "**/__fixtures__/**",
-    "packages/website/docs/.vitepress/cache/**"
-  ],
+  "ignorePatterns": ["**/dist/**", "**/__fixtures__/**", "packages/website/.astro/**"],
   "rules": {
     "import/no-unassigned-import": [
       "warn",

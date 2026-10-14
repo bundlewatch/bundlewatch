@@ -44,10 +44,16 @@ const check = async (path, expected) => {
   return { path, problems, response };
 };
 
-const sitemap = await (await get("/sitemap.xml")).text();
-const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(
-  ([, loc]) => new URL(loc).pathname,
-);
+const locs = (xml) => [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, loc]) => new URL(loc));
+// @astrojs/sitemap writes an index of sitemaps, with no /sitemap.xml.
+const sitemaps = locs(await (await get("/sitemap-index.xml")).text()).map((url) => url.pathname);
+const locations = (
+  await Promise.all(
+    sitemaps.filter(onSite).map(async (path) => locs(await (await get(path)).text())),
+  )
+)
+  .flat()
+  .map((url) => url.pathname);
 const pages = locations.filter(onSite);
 
 const html = { status: 200, type: "text/html" };
@@ -60,6 +66,8 @@ const results = await Promise.all([
   check("/llms.txt", { status: 200, type: "text/plain" }),
   check("/llms-full.txt", { status: 200, type: "text/plain" }),
   check("/guide/getting-started.md", { status: 200, type: "text/markdown" }),
+  // VitePress served pages without the trailing slash: old links redirect.
+  check("/guide/getting-started", { status: 301 }),
   // Amplify first redirects /missing to /missing/, so check both cases
   // where the 404 page answers directly.
   check("/this-page-does-not-exist/", { status: 404, type: "text/html" }),
@@ -71,7 +79,7 @@ if (asset) {
   results.push(await check(asset, { status: 200, headers: { "cache-control": "immutable" } }));
 }
 if (pages.length === 0) {
-  results.push({ path: "/sitemap.xml", problems: ["no pages listed"] });
+  results.push({ path: "/sitemap-index.xml", problems: ["no pages listed"] });
 }
 for (const path of locations.filter((location) => !onSite(location))) {
   results.push({ path, problems: ["sitemap entry points to another host, not requested"] });

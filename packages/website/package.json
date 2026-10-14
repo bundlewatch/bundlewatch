@@ -4,15 +4,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vitepress dev docs",
-    "build": "vitepress build docs",
-    "preview": "vitepress preview docs",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
     "test": "node --test scripts/*.test.mjs"
   },
   "devDependencies": {
-    "medium-zoom": "1.1.0",
-    "vitepress": "1.6.4",
-    "vitepress-plugin-tabs": "0.9.1",
-    "vue": "3.5.43"
+    "@astrojs/markdown-satteri": "0.4.3",
+    "@astrojs/starlight": "0.42.6",
+    "@expressive-code/plugin-line-numbers": "0.44.2",
+    "astro": "7.3.8",
+    "sharp": "0.35.5",
+    "starlight-image-zoom": "0.16.1",
+    "starlight-links-validator": "0.27.0",
+    "starlight-sidebar-topics": "0.9.0"
   }
 }

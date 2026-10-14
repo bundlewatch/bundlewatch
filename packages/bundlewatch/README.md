@@ -36,7 +36,7 @@ On GitHub Actions, give the workflow `statuses: write` and pass its token:
     BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-Other CI providers need a token from [service.bundlewatch.io/setup-github](https://service.bundlewatch.io/setup-github). See [using bundlewatch](https://bundlewatch.io/guide/using-bundlewatch).
+Other CI providers need a token from [service.bundlewatch.io/setup-github](https://service.bundlewatch.io/setup-github). See [using bundlewatch](https://bundlewatch.io/guide/using-bundlewatch/).
 
 ## Node.js API
 
@@ -54,7 +54,7 @@ CommonJS: `const bundlewatch = require('bundlewatch').default`. TypeScript types
 ## Documentation
 
 - [bundlewatch.io](https://bundlewatch.io): configuration, CLI and CI setup
-- [Migrating from 0.x](https://bundlewatch.io/guide/migrating-to-v1)
+- [Migrating from 0.x](https://bundlewatch.io/guide/migrating-to-v1/)
 - [Source and issues](https://github.com/bundlewatch/bundlewatch)
 
 ## License

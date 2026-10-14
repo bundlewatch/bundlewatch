@@ -2,7 +2,6 @@ node_modules
 dist
 coverage
 .aws-sam
-packages/website/docs/.vitepress/cache
-packages/website/docs/.vitepress/dist
+packages/website/.astro
 *.tgz
 .DS_Store

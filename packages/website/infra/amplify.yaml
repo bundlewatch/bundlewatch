@@ -53,8 +53,9 @@ Resources:
             headers:
               - key: Content-Type
                 value: text/plain; charset=utf-8
-      # Amplify serves /guide/x from /guide/x.html. Keep the 404 status and
-      # the www redirect used by the existing site.
+      # Pages are /guide/x/index.html, served at /guide/x/; Amplify redirects
+      # /guide/x there (301). Keep the 404 status and the www redirect used by
+      # the existing site.
       CustomRules:
         - !If
           - HasCustomDomain

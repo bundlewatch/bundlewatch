@@ -1,0 +1,49 @@
+---
+// The license, on the pages without a sidebar (the home pages), as with VitePress. On narrow
+// screens these pages have no menu either, so they also get the menu's links and selects.
+import Default from "@astrojs/starlight/components/Footer.astro";
+import MobileMenuFooter from "@astrojs/starlight/components/MobileMenuFooter.astro";
+
+const lines = {
+  "en-US": ["Released under the MIT License.", "Copyright © 2018-present BundleWatch"],
+  fr: ["Publié sous licence MIT.", "Copyright © 2018 à aujourd’hui BundleWatch"],
+  "zh-CN": ["根据 MIT 许可证发布。", "版权所有 © 2018-至今 BundleWatch"],
+};
+const { lang, hasSidebar } = Astro.locals.starlightRoute;
+const [license, copyright] = lines[lang] ?? lines["en-US"];
+---
+
+<Default />
+{
+  !hasSidebar && (
+    <div class="preferences">
+      <MobileMenuFooter />
+    </div>
+  )
+}
+{
+  !hasSidebar && (
+    <p class="license">
+      {license}
+      <br />
+      {copyright}
+    </p>
+  )
+}
+
+<style>
+  .preferences {
+    margin-top: 1.5rem;
+  }
+  @media (min-width: 50rem) {
+    .preferences {
+      display: none;
+    }
+  }
+  .license {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+</style>

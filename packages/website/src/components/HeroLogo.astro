@@ -1,0 +1,208 @@
+---
+// The behavior of the logo that hero-logo.mjs draws. On load the layers come together into it,
+// bottom first (in CSS). Then the layer under the pointer lifts out and the others part from it in
+// turn, on Hairline's lift curve: 700ms on (.32, .72, 0, 1), each layer 45ms after the last.
+//
+// Ported from HeroLogo.vue. VitePress kept the page between visits to the home page, so the logo
+// assembled only on the first one; here every visit is a page load, and it assembles each time.
+---
+
+<script>
+  const LIFT = -5;
+  const ABOVE = -9;
+  const BELOW = 6;
+  const STAGGER = 45;
+  const DURATION = 700;
+  const SLOPE = Math.tan(Math.PI / 6);
+  const CX = 23.55;
+  const fixed = (x: number) => x.toFixed(3);
+  /** A cubic Bézier coordinate at t, between 0 and 1, with control values a and b. */
+  const cubic = (t: number, a: number, b: number) =>
+    3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3;
+
+  /** A CSS cubic-bezier, as a function of progress. */
+  function bezier(x1: number, y1: number, x2: number, y2: number) {
+    return (p: number) => {
+      let lo = 0;
+      let hi = 1;
+      for (let i = 0; i < 20; i++) {
+        const m = (lo + hi) / 2;
+        if (cubic(m, x1, x2) < p) lo = m;
+        else hi = m;
+      }
+      return cubic((lo + hi) / 2, y1, y2);
+    };
+  }
+  const ease = bezier(0.32, 0.72, 0, 1);
+  const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // On narrow screens the logo sits close to the title, so the layers move less: CSS does the same for the intro.
+  const reach = () => (matchMedia("(max-width: 639px)").matches ? 0.55 : 1);
+
+  /** The layer at a point of the logo, judged on the seams at rest, which never move: -1 off the logo. */
+  function pick(x: number, y: number) {
+    if (x < -2 || x > 49 || y < -4 || y > 56) return -1;
+    const k = Math.abs(x - CX) * SLOPE;
+    return y < 16 + k ? 0 : y < 31.15 + k ? 1 : 2;
+  }
+
+  function setup(svg: SVGSVGElement) {
+    const groups = [...svg.querySelectorAll<SVGGElement>(".layer")];
+    const navy = groups[2].querySelector("path")!;
+    const ghost = svg.querySelector<SVGGElement>(".ghost")!;
+    const navyD = navy.getAttribute("d")!;
+
+    /** The navy layer, its sharp side tips rounded by r. They meet the orange's rounded corners in the logo, so
+     * they round off only while the layers are apart. At r = 0 it is the original path, character for character. */
+    function navyPath(r: number) {
+      if (r <= 0.01) return navyD;
+      const t = r * Math.sqrt(3);
+      const c = Math.cos(Math.PI / 6);
+      const f = fixed;
+      const [lx, ly] = [2.81, 41.5];
+      const [rx, ry] = [44.3, 41.52];
+      return (
+        `M26.39,31.15a5.68,5.68,0,0,0-5.68,0L${f(lx + c * t)},${f(ly - t / 2)}` +
+        `A${f(r)},${f(r)},0,0,0,${f(lx + c * t)},${f(ly + t / 2)}L20.72,51.88a5.68,5.68,0,0,0,5.68,0` +
+        `L${f(rx - c * t)},${f(ry + t / 2)}A${f(r)},${f(r)},0,0,0,${f(rx - c * t)},${f(ry - t / 2)}Z`
+      );
+    }
+    /** Rounds the navy tips by the gap between the navy and orange layers, which is where they show. */
+    const tips = (gap: number) => navy.setAttribute("d", navyPath(Math.min(4, Math.abs(gap) * 0.7)));
+
+    // One tween per layer: where it is coming from and going to, and when it set off.
+    const moves = groups.map(() => ({ from: 0, to: 0, start: 0 }));
+    const valueAt = (m: (typeof moves)[number], now: number) => {
+      const p = reduced() ? 1 : Math.min(1, Math.max(0, (now - m.start) / DURATION));
+      return m.from + (m.to - m.from) * ease(p);
+    };
+
+    let frame = 0;
+    function draw(now: number) {
+      let spread = 0;
+      let moving = false;
+      const ys = moves.map((m, i) => {
+        const y = valueAt(m, now);
+        spread = Math.max(spread, Math.abs(y));
+        groups[i].setAttribute("transform", y === 0 ? "" : `translate(0 ${y.toFixed(3)})`);
+        if (now - m.start < DURATION) moving = true;
+        return y;
+      });
+      tips(ys[2] - ys[1]);
+      ghost.style.opacity = String(Math.min(1, spread / 4));
+      frame = moving && !reduced() ? requestAnimationFrame(draw) : 0;
+    }
+    const wake = () => {
+      if (!frame) frame = requestAnimationFrame(draw);
+    };
+
+    let active = -1;
+    let assembling = true;
+    function choose(a: number) {
+      if (assembling || a === active) return;
+      const now = performance.now();
+      const from = a >= 0 ? a : active;
+      active = a;
+      moves.forEach((m, i) => {
+        m.from = valueAt(m, now);
+        m.to = (a < 0 ? 0 : i === a ? LIFT : i < a ? ABOVE : BELOW) * reach();
+        m.start = now + Math.abs(i - from) * STAGGER;
+      });
+      wake();
+    }
+
+    function move(event: PointerEvent) {
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return;
+      const p = new DOMPoint(event.clientX, event.clientY).matrixTransform(ctm.inverse());
+      choose(pick(p.x, p.y));
+    }
+    svg.addEventListener("pointermove", move);
+    svg.addEventListener("pointerdown", move);
+    svg.addEventListener("pointerleave", () => choose(-1));
+
+    // The layers come together in CSS, from the first paint. Until they land, this follows them to round the
+    // navy tips, and the pointer waits.
+    const animations = svg.getAnimations({ subtree: true });
+    if (!animations.length) {
+      assembling = false;
+      return;
+    }
+    let follow = 0;
+    const track = () => {
+      const [, orangeY, navyY] = groups.map((g) => new DOMMatrix(getComputedStyle(g).transform).f);
+      tips(navyY - orangeY);
+      follow = requestAnimationFrame(track);
+    };
+    track();
+    Promise.all(animations.map((a) => a.finished)).then(() => {
+      cancelAnimationFrame(follow);
+      tips(0);
+      assembling = false;
+    });
+  }
+
+  for (const svg of document.querySelectorAll<SVGSVGElement>("svg.HeroLogo")) setup(svg);
+</script>
+
+<style is:global>
+  .HeroLogo {
+    width: 300px;
+    height: 300px;
+    overflow: visible;
+    isolation: isolate;
+    touch-action: pan-y;
+  }
+
+  /* Where the layers sit at rest, as a thin dashed guide: it shows only while they are apart. The
+     stroke is set on the paths, since vector-effect does not inherit. */
+  .HeroLogo .ghost {
+    opacity: 0;
+  }
+
+  .HeroLogo .ghost path {
+    fill: none;
+    stroke: #000051;
+    stroke-opacity: 0.45;
+    stroke-width: 1px;
+    stroke-dasharray: 3 4;
+    vector-effect: non-scaling-stroke;
+  }
+
+  :root[data-theme="dark"] .HeroLogo .ghost path {
+    stroke: #dcdcf2;
+  }
+
+  /* The first load: each layer comes from --from (in the logo's units) to its place, bottom first. */
+  .HeroLogo.intro .layer {
+    animation: assemble 700ms cubic-bezier(0.32, 0.72, 0, 1) var(--delay) backwards;
+  }
+
+  .HeroLogo.intro .ghost {
+    animation: guide 1000ms cubic-bezier(0.32, 0.72, 0, 1) backwards;
+  }
+
+  @keyframes assemble {
+    from {
+      transform: translate(0, calc(var(--from) * var(--reach, 1)));
+    }
+  }
+
+  @media (max-width: 639px) {
+    .HeroLogo {
+      --reach: 0.55;
+    }
+  }
+
+  @keyframes guide {
+    from {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .HeroLogo.intro .layer,
+    .HeroLogo.intro .ghost {
+      animation: none;
+    }
+  }
+</style>

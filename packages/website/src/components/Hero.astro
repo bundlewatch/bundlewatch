@@ -1,0 +1,25 @@
+---
+// The home page: Starlight's hero with the moving logo, then the change table of a results page
+// and the features. Each locale's index.md gives them in its frontmatter, as with VitePress.
+// The 404 page (src/pages/404.astro) uses the same hero, with the logo missing its bottom layer.
+import Default from "@astrojs/starlight/components/Hero.astro";
+
+import { heroLogoSvg } from "./hero-logo.mjs";
+import HeroLogo from "./HeroLogo.astro";
+import HomeFeatures from "./HomeFeatures.astro";
+import HomeResults from "./HomeResults.astro";
+import NotFoundPath from "./NotFoundPath.astro";
+
+const { id, entry } = Astro.locals.starlightRoute;
+const { data } = entry;
+const notFound = id === "404";
+// The logo image in the frontmatter, which also shows without this override, becomes HeroLogo.
+const logo = data.hero?.image && "file" in data.hero.image;
+if (logo) data.hero.image = { html: heroLogoSvg(data.hero.image.alt || "BundleWatch") };
+---
+
+<Default />
+{logo && <HeroLogo />}
+{notFound && <NotFoundPath />}
+{data.results && <HomeResults {...data.results} />}
+{data.features && <HomeFeatures features={data.features} />}

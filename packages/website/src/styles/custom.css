@@ -1,0 +1,91 @@
+/* Starlight's theme in BundleWatch's colors, from the logo: orange, yellow and navy.
+   Starlight's dark theme is the default (:root); the light theme overrides it. */
+:root {
+  --color-1: #d54400;
+  --color-2: #ffcd52;
+  --color-navy: #000051;
+
+  /* On dark backgrounds, links and buttons use a lighter orange: #d54400 is too dark to read. */
+  --sl-color-accent-low: #3b1a08;
+  --sl-color-accent: var(--color-1);
+  --sl-color-accent-high: #ff8a4c;
+
+  --sl-color-bg-inline-code: #f9f2f4;
+}
+
+/* VitePress's dark background, which the dark results image on the home page was made on. */
+:root:not([data-theme="light"]) {
+  --sl-color-bg: #1b1b1f;
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #ffe3d1;
+  --sl-color-accent: var(--color-1);
+  --sl-color-accent-high: #7a2800;
+}
+
+/* Inline code, as on the VitePress site: crimson on pale pink, in both themes. */
+.sl-markdown-content :not(pre) > code {
+  color: #c7254e;
+}
+
+/* The primary button in the logo's orange, with white text, and yellow on hover. */
+:root[data-theme="light"] .sl-link-button.primary {
+  color: #fff;
+}
+
+.sl-link-button.primary:hover {
+  background: var(--color-2);
+  border-color: var(--color-2);
+  color: var(--color-navy);
+}
+
+/* The home page hero: the name in the logo's gradient, then what BundleWatch does. */
+.hero h1 .name {
+  display: inline-block;
+  background: linear-gradient(120deg, var(--color-2) 30%, var(--color-1));
+  background-clip: text;
+  color: transparent;
+}
+
+.hero h1 .text {
+  display: block;
+}
+
+/* A glow in the logo's colors behind the home page's logo, as on the VitePress site. */
+.hero > .hero-html:has(.HeroLogo) {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero > .hero-html:has(.HeroLogo)::before {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  z-index: -1;
+  border-radius: 50%;
+  background-image: linear-gradient(135deg, var(--color-2) 10%, var(--color-1) 100%);
+  filter: blur(100px);
+  opacity: 0.9;
+}
+
+/* Thin scrollbars that show on hover. */
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 1px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 3px;
+}
+
+*:hover::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #6a708028;
+}
+
+*::-webkit-scrollbar-track {
+  border-radius: 5px;
+  background: transparent;
+}

@@ -1,0 +1,67 @@
+---
+// The home page features: an icon (inline SVG drawn in brand colors, or an emoji), a title, a
+// sentence and a link.
+const { features } = Astro.props;
+---
+
+<ul class="HomeFeatures">
+  {
+    features.map(({ icon, title, details, link, linkText }) => (
+      <li>
+        <a href={link}>
+          <span class="icon" set:html={icon} />
+          {title && <strong>{title}</strong>}
+          <span class="details">{details}</span>
+          {linkText && <span class="more">{linkText} →</span>}
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .HomeFeatures {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    margin: 0;
+  }
+  a {
+    /* The icons were drawn for VitePress: their cut-outs use its card background. */
+    --vp-c-bg-soft: var(--sl-color-gray-7, var(--sl-color-gray-6));
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    height: 100%;
+    padding: 1.5rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    background: var(--sl-color-gray-7, var(--sl-color-gray-6));
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+  }
+  a:hover {
+    border-color: var(--sl-color-accent);
+  }
+  .icon {
+    color: #000051;
+    font-size: 1.75rem;
+    line-height: 1;
+  }
+  :global([data-theme="dark"]) .icon {
+    color: #dcdcf2;
+  }
+  strong {
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-lg);
+  }
+  .more {
+    margin-top: auto;
+    color: var(--sl-color-text-accent);
+    font-weight: 600;
+  }
+</style>

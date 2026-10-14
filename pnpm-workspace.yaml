@@ -11,6 +11,3 @@ trustPolicyExclude:
   # maintainer as every other release; an earlier release happened to carry
   # provenance, which trips the policy.
   - undici-types@6.21.0
-
-allowBuilds:
-  esbuild: true

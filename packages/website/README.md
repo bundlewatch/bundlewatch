@@ -1,6 +1,6 @@
 # website
 
-The [bundlewatch.io](https://bundlewatch.io) documentation site, built with [VitePress](https://vitepress.dev/).
+The [bundlewatch.io](https://bundlewatch.io) documentation site, built with [Starlight](https://starlight.astro.build/) on [Astro](https://astro.build/).
 
 ## Commands
 
@@ -8,39 +8,57 @@ Run these from the repository root:
 
 ```bash
 pnpm --filter @bundlewatch/website dev       # start the dev server
-pnpm --filter @bundlewatch/website build     # build into packages/website/docs/.vitepress/dist
+pnpm --filter @bundlewatch/website build     # build into packages/website/dist
 pnpm --filter @bundlewatch/website preview   # serve the built site locally
-bash packages/website/scripts/build.sh       # the production build, with the latest release in the nav
+bash packages/website/scripts/build.sh       # the production build, with the latest release in the header
 node packages/website/scripts/check-deployment.mjs <url>  # check a deployed copy of the site
 ```
 
-The build fails on dead internal links. Fix the link rather than ignoring it.
+The build fails on dead internal links, including links to a heading that doesn't exist. Fix the link rather than ignoring it.
 
 ## Structure
 
 ```
-docs/
-  .vitepress/
-    config/
-      index.mjs        # combines the shared config and the locales
-      shared.mjs       # site-wide settings: rewrites, clean URLs, search, markdown plugins
-      en.mjs           # English nav, sidebar and "Edit this page" link
-      fr.mjs       # French nav, sidebar and theme labels
-      zh.mjs           # Chinese nav, sidebar and "Edit this page" link
-    llms.mjs           # writes llms.txt, llms-full.txt and a Markdown copy of each page
-    theme/
-      index.mjs        # default theme, plus tabs, medium-zoom, HeroLogo and HomeResults
-      custom.css       # theme overrides (plain CSS with native nesting)
-      HeroLogo.vue     # the home page's logo: assembles on the first load, then lifts the layer under the pointer
-      HomeResults.vue  # the change table from a results page on the home page, from its `results` frontmatter
-  en/                  # English pages, served at / (rewritten from en/)
-  fr/              # French translation, served at /fr/
-  zh/                  # Chinese translation, served at /zh/
-  public/              # copied as-is to the site root: images, logos, favicon
-  _assets/             # old images, not used by the site (see below)
+astro.config.mjs       # site settings: URLs, locales, Markdown, plugins, component overrides
+ec.config.mjs          # code blocks (Expressive Code): line numbers, wrapping
+src/
+  content.config.ts    # the docs collection, with the home pages' `results` and `features`
+  sidebar.mjs          # the Guide and Reference sidebars, with labels in every language
+  llms.mjs             # writes llms.txt, llms-full.txt and a Markdown copy of each page
+  routeData.mjs        # leaves the 404 page without a canonical URL or translations
+  pages/404.astro      # the page for every missing path, in every language
+  styles/custom.css    # BundleWatch's colors on Starlight's theme
+  components/
+    Hero.astro         # the home page hero, then HomeResults and HomeFeatures; the 404 page's hero
+    HeroLogo.astro     # the home page's logo: assembles on load, then lifts the layer under the pointer
+    hero-logo.mjs      # the logo's three layers, drawn as SVG, and the 404 page's logo without its bottom one
+    NotFoundPath.astro # writes the missing path into the 404 page
+    HomeResults.astro  # the change table from a results page, from the `results` frontmatter
+    HomeFeatures.astro # the feature cards, from the `features` frontmatter
+    SocialIcons.astro  # the version menu next to the GitHub icon
+    Footer.astro       # the license, on the home pages
+  content/docs/        # English pages, served at /
+    fr/                # French translation, served at /fr/
+    zh/                # Chinese translation, served at /zh/
+  assets/              # images that Astro processes: the logos in the header and the hero
+public/                # copied as-is to the site root: images, logos, favicon
+docs/_assets/          # old images, not used by the site (see below)
 ```
 
-`_assets/` is a copy of `docs/_assets/` from the old `bundlewatch/bundlewatch.io` repository. External pages, such as the 0.x npm README, still load images from that repository. Some of the files (`logo.svg`, `logo-square-transparent-highquality.png` and this version of `logo-large.svg`) exist nowhere else. The site itself only uses `public/`. `public/logo-wordmark.svg` is a copy of that `logo-large.svg`, the logo with the name, used by the repository's README; `logo-wordmark-dark.svg` is the same logo with white letters, for dark mode.
+`docs/_assets/` is a copy of `docs/_assets/` from the old `bundlewatch/bundlewatch.io` repository. External pages, such as the 0.x npm README, still load images from that repository. Some of the files (`logo.svg`, `logo-square-transparent-highquality.png` and this version of `logo-large.svg`) exist nowhere else. The site itself only uses `public/` and `src/assets/`. `public/logo-wordmark.svg` is a copy of that `logo-large.svg`, the logo with the name, used by the repository's README; `logo-wordmark-dark.svg` is the same logo with white letters, for dark mode.
+
+Pages are served at `/guide/x/`, from `guide/x/index.html`. Amplify redirects `/guide/x`, the URL the site used before, to it.
+
+## Writing pages
+
+Pages are Markdown, with Starlight's syntax:
+
+- **Title:** the frontmatter `title` is the page's heading, so the page starts at `##`. Give every page a `description` too.
+- **Links:** link to the other page's file, e.g. `[files](../reference/configuration.md#files)`, as on GitHub. The build turns these into the page's URL, `/reference/configuration/#files`, and checks that the page and the heading exist.
+- **Asides:** `:::note`, `:::tip`, `:::caution` and `:::danger`, with an optional title: `:::note[Pull requests from forks]`. For a collapsible block, use `<details>` and `<summary>`.
+- **Code:** a title goes in the fence, e.g. ` ```js title="bundlewatch.config.mjs" `. Every block has line numbers; `showLineNumbers=false` turns them off, as on the agent prompts. `text` blocks wrap instead of scrolling sideways.
+- **Tabs:** code in tabs (npm, pnpm, Yarn and Bun, or one file per config format) needs the `<Tabs>` and `<TabItem>` components, so the page is `.mdx`. In MDX, write comments as `{/* … */}`, not `<!-- … -->`.
+- **Images:** every image in a page zooms on click; add `data-zoom-off` to one that shouldn't.
 
 ## Documentation for LLMs and agents
 
@@ -48,25 +66,27 @@ Every build also writes, from the English pages and following [llmstxt.org](http
 
 - `llms.txt`: the pages, grouped and ordered like the English sidebar, with the `description` from their frontmatter.
 - `llms-full.txt`: every page in one file.
-- `<page>.md`: each page as plain Markdown, so `https://bundlewatch.io/guide/getting-started.md` works next to `/guide/getting-started`.
+- `<page>.md`: each page as plain Markdown, so `https://bundlewatch.io/guide/getting-started.md` works next to `/guide/getting-started/`.
 
-VitePress-only syntax (containers, code groups, heading anchors, HTML images) becomes plain Markdown, and links become absolute. A page appears in these files once it is in the English sidebar, so give every page a `title` and `description`. These files only exist in builds, not with the dev server: check them in `docs/.vitepress/dist` after a build.
+Starlight-only syntax (asides, tabs, MDX imports and comments, heading IDs, HTML images) becomes plain Markdown, and links become absolute. A page appears in these files once it is in `src/sidebar.mjs`. These files only exist in builds, not with the dev server: check them in `dist` after a build.
 
-The [getting started guide](docs/en/guide/getting-started.md#set-up-with-an-ai-agent) and the [migration guide](docs/en/guide/migrating-to-v1.md#upgrade-with-an-ai-agent) have prompts for coding agents, which point at these files. Keep the prompts in step with the pages they describe.
+The [getting started guide](src/content/docs/guide/getting-started.mdx#set-up-with-an-ai-agent) and the [migration guide](src/content/docs/guide/migrating-to-v1.mdx#upgrade-with-an-ai-agent) have prompts for coding agents, which point at these files. Keep the prompts in step with the pages they describe.
 
-## Version in the nav
+## Version in the header
 
-The version in the nav is the latest release. [`scripts/build.sh`](scripts/build.sh) reads it from the newest `vX.Y.Z` tag on GitHub, skipping prereleases. GitHub Actions uses that script for production, previews, and CI. The Website workflow rebuilds production after every successful release. `pnpm build` alone shows the version in `packages/bundlewatch/package.json` instead.
+The header shows the latest release. [`scripts/build.sh`](scripts/build.sh) reads it from the newest `vX.Y.Z` tag on GitHub, skipping prereleases. GitHub Actions uses that script for production, previews, and CI. The Website workflow rebuilds production after every successful release. `pnpm build` alone shows the version in `packages/bundlewatch/package.json` instead.
 
 ## Translation
 
-Every page in `en/` has a counterpart at the same path in `fr/` and `zh/`. When you add or change an English page:
+English pages are in `src/content/docs/`, and every one of them has a counterpart at the same path in `fr/` and `zh/`. A page that isn't translated yet shows the English one, with a notice. When you add or change an English page:
 
 - Update or add the matching pages in `fr/` and `zh/`.
-- Add new pages to the sidebar in `en.mjs`, `fr.mjs` and `zh.mjs`.
+- Add new pages to `src/sidebar.mjs`, with their label in each language.
 - Give translated headings that other pages link to an explicit English anchor, e.g. `## Liens vers les résultats {#results-links}`, so that anchors are the same across languages.
-- Keep internal links within the current language, including locale prefixes on absolute paths. Shared images stay at the site root.
+- Keep links within the current language: relative links already do. Shared images stay at the site root.
 - Translate prose and code comments, but preserve commands, configuration keys and actual CLI output. The generated LLM files and Markdown copies remain English-only.
+
+Starlight translates its own interface (search, the table of contents, previous and next) for every language. Chinese uses `lang: "zh-CN"`, the language tag of Starlight's Simplified Chinese strings.
 
 ## Deployment
 
