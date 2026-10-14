@@ -28,6 +28,24 @@ Error bodies are JSON: `401 {"error":"Not allowed"}`, `422 {"errors":{"details":
 
 The request bodies of `/store`, `/store/lookup` and `/analyze` are unchanged from 0.x; see CONTRACT.md. Their validation ports the 0.x Joi schemas, so unknown keys are rejected, strings must be non-empty, and baselines containing error entries (`{ error }`) are rejected.
 
+### Application prefixes and rollout
+
+**Client requirement: BundleWatch 1.1.0 or later**, for both the CLI and Node API. Recommend a dependency such as `"bundlewatch": "^1.1.0"`. Older clients silently ignore `prefix`, sharing the unprefixed baseline and `bundlewatch` GitHub status even against an upgraded service. Keep prefix-enabled applications on 1.1.0 or later when rolling back; upgrading the service alone cannot make an older client honor `prefix`.
+
+The optional top-level `prefix` isolates application baselines in the same repository and branch. It must contain 1–64 lowercase ASCII letters, digits, hyphens or underscores, starting with a letter or digit. Empty strings, `null`, whitespace, uppercase, slashes and non-string values are invalid (422). The client and service share this validation; no normalization is performed. Authentication and repository authorization are unchanged: a prefix is an application namespace, not an access-control boundary.
+
+Deploy this service to every instance before upgrading clients and enabling `prefix`. No table migration or infrastructure changes are needed. Older clients continue using `/store` and `/store/lookup`, and every existing results link remains valid. Keep this service version or newer while prefixed clients run; an older service will fail their support check.
+
+- `POST /capabilities` needs no GitHub credentials, returns `200 { "baselinePrefix": 1 }`, and uses `Cache-Control: no-store`. This version promises the validation, namespace isolation, response echo and dedicated routes described here. Prefixed clients require it before any baseline lookup or save; unprefixed clients do not probe.
+- `POST /store/prefixed` and `POST /store/prefixed/lookup` use the existing store/lookup request bodies with an additional **required** `prefix`. Both use the same authentication and handlers as the existing routes. The original routes also accept an optional prefix for API callers.
+- Successful prefixed saves and lookups echo `prefix` in their JSON responses. A missing prefixed baseline returns `404 { "prefix": "storefront" }`; an unprefixed miss retains its empty 404 response. The client checks this echo. An unknown route or a mismatched namespace stops the run with an actionable compatibility error. Dedicated routes ensure a partially upgraded or rolled-back instance cannot interpret a prefixed write as an unprefixed write.
+- `POST /analyze` accepts `prefix`, reads the corresponding base-branch baseline, prefixes every GitHub context, and includes it in results metadata. Analysis still never saves a baseline.
+- For `POST /results`, set both top-level `prefix` and `payload.details.prefix` to the same value. Long links encode the prefix in `details.prefix`. Both forms display the application on the page; payloads without a prefix are unchanged.
+
+The DynamoDB key remains `(repo, repoBranch)`. For unprefixed baselines, `repo` remains exactly `owner/name`. For prefixed baselines, it is `owner/name/prefix`; `repoBranch` is unchanged. GitHub repository names and valid prefixes cannot contain slashes, so the namespaces cannot collide, including for branch names containing slashes. Prefixed items also store a `prefix` string attribute. File sizes and timestamps keep their legacy attribute formats. Memory storage uses the same namespace mapping.
+
+There is no fallback or automatic migration between namespaces. After enabling prefixes, build each application's tracked base branch to populate its baseline. Configure required GitHub checks for `storefront/bundlewatch` and `admin/bundlewatch` as appropriate. See the [two-application example](../website/docs/en/reference/configuration.md#prefix).
+
 ### `POST /results`
 
 Stores a results page and returns a short link to it. The CLI calls this when it has a GitHub token, and falls back to a long `/results?d=…` link when the call fails or the service predates it.
@@ -77,10 +95,10 @@ Stores a results page and returns a short link to it. The CLI calls this when it
 
 - `repoOwner`, `repoName`, `commitSha` and `githubAccessToken` are required non-empty strings. The token goes through the [authorization check](#authorization) for `repoOwner/repoName` and is not stored.
 - `payload` is what core's `createResultsPayload(results, details)` returns, the same data a `d` parameter holds. It is validated like a decoded `d`:
-  - `details`: optional strings `repoOwner`, `repoName`, `repoCurrentBranch`, `repoBranchBase`, `commitSha`.
+  - `details`: optional strings `repoOwner`, `repoName`, `repoCurrentBranch`, `repoBranchBase`, `commitSha`, and the validated application `prefix` described above.
   - `results`: `status` and `summary` (non-empty strings), and `fullResults`, an array of `{ filePath, status }` (required, non-empty) with optional `size`, `baseBranchSize`, `maxSize` (number or `null`; `null` means unlimited), `error`, `message` and `compression`.
   - Any other key is a `422`.
-- No other top-level keys are accepted.
+- The optional top-level `prefix` must match `payload.details.prefix`. No other top-level keys are accepted.
 - `payload.details.repoOwner` and `repoName`, when present, must name the repository the token was checked against (case-insensitively). Otherwise it's a `422`.
 
 Response:

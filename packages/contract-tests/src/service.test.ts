@@ -1,3 +1,4 @@
+// oxlint-disable no-await-in-loop -- Isolation tests observe shared state between sequential requests.
 import assert from 'node:assert/strict';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
@@ -27,6 +28,8 @@ let strictUnavailable = false;
 let world: World;
 let github: Awaited<ReturnType<typeof listen>>;
 let service: Awaited<ReturnType<typeof listen>>;
+const baselineStore = new MemoryBaselineStore();
+const resultsStore = new MemoryResultsStore();
 
 before(async () => {
   world = await startWorld();
@@ -52,8 +55,8 @@ before(async () => {
   });
 
   const app = createApp({
-    baselineStore: new MemoryBaselineStore(),
-    resultsStore: new MemoryResultsStore(),
+    baselineStore,
+    resultsStore,
     config: { githubApiUrl: github.url },
     logger: { error: () => {}, warn: () => {} },
   });
@@ -148,6 +151,115 @@ for (const version of Object.keys(LEGACY_CLIS)) {
 }
 
 describe('the new CLI against the new service', () => {
+  test('two applications compare against their own PR base branch and never save PR baselines', async () => {
+    const filePath = './images/test-file-1.jpg';
+    for (const [index, prefix] of [undefined, 'storefront', 'admin'].entries()) {
+      for (const repoBranch of ['release/apps', 'master']) {
+        await baselineStore.save({
+          repo: 'owner/repo',
+          repoBranch,
+          ...(prefix === undefined ? {} : { prefix }),
+          fileDetailsByPath: {
+            [filePath]: {
+              size: (index + 1) * (repoBranch === 'master' ? 100 : 1000),
+              maxSize: null,
+              compression: 'none',
+            },
+          },
+        });
+      }
+    }
+    for (const [index, prefix] of [undefined, 'storefront', 'admin'].entries()) {
+      const fields = prefix === undefined ? {} : { prefix };
+      const cwd = createProject({
+        'bundlewatch.config.mjs': `export default ${JSON.stringify({
+          ...fields,
+          files: [{ path: filePath }],
+          defaultCompression: 'none',
+          bundlewatchServiceHost: service.url,
+        })}`,
+      });
+      const outcome = await runCli('new', world, cwd, [], {
+        ...env('master'),
+        CI_EVENT: 'pull_request',
+        CI_BRANCH_BASE: 'release/apps',
+      });
+      assert.equal(outcome.status, 0, outcome.stderr.join('\n'));
+      const statuses = world.captured
+        .filter(({ target }) => target === 'github')
+        .map(({ body }) => body as { context: string; state: string });
+      const expectedContext = prefix === undefined ? 'bundlewatch' : `${prefix}/bundlewatch`;
+      assert.deepEqual(
+        statuses.map(({ context, state }) => [state, context]),
+        [
+          ['pending', expectedContext],
+          ['success', expectedContext],
+        ],
+      );
+      const id = new URL(lastStatusLink()).pathname.split('/').at(-1)!;
+      const result = await resultsStore.get(id);
+      assert.equal(result?.payload.details.prefix, prefix);
+      assert.equal(result?.payload.details.repoBranchBase, 'release/apps');
+      assert.equal(result?.payload.results.fullResults[0]?.baseBranchSize, (index + 1) * 1000);
+      assert.equal(result?.payload.results.fullResults[0]?.filePath, filePath);
+    }
+    for (const [index, prefix] of [undefined, 'storefront', 'admin'].entries()) {
+      const base = await baselineStore.get('owner/repo', 'release/apps', prefix);
+      const head = await baselineStore.get('owner/repo', 'master', prefix);
+      assert.equal(
+        (base?.fileDetailsByPath?.[filePath] as { size: number } | undefined)?.size,
+        (index + 1) * 1000,
+      );
+      assert.equal(
+        (head?.fileDetailsByPath?.[filePath] as { size: number } | undefined)?.size,
+        (index + 1) * 100,
+      );
+    }
+  });
+
+  test('prefixed tracked builds save independent baselines and report per-file failures', async () => {
+    const filePath = './images/test-file-1.jpg';
+    const legacy = await baselineStore.get('owner/repo', 'master');
+    for (const [prefix, compression] of [
+      ['storefront', 'gzip'],
+      ['admin', 'none'],
+    ]) {
+      const cwd = createProject({
+        'package.json': JSON.stringify({
+          bundlewatch: {
+            prefix,
+            files: [{ path: filePath, maxSize: 1 }],
+            defaultCompression: compression,
+            bundlewatchServiceHost: service.url,
+          },
+        }),
+      });
+      const outcome = await runCli('new', world, cwd, [], env('master'));
+      assert.equal(outcome.status, 1);
+      const statuses = world.captured
+        .filter(({ target }) => target === 'github')
+        .map(({ body }) => body as { context: string; state: string });
+      assert.deepEqual(
+        statuses.map(({ context, state }) => [state, context]),
+        [
+          ['pending', `${prefix}/bundlewatch`],
+          ['failure', `${prefix}/bundlewatch`],
+          ['failure', `${prefix}/bundlewatch ${filePath}`],
+        ],
+      );
+    }
+    const storefront = await baselineStore.get('owner/repo', 'master', 'storefront');
+    const admin = await baselineStore.get('owner/repo', 'master', 'admin');
+    assert.equal(
+      (storefront?.fileDetailsByPath?.[filePath] as { size: number } | undefined)?.size,
+      38995,
+    );
+    assert.equal(
+      (admin?.fileDetailsByPath?.[filePath] as { size: number } | undefined)?.size,
+      38962,
+    );
+    assert.deepEqual(await baselineStore.get('owner/repo', 'master'), legacy);
+  });
   test('gets a short link that renders the results', async () => {
     const cwd = project([{ path: './images/*.jpg', maxSize: '1MB' }]);
     const outcome = await runCli('new', world, cwd, [], env('feature'));

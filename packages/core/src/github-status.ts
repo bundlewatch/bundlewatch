@@ -1,4 +1,5 @@
 import { postJson } from './http.ts';
+import { validatePrefix } from './prefix.ts';
 
 // Reports commit statuses. Users list the `bundlewatch` context in
 // branch-protection required checks, so context names must not change.
@@ -35,6 +36,7 @@ const contextFor = (filePath: string | undefined): string => {
 };
 
 export type GitHubStatusOptions = {
+  prefix?: string | undefined;
   repoOwner?: string | undefined;
   repoName?: string | undefined;
   commitSha?: string | undefined;
@@ -50,6 +52,7 @@ export class GitHubStatusReporter {
   readonly #contexts = new Map<string, string | undefined>();
 
   constructor(options: GitHubStatusOptions) {
+    validatePrefix(options.prefix);
     this.#options = options;
   }
 
@@ -89,7 +92,7 @@ export class GitHubStatusReporter {
    * hid the other.
    */
   #uniqueContext(filePath: string | undefined): string {
-    const base = contextFor(filePath);
+    const base = `${this.#options.prefix === undefined ? '' : `${this.#options.prefix}/`}${contextFor(filePath)}`;
     for (let n = 1; ; n++) {
       const candidate = n === 1 ? base : `${base} (${n})`;
       if (!this.#contexts.has(candidate) || this.#contexts.get(candidate) === filePath) {

@@ -30,6 +30,7 @@ const randomPayload = (): {
   results: AnalyzeResult;
 } => ({
   details: {
+    ...(random(2) ? { prefix: pick(['storefront', 'admin', 'a'.repeat(64)]) } : {}),
     repoOwner: pick(strings),
     repoName: 'name',
     repoCurrentBranch: pick(strings),

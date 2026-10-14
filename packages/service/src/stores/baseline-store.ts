@@ -1,4 +1,10 @@
-import type { FileDetailsByPath } from '@bundlewatch/core';
+import { type FileDetailsByPath, validatePrefix } from '@bundlewatch/core';
+
+/** GitHub repositories have two path components; prefixes cannot contain a slash. */
+export const baselineRepoKey = (repo: string, prefix?: string): string => {
+  validatePrefix(prefix);
+  return prefix === undefined ? repo : `${repo}/${prefix}`;
+};
 
 /**
  * The latest file sizes saved for a branch. Fields other than the keys are
@@ -8,6 +14,7 @@ import type { FileDetailsByPath } from '@bundlewatch/core';
 export type Baseline = {
   /** `owner/name`. */
   repo: string;
+  prefix?: string | undefined;
   repoBranch: string;
   repoOwner?: string | undefined;
   repoName?: string | undefined;
@@ -20,7 +27,7 @@ export type Baseline = {
 export type BaselineStore = {
   /** Replaces the branch's baseline. */
   save(baseline: Baseline): Promise<void>;
-  get(repo: string, repoBranch: string): Promise<Baseline | undefined>;
+  get(repo: string, repoBranch: string, prefix?: string): Promise<Baseline | undefined>;
 };
 
 export class MemoryBaselineStore implements BaselineStore {
@@ -28,13 +35,13 @@ export class MemoryBaselineStore implements BaselineStore {
 
   async save(baseline: Baseline): Promise<void> {
     this.#items.set(
-      JSON.stringify([baseline.repo, baseline.repoBranch]),
+      JSON.stringify([baselineRepoKey(baseline.repo, baseline.prefix), baseline.repoBranch]),
       structuredClone(baseline),
     );
   }
 
-  async get(repo: string, repoBranch: string): Promise<Baseline | undefined> {
-    const baseline = this.#items.get(JSON.stringify([repo, repoBranch]));
+  async get(repo: string, repoBranch: string, prefix?: string): Promise<Baseline | undefined> {
+    const baseline = this.#items.get(JSON.stringify([baselineRepoKey(repo, prefix), repoBranch]));
     return baseline && structuredClone(baseline);
   }
 }

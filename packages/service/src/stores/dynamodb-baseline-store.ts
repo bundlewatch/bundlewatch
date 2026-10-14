@@ -7,7 +7,7 @@ import {
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import type { FileDetailsByPath } from '@bundlewatch/core';
 
-import type { Baseline, BaselineStore } from './baseline-store.ts';
+import { type Baseline, type BaselineStore, baselineRepoKey } from './baseline-store.ts';
 
 // The baseline table was written by dynamoose 1.11.1, and older service
 // deployments may still read and write it. dynamoose stored every attribute
@@ -20,6 +20,7 @@ export const toBaselineItem = (baseline: Baseline): Record<string, AttributeValu
   marshall(
     {
       ...baseline,
+      repo: baselineRepoKey(baseline.repo, baseline.prefix),
       fileDetailsByPath: baseline.fileDetailsByPath && JSON.stringify(baseline.fileDetailsByPath),
     },
     { removeUndefinedValues: true },
@@ -30,8 +31,10 @@ const optionalString = (value: unknown): string | undefined =>
 
 export const fromBaselineItem = (item: Record<string, AttributeValue>): Baseline => {
   const raw = unmarshall(item);
+  const prefix = optionalString(raw.prefix);
   return {
-    repo: String(raw.repo),
+    repo: prefix === undefined ? String(raw.repo) : String(raw.repo).slice(0, -(prefix.length + 1)),
+    ...(prefix === undefined ? {} : { prefix }),
     repoBranch: String(raw.repoBranch),
     repoOwner: optionalString(raw.repoOwner),
     repoName: optionalString(raw.repoName),
@@ -62,11 +65,11 @@ export class DynamoBaselineStore implements BaselineStore {
     );
   }
 
-  async get(repo: string, repoBranch: string): Promise<Baseline | undefined> {
+  async get(repo: string, repoBranch: string, prefix?: string): Promise<Baseline | undefined> {
     const { Item } = await this.#client.send(
       new GetItemCommand({
         TableName: this.#tableName,
-        Key: marshall({ repo, repoBranch }),
+        Key: marshall({ repo: baselineRepoKey(repo, prefix), repoBranch }),
       }),
     );
     return Item && fromBaselineItem(Item);

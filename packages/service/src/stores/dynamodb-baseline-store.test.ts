@@ -1,9 +1,11 @@
+// oxlint-disable no-await-in-loop -- Isolation tests observe shared state between sequential requests.
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
 import { type AttributeValue, GetItemCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
 
 import { recordingClient } from '../test-helpers/fake-dynamodb.ts';
+import { MemoryBaselineStore } from './baseline-store.ts';
 import {
   DynamoBaselineStore,
   fromBaselineItem,
@@ -161,6 +163,61 @@ describe('defensive reads', () => {
 });
 
 describe('DynamoBaselineStore', () => {
+  test('DynamoDB and memory isolate all namespaces and preserve legacy keys exactly', async () => {
+    const items = new Map<string, Record<string, AttributeValue>>();
+    const { client, commands } = recordingClient((command) => {
+      if (command instanceof PutItemCommand) {
+        const item = command.input.Item!;
+        items.set(JSON.stringify([item.repo, item.repoBranch]), structuredClone(item));
+        return {};
+      }
+      assert.ok(command instanceof GetItemCommand);
+      return {
+        Item: items.get(JSON.stringify([command.input.Key?.repo, command.input.Key?.repoBranch])),
+      };
+    });
+    for (const store of [new DynamoBaselineStore(client, 't'), new MemoryBaselineStore()]) {
+      for (const [index, prefix] of [undefined, 'storefront', 'admin'].entries()) {
+        assert.equal(await store.get('o/r', 'feature/branch', prefix), undefined);
+        await store.save({
+          repo: 'o/r',
+          repoBranch: 'feature/branch',
+          ...(prefix === undefined ? {} : { prefix }),
+          fileDetailsByPath: {
+            'dist/assets/app.js': { size: index + 1, maxSize: null, compression: 'gzip' },
+          },
+        });
+      }
+      for (const [index, prefix] of [undefined, 'storefront', 'admin'].entries()) {
+        const baseline = await store.get('o/r', 'feature/branch', prefix);
+        assert.equal(baseline?.repo, 'o/r');
+        assert.equal(baseline?.prefix, prefix);
+        assert.equal(
+          (baseline?.fileDetailsByPath?.['dist/assets/app.js'] as { size: number } | undefined)
+            ?.size,
+          index + 1,
+        );
+        assert.equal(await store.get('o/r', 'another/branch', prefix), undefined);
+      }
+      for (const prefix of ['', 'storefront/admin', 'storefront\n', null]) {
+        await assert.rejects(
+          store.save({ repo: 'o/r', repoBranch: 'feature/branch', prefix: prefix as string }),
+          /prefix must be/,
+        );
+        await assert.rejects(
+          store.get('o/r', 'feature/branch', prefix as string),
+          /prefix must be/,
+        );
+      }
+    }
+    assert.deepEqual(
+      commands
+        .filter((command) => command instanceof PutItemCommand)
+        .map((command) => command.input.Item?.repo),
+      [{ S: 'o/r' }, { S: 'o/r/storefront' }, { S: 'o/r/admin' }],
+    );
+    assert.equal(items.size, 3);
+  });
   test('save puts the item, overwriting', async () => {
     const { client, commands } = recordingClient(() => ({}));
     await new DynamoBaselineStore(client, 'store-table').save({

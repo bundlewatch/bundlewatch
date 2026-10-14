@@ -12,10 +12,56 @@ Your configuration is merged with the defaults below. Arrays, such as `files` an
 | Option                   | Default                            | Description                                                                                                  |
 | ------------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `files`                  | None                               | The files to check and their limits, see [files](#files)                                                     |
+| `prefix`                 | Unset                              | Application namespace for GitHub statuses, baselines and results, see [prefix](#prefix)                      |
 | `defaultCompression`     | `'gzip'`                           | Compression for files that don't set their own, see [defaultCompression](#defaultcompression)                |
 | `normalizeFilenames`     | `null`                             | Removes hashes from file names, see [normalizeFilenames](#normalizefilenames)                                |
 | `bundlewatchServiceHost` | `'https://service.bundlewatch.io'` | The service that stores baselines; `null` disables it, see [bundlewatchServiceHost](#bundlewatchservicehost) |
 | `ci`                     | Detected from your CI environment  | Token, repository, commit and branches, see [ci](#ci)                                                        |
+
+## `prefix`
+
+**Requires BundleWatch 1.1.0 or later**, for both the CLI and Node API. Use a dependency such as `"bundlewatch": "^1.1.0"` and ensure CI runs that installed version. Older versions silently ignore `prefix`: applications share the unprefixed baseline and the `bundlewatch` GitHub status, so one application's results can overwrite another's. Do not downgrade a prefix-enabled application below 1.1.0.
+
+Use a top-level `prefix` to run BundleWatch independently for multiple applications in one GitHub repository. It works in config files, `package.json`, and the Node API (`await bundlewatch({ prefix: 'storefront', files: [...] })`).
+
+A prefix must be **1–64 lowercase ASCII letters, digits, hyphens or underscores**, starting with a letter or digit. For example, `storefront`, `admin`, and `web_v2` are valid. Empty strings, `null`, uppercase letters, spaces, slashes, and non-string values are rejected by both the client and service. Values are never trimmed or converted. Omit the option to use the existing `bundlewatch` status and baselines.
+
+For a monorepo with two frontends, give each application its own config:
+
+```js
+// apps/storefront/bundlewatch.config.mjs
+export default {
+  prefix: 'storefront',
+  files: [{ path: 'dist/assets/*.js', maxSize: '200 kB' }],
+}
+```
+
+```js
+// apps/admin/bundlewatch.config.mjs
+export default {
+  prefix: 'admin',
+  files: [{ path: 'dist/assets/*.js', maxSize: '200 kB' }],
+}
+```
+
+Build and run BundleWatch from each application's directory. Paths are relative to the working directory, so both applications can measure `dist/assets/app.js` without sharing a baseline:
+
+```sh
+(cd apps/storefront && npm run build && npx bundlewatch)
+(cd apps/admin && npm run build && npx bundlewatch)
+```
+
+The overall GitHub contexts are `storefront/bundlewatch` and `admin/bundlewatch`. Per-file failures use the same prefix, such as `storefront/bundlewatch dist/assets/app.js`; path shortening, collision suffixes and status limits stay the same. Set branch protection to require the two prefixed contexts if both applications must pass. Results pages display the application name.
+
+Baselines are identified by **repository + prefix + branch**. Pull requests compare against their own application's base-branch baseline and never save baselines, even when the head branch is tracked. Neither application reads or replaces an unprefixed baseline. Changing or removing a prefix selects a different namespace; it does not move data. Build each application's tracked base branch once to establish its baseline.
+
+### Service rollout
+
+Deploy the updated service to **every instance first**, then upgrade clients and enable `prefix`. Existing clients and unprefixed configurations keep their current requests, storage keys, and links; no migration is needed.
+
+Before a prefixed client reads or saves a baseline, it sends `POST /capabilities` and requires `{ "baselinePrefix": 1 }`. Failure, an unreachable endpoint, or a different response stops the run with instructions to upgrade or select a compatible `bundlewatchServiceHost`. The client never falls back to unprefixed baselines. With the service disabled (`bundlewatchServiceHost: null`), prefixes still work for GitHub statuses without a capability check.
+
+Prefixed clients use `/store/prefixed/lookup` and `/store/prefixed`, and check that responses identify the requested prefix. These dedicated routes prevent an old instance from interpreting a prefixed request as a legacy baseline write during a partial rollout or rollback. Keep the capable service deployed while prefixed clients run; rolling it back can fail their checks. Do not remove a prefix just to bypass the compatibility error, since that selects the legacy namespace.
 
 ## `files`
 

@@ -6,6 +6,7 @@ import { describe, test } from 'node:test';
 
 import { mergeConfig, resolveConfig } from './config.ts';
 import { ValidationError } from './errors.ts';
+import { loadConfig } from './load-config.ts';
 import { withEnv } from './test-helpers.ts';
 
 describe('mergeConfig', () => {
@@ -29,6 +30,29 @@ describe('mergeConfig', () => {
 });
 
 describe('resolveConfig', () => {
+  test('loads prefix from an ES module, JSON and package.json', async () => {
+    const directory = mkdtempSync(path.join(tmpdir(), 'bundlewatch-prefix-'));
+    const config = { prefix: 'storefront', files: [{ path: 'dist/assets/*.js' }] };
+    writeFileSync(path.join(directory, 'package.json'), JSON.stringify({ bundlewatch: config }));
+    writeFileSync(path.join(directory, 'config.json'), JSON.stringify(config));
+    writeFileSync(path.join(directory, 'config.mjs'), `export default ${JSON.stringify(config)}`);
+    await Promise.all(
+      [undefined, 'config.json', 'config.mjs'].map(async (file) => {
+        const loaded = await loadConfig({ globs: [], config: file }, directory);
+        assert.equal(resolveConfig(loaded).prefix, 'storefront');
+      }),
+    );
+  });
+
+  test('validates the Node API prefix without coercion or defaults', () => {
+    assert.equal(resolveConfig().prefix, undefined);
+    for (const prefix of ['storefront', 'admin', 'a'.repeat(64)]) {
+      assert.equal(resolveConfig({ prefix }).prefix, prefix);
+    }
+    for (const prefix of ['', null, 1, false, {}, [], 'Storefront', 'a/b', 'a\n', 'a'.repeat(65)]) {
+      assert.throws(() => resolveConfig({ prefix: prefix as string }), ValidationError);
+    }
+  });
   test('applies the 1.0 defaults', async () => {
     const config = await withEnv({}, () => resolveConfig({ files: [{ path: 'a.js' }] }));
     assert.equal(config.defaultCompression, 'gzip');
