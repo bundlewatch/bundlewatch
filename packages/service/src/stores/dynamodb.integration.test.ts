@@ -59,7 +59,7 @@ describe('DynamoDB stores', { skip: !endpoint && 'set DYNAMODB_ENDPOINT to run' 
   test('short links are created once per id', async () => {
     const store = new DynamoResultsStore(client, resultsTable);
     const results = {
-      id: 'AAAAAAAAAAAA',
+      id: 'AAAAAAAAAAAAAAAAAAAAAA',
       repo: 'o/r',
       createdAt: new Date(0).toISOString(),
       payload: {
@@ -73,6 +73,6 @@ describe('DynamoDB stores', { skip: !endpoint && 'set DYNAMODB_ENDPOINT to run' 
       ...results,
       expiresAt: undefined,
     });
-    assert.equal(await store.get('BBBBBBBBBBBB'), undefined);
+    assert.equal(await store.get('BBBBBBBBBBBBBBBBBBBBBB'), undefined);
   });
 });

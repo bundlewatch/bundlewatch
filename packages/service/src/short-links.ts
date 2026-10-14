@@ -4,13 +4,19 @@ import type { ResultsStore } from './stores/results-store.ts';
 import type { ResultsData } from './validators.ts';
 
 const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-const ID_LENGTH = 12;
+const ID_LENGTH = 22;
 const MAX_ATTEMPTS = 5;
 const DAY_SECONDS = 24 * 60 * 60;
 
-export const SHORT_LINK_ID: RegExp = /^[0-9A-Za-z]{12}$/;
+// 1.0.0 created 12-character ids. Those links keep working, so the
+// route accepts both lengths.
+export const SHORT_LINK_ID: RegExp = /^(?:[0-9A-Za-z]{22}|[0-9A-Za-z]{12})$/;
 
-/** 12 base62 characters: 71 bits, so collisions are rare but handled. */
+/**
+ * 22 base62 characters: 131 bits. A link can only be opened by someone who
+ * has it, and two links can't get the same id in practice; a taken id is
+ * still retried.
+ */
 export const generateShortLinkId = (): string => {
   let id = '';
   for (let i = 0; i < ID_LENGTH; i++) {

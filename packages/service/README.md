@@ -88,12 +88,12 @@ Response:
 ```http
 HTTP/1.1 201 Created
 content-type: application/json; charset=utf-8
-location: https://service.bundlewatch.io/r/AbxBAzAlLgSQ
+location: https://service.bundlewatch.io/r/GUr7mjtjzlIQoB88G1l2At
 
-{"id":"AbxBAzAlLgSQ","url":"https://service.bundlewatch.io/r/AbxBAzAlLgSQ"}
+{"id":"GUr7mjtjzlIQoB88G1l2At","url":"https://service.bundlewatch.io/r/GUr7mjtjzlIQoB88G1l2At"}
 ```
 
-`id` is 12 random base62 characters. `url` is built from `PUBLIC_URL`, or from the request's origin when it isn't set.
+`id` is 22 random base62 characters, 131 bits, so a link can only be opened by someone who has it. Links created by 1.0.0 have 12-character ids, and they keep working. `url` is built from `PUBLIC_URL`, or from the request's origin when it isn't set.
 
 ### Authorization
 
@@ -202,7 +202,7 @@ Hash key `id` (S), no range key. Enable TTL on `expiresAt`.
 
 | Attribute   | Type | Value                                                            |
 | ----------- | ---- | ---------------------------------------------------------------- |
-| `id`        | S    | 12 base62 characters                                             |
+| `id`        | S    | 22 base62 characters; 12 for links created by 1.0.0              |
 | `repo`      | S    | `owner/name` the token was checked against                       |
 | `createdAt` | S    | ISO 8601                                                         |
 | `expiresAt` | N    | Epoch seconds. Only written when `RESULTS_RETENTION_DAYS` is set |
