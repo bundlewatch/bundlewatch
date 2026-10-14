@@ -2,6 +2,8 @@ name: Website preview
 
 # PR code, including forks, runs only in this read-only workflow. There are no
 # AWS credentials or OIDC permissions, and no caches shared with trusted jobs.
+# Fork PRs may not receive repository variables, so no job is gated on one.
+# Without AMPLIFY_APP_ID, a website PR builds even when its preview is current.
 on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
@@ -17,7 +19,6 @@ concurrency:
 
 jobs:
   build:
-    if: vars.AMPLIFY_PREVIEW_ROLE_ARN != ''
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
