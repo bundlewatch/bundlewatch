@@ -32,7 +32,18 @@ export const shared = defineConfig({
     },
   },
 
-  head: [["link", { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" }]],
+  head: [
+    ["link", { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" }],
+    [
+      "script",
+      {
+        defer: "",
+        src: "https://api.pirsch.io/pa.js",
+        id: "pianjs",
+        "data-code": "LcBZ8OPau2j6wcWCBM7ljbz563wxHEYj",
+      },
+    ],
+  ],
 
   themeConfig: {
     logo: { src: "/logo-mini.svg", width: 24, height: 24 },
