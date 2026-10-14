@@ -30,6 +30,10 @@ results:
   alt: "一个 Pull Request 结果页面中的变化：index.js 增加了 17.08KB，比 160KB 限制少 14.58KB；vendor.js 增加了 13.17KB，超出 200KB 限制 9.77KB；charts.js 减少了 5.51KB。"
   caption: "每个 Pull Request 的 <code>bundlewatch</code> 状态都会链接到它的结果页面，逐个文件列出这次提交带来的变化，以及每个文件的限制。"
 
+usedBy:
+  title: 这些团队的开发者在使用
+  pauseHint: 将指针悬停在此处或使此区域获得焦点以暂停标志滚动
+
 # The icons are inline SVG, so that their navy parts (currentColor) follow the theme
 # in dark mode. They are drawn from the logo and the results page.
 features:

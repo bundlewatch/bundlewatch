@@ -22,6 +22,10 @@ hero:
       text: Configurer avec un agent IA
       link: /fr/guide/getting-started#set-up-with-an-ai-agent
 
+usedBy:
+  title: Utilisé par les développeurs de
+  pauseHint: Survolez cette zone ou placez-y le focus pour mettre les logos en pause
+
 features:
   - icon: 🚫
     title: Limites de taille
