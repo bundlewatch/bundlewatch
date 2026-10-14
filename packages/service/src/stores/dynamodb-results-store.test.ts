@@ -13,7 +13,7 @@ import { DynamoResultsStore, fromResultsItem, toResultsItem } from './dynamodb-r
 import type { StoredResults } from './results-store.ts';
 
 const results: StoredResults = {
-  id: 'AbCdEf123456',
+  id: 'AbCdEf123456GhIjKl7890',
   repo: 'o/r',
   createdAt: '2026-10-12T00:00:00.000Z',
   expiresAt: 1_800_000_000,
@@ -37,7 +37,7 @@ describe('results items', () => {
       'payload',
       'repo',
     ]);
-    assert.deepEqual(item.id, { S: 'AbCdEf123456' });
+    assert.deepEqual(item.id, { S: 'AbCdEf123456GhIjKl7890' });
     assert.deepEqual(item.repo, { S: 'o/r' });
     assert.deepEqual(item.createdAt, { S: '2026-10-12T00:00:00.000Z' });
     assert.deepEqual(item.expiresAt, { N: '1800000000' });

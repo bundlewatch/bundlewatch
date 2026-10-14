@@ -154,7 +154,7 @@ describe('the new CLI against the new service', () => {
     assert.equal(outcome.status, 0);
 
     const link = lastStatusLink();
-    assert.match(link, new RegExp(`^${service.url}/r/[0-9A-Za-z]{12}$`));
+    assert.match(link, new RegExp(`^${service.url}/r/[0-9A-Za-z]{22}$`));
     assert.ok(outcome.stdout.includes(`Result breakdown at: ${link}`));
     const page = await fetch(link);
     assert.equal(page.status, 200);

@@ -515,7 +515,7 @@ describe('POST /results and GET /r/{id}', () => {
     const response = await call('POST', '/results', createBody);
     assert.equal(response.status, 201);
     const { id, url } = await readJson(response);
-    assert.match(id, /^[0-9A-Za-z]{12}$/);
+    assert.match(id, /^[0-9A-Za-z]{22}$/);
     assert.equal(url, `https://service.test/r/${id}`);
     assert.equal(response.headers.get('location'), url);
     assert.deepEqual(githubRequests(), ['GET /repos/o/r']);
@@ -592,18 +592,34 @@ describe('POST /results and GET /r/{id}', () => {
   });
 
   test('retries when an id is taken', async () => {
-    const ids = ['AAAAAAAAAAAA', 'AAAAAAAAAAAA', 'BBBBBBBBBBBB'];
+    const taken = 'A'.repeat(22);
+    const free = 'B'.repeat(22);
+    const ids = [taken, taken, free];
     const { call } = setup({ generateId: () => ids.shift() ?? 'unused' });
-    assert.equal((await readJson(await call('POST', '/results', createBody))).id, 'AAAAAAAAAAAA');
-    assert.equal((await readJson(await call('POST', '/results', createBody))).id, 'BBBBBBBBBBBB');
+    assert.equal((await readJson(await call('POST', '/results', createBody))).id, taken);
+    assert.equal((await readJson(await call('POST', '/results', createBody))).id, free);
   });
 
   test('500 after five taken ids', async () => {
-    const { call, errors } = setup({ generateId: () => 'AAAAAAAAAAAA' });
+    const { call, errors } = setup({ generateId: () => 'A'.repeat(22) });
     await call('POST', '/results', createBody);
     const response = await call('POST', '/results', createBody);
     assert.equal(response.status, 500);
     assert.equal(errors.length, 1);
+  });
+
+  test('renders a 12-character id, as 1.0.0 created them', async () => {
+    const { call, resultsStore } = setup();
+    await resultsStore.create({
+      id: 'AbxBAzAlLgSQ',
+      repo: 'o/r',
+      createdAt: new Date(NOW).toISOString(),
+      expiresAt: undefined,
+      payload: resultsPayload,
+    });
+    const page = await call('GET', '/r/AbxBAzAlLgSQ');
+    assert.equal(page.status, 200);
+    assert.match(await page.text(), /dist\/b\.js/);
   });
 
   test('401 when the token may not push', async () => {
@@ -668,7 +684,7 @@ describe('POST /results and GET /r/{id}', () => {
     assert.equal(response.status, 400);
   });
 
-  for (const id of ['AAAAAAAAAAAA', 'short', 'AAAAAAAAAAA%21']) {
+  for (const id of ['A'.repeat(22), 'A'.repeat(12), 'short', 'AAAAAAAAAAA%21']) {
     test(`404 page for the unknown id ${id}`, async () => {
       const response = await setup().call('GET', `/r/${id}`);
       assert.equal(response.status, 404);
@@ -922,7 +938,7 @@ describe('POST /analyze', () => {
         ['failure', 'bundlewatch dist/a.js', '2KB > 1KB (gzip)'],
       ],
     );
-    const id = statuses[1].target_url.match(/^https:\/\/service\.test\/r\/(\w{12})$/)?.[1];
+    const id = statuses[1].target_url.match(/^https:\/\/service\.test\/r\/(\w{22})$/)?.[1];
     assert.ok(id);
     const stored = await resultsStore.get(id);
     assert.deepEqual(stored?.payload.details, {
