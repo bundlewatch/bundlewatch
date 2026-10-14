@@ -2,6 +2,7 @@ import { defineConfig } from "vitepress";
 
 import { writeLlmsFiles } from "../llms.mjs";
 import { en, sidebar } from "./en.mjs";
+import { fr } from "./fr.mjs";
 import { shared } from "./shared.mjs";
 import { zh } from "./zh.mjs";
 
@@ -10,6 +11,7 @@ const config = {
 
   locales: {
     root: { label: "English", ...en },
+    fr: { label: "Français", ...fr },
     zh: { label: "简体中文", ...zh },
   },
 
