@@ -67,8 +67,6 @@ dd code {
     margin-top: -4px;
 }
 .rail a {
-    position: sticky;
-    top: 40px;
     display: block;
 }
 
