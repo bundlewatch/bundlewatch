@@ -86,7 +86,7 @@ const authorizeUrl = ({ githubWebUrl, clientId, state }: Authorization): string 
 
 /** What BundleWatch posts on a pull request. */
 export const statusPreview: SafeHtml = html`<div class="preview" role="img" aria-label="The bundlewatch status on a pull request">
-        <div><span class="ok">✓</span>${mark(16)}<b>bundlewatch</b><span class="desc">— Everything is in check (+1.41KB, -0B, +4.8%)</span><span class="details">Details</span></div>
+        <div><span class="ok">✓</span>${mark(16)}<b>bundlewatch</b><span class="desc"><span class="dash">— </span>Everything is in check (+1.41KB, -0B, +4.8%)</span><span class="details">Details</span></div>
     </div>`;
 
 /** The two ways to connect a CI provider, since GitHub Actions needs no token. */
