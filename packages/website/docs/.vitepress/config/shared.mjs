@@ -65,30 +65,6 @@ export const shared = defineConfig({
 
     search: {
       provider: "local",
-      options: {
-        locales: {
-          fr: {
-            translations: {
-              button: { buttonText: "Rechercher", buttonAriaLabel: "Rechercher" },
-              modal: {
-                displayDetails: "Afficher les détails",
-                resetButtonTitle: "Effacer la recherche",
-                backButtonTitle: "Fermer la recherche",
-                noResultsText: "Aucun résultat pour",
-                footer: {
-                  selectText: "sélectionner",
-                  selectKeyAriaLabel: "entrée",
-                  navigateText: "naviguer",
-                  navigateUpKeyAriaLabel: "flèche vers le haut",
-                  navigateDownKeyAriaLabel: "flèche vers le bas",
-                  closeText: "fermer",
-                  closeKeyAriaLabel: "échap",
-                },
-              },
-            },
-          },
-        },
-      },
     },
   },
 });

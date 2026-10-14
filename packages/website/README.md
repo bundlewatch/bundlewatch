@@ -25,7 +25,6 @@ docs/
       index.mjs        # combines the shared config and the locales
       shared.mjs       # site-wide settings: rewrites, clean URLs, search, markdown plugins
       en.mjs           # English nav, sidebar and "Edit this page" link
-      fr.mjs           # French nav, sidebar and theme labels
       zh.mjs           # Chinese nav, sidebar and "Edit this page" link
     llms.mjs           # writes llms.txt, llms-full.txt and a Markdown copy of each page
     check-anchors.mjs  # fails the build on links to headings that don't exist
@@ -39,7 +38,6 @@ docs/
       used-by.mjs      # companies and projects, with local artwork and display dimensions
       NotFound.vue     # the 404 page: the logo without its bottom layer, and the missing path
   en/                  # English pages, served at / (rewritten from en/)
-  fr/                  # French translation, served at /fr/
   zh/                  # Chinese translation, served at /zh/
   public/              # copied as-is to the site root: images, logos, favicon
   _assets/             # old images, not used by the site (see below)
@@ -65,11 +63,11 @@ The version in the nav is the latest release. [`scripts/build.sh`](scripts/build
 
 ## Translation
 
-Every page in `en/` has a counterpart at the same path in `fr/` and `zh/`. When you add or change an English page:
+Every page in `en/` has a counterpart at the same path in `zh/`. When you add or change an English page:
 
-- Update or add the matching pages in `fr/` and `zh/`.
-- Add new pages to the sidebar in `en.mjs`, `fr.mjs` and `zh.mjs`.
-- Give translated headings that other pages link to an explicit English anchor, e.g. `## Liens vers les résultats {#results-links}`, so that anchors are the same across languages.
+- Update or add the matching page in `zh/`.
+- Add new pages to the sidebar in both `en.mjs` and `zh.mjs`.
+- Give Chinese headings that other pages link to an explicit English anchor, e.g. `## 基准分支 {#base-branch}`, so that anchors are the same in both languages.
 - Keep internal links within the current language, including locale prefixes on absolute paths. Shared images stay at the site root.
 - Translate prose and code comments, but preserve commands, configuration keys and actual CLI output. The generated LLM files and Markdown copies remain English-only.
 
