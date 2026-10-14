@@ -130,7 +130,7 @@ Known gaps, because GitHub has no API that shows what an installation token may 
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `STORE_TABLE`                              | Baseline table (`bundlewatch-service-store-table-prod`). Required on Lambda.                                                                                                                                                 |
 | `RESULTS_TABLE`                            | Short link table. Required on Lambda.                                                                                                                                                                                        |
-| `RESULTS_RETENTION_DAYS`                   | Optional. A positive integer keeps short links for that many days (`expiresAt` is written for DynamoDB TTL); otherwise they are kept forever.                                                                                |
+| `RESULTS_RETENTION_DAYS`                   | Optional. A positive integer keeps short links for that many days (`expiresAt` is written for DynamoDB TTL); otherwise they are kept forever. The deploy workflow sets it from the `RESULTS_RETENTION_DAYS` variable.        |
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | The OAuth app behind `/setup-github` (client id `04fcf325dd26ca2a159f`).                                                                                                                                                     |
 | `GIT_SHA1`                                 | Deployed commit, linked in the results page footer.                                                                                                                                                                          |
 | `PUBLIC_URL`                               | Base of short links, e.g. `https://service.bundlewatch.io`. Defaults to the request's origin. `template.yaml` sets it from `PublicUrl`, whose default is `https://service.bundlewatch.io`: override it for your own service. |
@@ -241,15 +241,19 @@ Then deploy [`template.yaml`](template.yaml), overriding these parameters:
   - The template doesn't create it.
   - Reuse the table of your 0.x deployment, or create one with hash key `repo` (S) and range key `repoBranch` (S); see [Baseline table](#baseline-table-store_table).
 - `GitHubApiUrl`: for GitHub Enterprise, your API URL, such as `https://github.example.com/api/v3`.
+- `ReservedConcurrency` and `AlarmEmail`: see [Limits and alarms](#limits-and-alarms). Alarms need the permissions of the bootstrap stack.
 
 ## Deployment
 
 Production runs as the CloudFormation stack `bundlewatch-service` in `us-east-1`. [`template.yaml`](template.yaml) describes it:
 
-- an HTTP API with throttling;
-- the function, on `nodejs24.x` and arm64;
-- a log group that keeps 30 days;
-- the short-link table `bundlewatch-service-results`.
+- an HTTP API with throttling and access logs;
+- the function, on `nodejs24.x` and arm64, with a 12-second timeout and reserved concurrency;
+- two log groups that keep 30 days, the function's and the API's access log;
+- the short-link table `bundlewatch-service-results`;
+- alarms, when `AlarmEmail` is set.
+
+See [Limits and alarms](#limits-and-alarms).
 
 The baseline table `bundlewatch-service-store-table-prod` is only referenced by name, and no stack from this repository manages it.
 
@@ -263,10 +267,27 @@ The [Deploy service workflow](../../.github/workflows/deploy-service.yml) runs o
 It authenticates with GitHub's OIDC token, so no AWS keys are stored in GitHub. Tests and the build run in a job without AWS credentials or the OAuth secret; the deploy job only checks and deploys the bundle that job produced, so no dependency code runs where the credentials are. [`infra/bootstrap.yaml`](infra/bootstrap.yaml) defines three roles:
 
 - **The deploy role**, which GitHub Actions assumes. It can only start CloudFormation deployments of this stack.
-- **The execution role**, which CloudFormation uses. It can manage the stack's function, API, table and log group, and can't create IAM roles. It can't touch the 0.x function, create a function URL, or let anything but API Gateway invoke the function.
+- **The execution role**, which CloudFormation uses. It can manage the stack's function, API, table, log groups and alarms, and can't create IAM roles. It can't touch the 0.x function, create a function URL, or let anything but API Gateway invoke the function.
 - **The function's own role**, with only `GetItem` and `PutItem` on the two tables and access to its log group.
 
-Parameters that the workflow doesn't pass keep the value of the first deploy (`PublicUrl`, `ResultsRetentionDays`, `GitHubApiUrl` and the table names). Changing their defaults in `template.yaml` doesn't change the running stack; pass them with `--parameter-overrides` instead.
+Parameters that the workflow doesn't pass keep the value of the first deploy (`PublicUrl`, `GitHubApiUrl` and the table names). Changing their defaults in `template.yaml` doesn't change the running stack; pass them with `--parameter-overrides` instead.
+
+### Limits and alarms
+
+- **Reserved concurrency** (`ReservedConcurrency`, default 10, from the `RESERVED_CONCURRENCY` variable): at most that many invocations run at once. Lambda refuses invocations over it and API Gateway answers `500`; the CLI logs the failure and the build goes on, without a saved baseline or a short link. Size it from the function's `ConcurrentExecutions` metric, its maximum over a month, with headroom.
+- **Route throttling.** The API accepts 100 requests per second overall, and fewer on `POST /store`, `/store/lookup`, `/results` and `/analyze`. Requests over a limit get a `429` from API Gateway, which the CLI also treats as a non-fatal failure.
+- **Timeout** of 12 seconds. The GitHub check has a 6-second budget, and 0.x CLIs give up after 10 seconds. `/analyze`, which posts statuses after the check, can run out of time when GitHub is slow; it has no known callers.
+- **Short-link retention** (`ResultsRetentionDays`, from the `RESULTS_RETENTION_DAYS` variable). Links are kept forever until it is set. With it, short links older than that stop rendering; long `/results?d=…` links are unaffected.
+- **Access logs**: one JSON line per request in `/bundlewatch/service-access`, kept 30 days. In CloudWatch Logs Insights:
+
+  ```
+  fields ip, routeKey, status, userAgent
+  | stats count() as requests by ip, routeKey, status
+  | sort requests desc
+  | limit 50
+  ```
+
+- **Alarms**, when the `ALARM_EMAIL` variable is set, on the function's throttles and invocations and on the short-link table's writes. They email through an SNS topic; confirm the subscription from its first email. Creating them needs CloudWatch and SNS permissions that `infra/bootstrap.yaml` grants, so a bootstrap stack deployed before they were added must be redeployed first, with the command in [One-time setup](#one-time-setup).
 
 ### One-time setup
 
@@ -306,9 +327,10 @@ You need administrator access to the AWS account. Do the GitHub steps before the
    - **Variables:**
      - `AWS_DEPLOY_ROLE_ARN`, `CFN_EXECUTION_ROLE_ARN` and `SAM_ARTIFACT_BUCKET`, from the bootstrap stack outputs (`aws cloudformation describe-stacks --stack-name bundlewatch-deploy-access`).
      - Optionally `WRITE_AUTHORIZATION`; leave it unset (`report`) for now. See [Enforcing the stricter write check](#enforcing-the-stricter-write-check).
+     - Optionally `RESERVED_CONCURRENCY` (default 10), `RESULTS_RETENTION_DAYS` (default 0, forever) and `ALARM_EMAIL` (default none). See [Limits and alarms](#limits-and-alarms).
    - **Secret:** `OAUTH_CLIENT_SECRET`, set in step 4.
 
-6. Create an AWS Budgets alert for the account, for example at twice the usual monthly cost. Short links are stored per request, and the API is throttled to 100 requests per second overall, so a misbehaving client shows up as cost and throttling first.
+6. Create an AWS Budgets alert for the account, for example at twice the usual monthly cost. The stack's own alarms are in [Limits and alarms](#limits-and-alarms).
 
 7. Run the Deploy service workflow. It creates the stack next to the 0.x one, which keeps serving `service.bundlewatch.io`.
    - If this first deploy fails, the stack is left in `ROLLBACK_COMPLETE` and can't be updated.

@@ -17,7 +17,9 @@ Parameters:
     Type: Number
     Default: 0
     MinValue: 0
-    Description: Days to keep short links; 0 keeps them forever.
+    Description: >-
+      Days to keep short links; 0 keeps them forever. The deploy workflow
+      sets it from the RESULTS_RETENTION_DAYS variable.
   PublicUrl:
     Type: String
     Default: https://service.bundlewatch.io
@@ -46,6 +48,22 @@ Parameters:
     Description: >-
       GitHub API used to check tokens and for OAuth. Self-hosted services for
       GitHub Enterprise set their API URL, e.g. https://github.example.com/api/v3.
+  ReservedConcurrency:
+    Type: Number
+    Default: 10
+    MinValue: 1
+    Description: >-
+      How many invocations of the function may run at once. Requests over it
+      get a 500. See README.md to size it.
+  AlarmEmail:
+    Type: String
+    Default: ''
+    Description: >-
+      Address the alarms email. Empty creates none. Creating them needs the
+      CloudWatch and SNS permissions of infra/bootstrap.yaml.
+
+Conditions:
+  HasAlarmEmail: !Not [!Equals [!Ref AlarmEmail, '']]
 
 Resources:
   HttpApi:
@@ -54,6 +72,25 @@ Resources:
       DefaultRouteSettings:
         ThrottlingBurstLimit: 200
         ThrottlingRateLimit: 100
+      # Lower limits for the routes that call GitHub and write to DynamoDB.
+      RouteSettings:
+        'POST /store':
+          ThrottlingBurstLimit: 20
+          ThrottlingRateLimit: 10
+        'POST /store/lookup':
+          ThrottlingBurstLimit: 20
+          ThrottlingRateLimit: 10
+        'POST /results':
+          ThrottlingBurstLimit: 20
+          ThrottlingRateLimit: 10
+        'POST /analyze':
+          ThrottlingBurstLimit: 20
+          ThrottlingRateLimit: 10
+      # One JSON line per request; README.md has the queries.
+      AccessLogSettings:
+        DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: >-
+          {"requestId":"$context.requestId","time":"$context.requestTime","ip":"$context.identity.sourceIp","method":"$context.httpMethod","routeKey":"$context.routeKey","path":"$context.path","status":"$context.status","integrationStatus":"$context.integrationStatus","integrationLatency":"$context.integrationLatency","responseLength":"$context.responseLength","userAgent":"$context.identity.userAgent"}
 
   ServiceFunction:
     Type: AWS::Serverless::Function
@@ -66,7 +103,12 @@ Resources:
       Runtime: nodejs24.x
       Architectures: [arm64]
       MemorySize: 512
-      Timeout: 29
+      # The GitHub check has a 6-second budget, DynamoDB answers in
+      # milliseconds, and 0.x CLIs give up after 10 seconds anyway.
+      Timeout: 12
+      # Over it, Lambda refuses the invocation and API Gateway answers 500;
+      # the CLI logs that and carries on.
+      ReservedConcurrentExecutions: !Ref ReservedConcurrency
       LoggingConfig:
         LogGroup: !Ref ServiceLogGroup
       Environment:
@@ -89,11 +131,44 @@ Resources:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
+        # The POST routes are declared too, so the API can throttle them
+        # separately (RouteSettings above). API Gateway prefers an explicit
+        # route over $default; the function routes them the same way.
+        SaveBaseline:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: POST
+            Path: /store
+        LookupBaseline:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: POST
+            Path: /store/lookup
+        CreateShortLink:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: POST
+            Path: /results
+        Analyze:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: POST
+            Path: /analyze
 
   ServiceLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: /bundlewatch/service
+      RetentionInDays: 30
+
+  AccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /bundlewatch/service-access
       RetentionInDays: 30
 
   ResultsTable:
@@ -117,6 +192,75 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
+  # Only with AlarmEmail: creating them needs permissions that
+  # infra/bootstrap.yaml didn't grant to the first deployments. Their names
+  # start with the stack name, which is what bootstrap allows.
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Condition: HasAlarmEmail
+    Properties:
+      TopicName: !Sub ${AWS::StackName}-alarms
+      Subscription:
+        - Protocol: email
+          Endpoint: !Ref AlarmEmail
+
+  ThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasAlarmEmail
+    Properties:
+      AlarmName: !Sub ${AWS::StackName}-throttles
+      AlarmDescription: Invocations were refused because ReservedConcurrency was reached.
+      Namespace: AWS/Lambda
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ServiceFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+
+  InvocationsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasAlarmEmail
+    Properties:
+      AlarmName: !Sub ${AWS::StackName}-invocations
+      AlarmDescription: More than 10,000 invocations in five minutes.
+      Namespace: AWS/Lambda
+      MetricName: Invocations
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ServiceFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 10000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+
+  ResultsWritesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasAlarmEmail
+    Properties:
+      AlarmName: !Sub ${AWS::StackName}-results-writes
+      AlarmDescription: More than 50,000 write units on the short-link table in five minutes.
+      Namespace: AWS/DynamoDB
+      MetricName: ConsumedWriteCapacityUnits
+      Dimensions:
+        - Name: TableName
+          Value: !Ref ResultsTable
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 50000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+
 Outputs:
   ApiUrl:
     Description: The API's own endpoint, usable before the custom domain moves.
@@ -125,3 +269,5 @@ Outputs:
     Value: !Ref ServiceFunction
   ResultsTableName:
     Value: !Ref ResultsTable
+  AccessLogGroupName:
+    Value: !Ref AccessLogGroup

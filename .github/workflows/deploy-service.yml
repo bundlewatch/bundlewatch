@@ -95,12 +95,17 @@ jobs:
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
+      # AlarmEmail is quoted because sam deploy drops a bare `Key=` instead of
+      # clearing the parameter.
       - name: Deploy
         working-directory: ${{ runner.temp }}/service
         env:
           SAM_ARTIFACT_BUCKET: ${{ vars.SAM_ARTIFACT_BUCKET }}
           CFN_EXECUTION_ROLE_ARN: ${{ vars.CFN_EXECUTION_ROLE_ARN }}
           WRITE_AUTHORIZATION: ${{ vars.WRITE_AUTHORIZATION || 'report' }}
+          RESERVED_CONCURRENCY: ${{ vars.RESERVED_CONCURRENCY || '10' }}
+          RESULTS_RETENTION_DAYS: ${{ vars.RESULTS_RETENTION_DAYS || '0' }}
+          ALARM_EMAIL: ${{ vars.ALARM_EMAIL || '' }}
           OAUTH_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
         run: >-
           sam deploy
@@ -115,6 +120,9 @@ jobs:
           "GitSha=$GITHUB_SHA"
           "GitHubClientSecret=$OAUTH_CLIENT_SECRET"
           "WriteAuthorization=$WRITE_AUTHORIZATION"
+          "ReservedConcurrency=$RESERVED_CONCURRENCY"
+          "ResultsRetentionDays=$RESULTS_RETENTION_DAYS"
+          "AlarmEmail=\"$ALARM_EMAIL\""
       - name: Smoke test
         run: |
           url=$(aws cloudformation describe-stacks --stack-name bundlewatch-service \
