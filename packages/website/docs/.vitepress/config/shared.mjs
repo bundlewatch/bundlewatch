@@ -22,6 +22,19 @@ export const shared = defineConfig({
     hostname: "https://bundlewatch.io",
   },
 
+  transformPageData(pageData) {
+    if (/(^|\/)404\.md$/.test(pageData.relativePath)) return;
+
+    // VitePress applies rewrites before setting relativePath. Use the same
+    // clean routes as the sitemap, including trailing slashes for index pages.
+    const route = pageData.relativePath.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
+    const head = (pageData.frontmatter.head ?? []).filter(
+      ([tag, attrs]) => !(tag === "link" && attrs.rel === "canonical"),
+    );
+    head.push(["link", { rel: "canonical", href: new URL(route, "https://bundlewatch.io/").href }]);
+    pageData.frontmatter.head = head;
+  },
+
   markdown: {
     image: {
       lazyLoading: true,
