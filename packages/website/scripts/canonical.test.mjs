@@ -11,12 +11,6 @@ test("canonical links use clean public routes and preserve each page's language"
       "en/guide/getting-started.md",
       "https://bundlewatch.io/guide/getting-started",
     ],
-    ["fr/index.md", "fr/index.md", "https://bundlewatch.io/fr/"],
-    [
-      "fr/guide/getting-started.md",
-      "fr/guide/getting-started.md",
-      "https://bundlewatch.io/fr/guide/getting-started",
-    ],
     ["zh/index.md", "zh/index.md", "https://bundlewatch.io/zh/"],
     ["zh/reference/cli.md", "zh/reference/cli.md", "https://bundlewatch.io/zh/reference/cli"],
     ["guide/index.md", "en/guide/index.md", "https://bundlewatch.io/guide/"],
@@ -36,7 +30,7 @@ test("canonical generation preserves other page metadata and replaces duplicate 
   const description = ["meta", { name: "description", content: "A guide" }];
   const alternate = [
     "link",
-    { rel: "alternate", href: "https://bundlewatch.io/fr/guide/getting-started" },
+    { rel: "alternate", href: "https://bundlewatch.io/zh/guide/getting-started" },
   ];
   const pageData = {
     relativePath: "guide/getting-started.md",
@@ -64,7 +58,7 @@ test("canonical generation preserves other page metadata and replaces duplicate 
 });
 
 test("error pages do not receive canonical links", () => {
-  for (const relativePath of ["404.md", "fr/404.md", "zh/404.md"]) {
+  for (const relativePath of ["404.md", "zh/404.md"]) {
     const pageData = { relativePath, frontmatter: {} };
     shared.transformPageData(pageData);
     assert.deepEqual(pageData.frontmatter, {}, relativePath);

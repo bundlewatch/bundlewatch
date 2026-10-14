@@ -11,7 +11,7 @@ const walk = (dir) =>
     entry.isDirectory() ? walk(path.join(dir, entry.name)) : [path.join(dir, entry.name)],
   );
 
-/** The URL of a built page: `guide/x.html` → `/guide/x`, `fr/index.html` → `/fr/`. */
+/** The URL of a built page: `guide/x.html` → `/guide/x`, `zh/index.html` → `/zh/`. */
 const pageUrl = (file) => `/${file.replace(/\.html$/, "").replace(/(^|\/)index$/, "$1")}`;
 
 export const checkAnchors = (outDir) => {

@@ -34,7 +34,7 @@ onMounted(() => {
     </p>
     <p class="text">
       Check the address, or start from the guide. The documentation is also in
-      <a href="/fr/">Français</a> and <a href="/zh/">简体中文</a>.
+      <a href="/zh/">简体中文</a>.
     </p>
     <div class="actions">
       <VPButton
