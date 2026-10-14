@@ -1,0 +1,244 @@
+/* The home page's feature icons show what their feature does: each builds itself, ending on the icon
+   at rest. The icons are drawn in en/index.md and zh/index.md, where their classes name the parts;
+   lengths here are in their 48-unit space. They build from the first paint, in CSS, so they need no
+   script; feature-icons.mjs holds back the icons that are not in view yet, and builds an icon again
+   when its card is hovered or focused. The curve is the hero logo's. */
+
+.VPFeature .icon svg {
+  overflow: visible;
+}
+
+.VPFeature .icon svg > * {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes feature-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes feature-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+/* Draws a stroke along its path, whose pathLength is 1. The dash starts wholly before the path, so
+   not even a round cap shows. */
+@keyframes feature-draw {
+  from {
+    stroke-dasharray: 1 2;
+    stroke-dashoffset: 1.1;
+  }
+  to {
+    stroke-dasharray: 1 2;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes feature-pop {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+}
+
+/* A hexagon turned by a multiple of 60deg looks the same, so it lands without a jump. */
+@keyframes feature-spin {
+  from {
+    transform: rotate(-120deg);
+  }
+}
+
+@keyframes feature-drop {
+  from {
+    transform: translateY(var(--from));
+  }
+}
+
+/* Each part's move, how long it takes and how late it starts. */
+.VPFeature .icon {
+  /* Size limits: the limit, then the files grow to their sizes. The middle one stops at the limit,
+     then goes over it in orange. */
+  .limits-icon {
+    .limit {
+      --name: feature-draw;
+      --duration: 350ms;
+    }
+    .row1,
+    .row2,
+    .row3 {
+      --name: feature-grow-x;
+      transform-origin: left;
+    }
+    .row1 {
+      --delay: 100ms;
+    }
+    .row2 {
+      --delay: 180ms;
+      --duration: 450ms;
+    }
+    .over {
+      --delay: 560ms;
+      --duration: 380ms;
+    }
+    .row3 {
+      --delay: 260ms;
+    }
+  }
+
+  /* Pull request statuses: the hexagon turns like a pending check, then the tick draws. */
+  .statuses-icon {
+    .hex {
+      --name: feature-spin;
+      --duration: 700ms;
+    }
+    .check {
+      --name: feature-draw;
+      --delay: 380ms;
+      --duration: 380ms;
+    }
+  }
+
+  /* Results page: the changes grow out of the baseline, growth to the right and savings to the left. */
+  .results-icon {
+    .axis {
+      --name: feature-draw;
+      --duration: 350ms;
+    }
+    .right,
+    .left {
+      --name: feature-grow-x;
+      transform-origin: left;
+    }
+    .left {
+      transform-origin: right;
+    }
+    .row1 {
+      --delay: 100ms;
+    }
+    .row2 {
+      --delay: 180ms;
+    }
+    .row3 {
+      --delay: 260ms;
+    }
+  }
+
+  /* Any CI: a run goes down the steps, each step lighting up before its bar fills. */
+  .ci-icon {
+    .spine {
+      --name: feature-draw;
+      --duration: 700ms;
+    }
+    .step {
+      --name: feature-pop;
+      --duration: 300ms;
+    }
+    .bar {
+      --name: feature-grow-x;
+      --duration: 450ms;
+      transform-origin: left;
+    }
+    .row1.bar {
+      --delay: 90ms;
+    }
+    .row2.step {
+      --delay: 220ms;
+    }
+    .row2.bar {
+      --delay: 310ms;
+    }
+    .row3.step {
+      --delay: 440ms;
+    }
+    .row3.bar {
+      --delay: 530ms;
+    }
+  }
+
+  /* Branches: the base branch grows to its head, then the pull request's branch leaves it. */
+  .branches-icon {
+    .main {
+      --name: feature-grow-y;
+      --duration: 450ms;
+      transform-origin: bottom;
+    }
+    .base {
+      --name: feature-pop;
+      --delay: 200ms;
+      --duration: 300ms;
+    }
+    .branch {
+      --name: feature-draw;
+      --delay: 320ms;
+      --duration: 450ms;
+    }
+    .tip {
+      --name: feature-pop;
+      --delay: 620ms;
+      --duration: 300ms;
+    }
+  }
+
+  /* Your own server: the layers stack, bottom first, as the hero logo comes together. */
+  .server-icon {
+    .row1,
+    .row2,
+    .row3 {
+      --name: feature-drop;
+      --duration: 700ms;
+    }
+    .row1 {
+      --from: -12px;
+      --delay: 300ms;
+    }
+    .row2 {
+      --from: -5px;
+      --delay: 210ms;
+    }
+    .row3 {
+      --from: 8px;
+      --delay: 120ms;
+    }
+  }
+}
+
+/* On the first load, the cards follow each other by 90ms. feature-icons.mjs sets --card on the
+   cards it holds back, for the order they come into view in. */
+.VPFeatures .item:nth-child(2) {
+  --card: 90ms;
+}
+
+.VPFeatures .item:nth-child(3) {
+  --card: 180ms;
+}
+
+.VPFeatures .item:nth-child(4) {
+  --card: 270ms;
+}
+
+.VPFeatures .item:nth-child(5) {
+  --card: 360ms;
+}
+
+.VPFeatures .item:nth-child(6) {
+  --card: 450ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The icons build on the first load. When the reader comes back to the home page, they build only
+     when a card is told to, as the hero logo comes together only once. */
+  :where(:root:not(.feature-icons-told)) .VPFeature .icon svg > *,
+  .VPFeature.tell .icon svg > * {
+    animation: var(--name, none) var(--duration, 550ms) cubic-bezier(0.32, 0.72, 0, 1)
+      calc(var(--card, 0ms) + var(--delay, 0ms)) backwards;
+  }
+
+  /* An icon that is not in view yet waits at the start. */
+  .VPFeature.wait .icon svg > * {
+    animation-play-state: paused;
+  }
+}
