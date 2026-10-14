@@ -24,6 +24,8 @@ export const PAGE_CSS: string = `${FONT_FACES}
 }
 html {
     -webkit-text-size-adjust: 100%;
+    /* Keep centered content still when expanding sections adds a scrollbar. */
+    scrollbar-gutter: stable;
 }
 body {
     margin: 0;
