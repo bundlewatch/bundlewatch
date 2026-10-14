@@ -535,7 +535,7 @@ footer .sha {
 .fine {
     margin: 34px 0 0;
     display: grid;
-    grid-template-columns: max-content 1fr;
+    grid-template-columns: max-content minmax(0, 1fr);
     gap: 8px 24px;
     font-size: 15px;
 }
@@ -627,8 +627,10 @@ footer .sha {
 }
 
 @media (max-width: 780px) {
+    /* minmax(0, …): a plain 1fr column grows to its widest unbreakable
+       line, and phones then zoom out to fit the page. */
     .page {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         padding: 22px 18px 0;
     }
     .rail {
@@ -658,16 +660,51 @@ footer .sha {
     .r.cols .lim {
         display: none;
     }
+    /* The status's description goes under its name, as a whole line. */
+    .preview div {
+        display: grid;
+        grid-template-columns: auto auto minmax(0, 1fr) auto;
+        gap: 2px 10px;
+    }
+    .preview .desc {
+        grid-column: 3 / -1;
+        grid-row: 2;
+        white-space: normal;
+    }
+    .preview .dash {
+        display: none;
+    }
     .paths {
         grid-template-columns: 1fr;
     }
+    .paths > div,
     .paths > div + div {
-        padding-left: 0;
+        padding: 20px 0 4px;
+    }
+    .paths > div + div {
         border-left: 0;
         border-top: 1px solid var(--rule);
     }
     .copy-box code {
         font-size: 15px;
+    }
+}
+
+/* Beside the Copy button, BUNDLEWATCH_GITHUB_TOKEN would break in two.
+   The button goes under the value instead, as wide as the box. */
+@media (max-width: 480px) {
+    .copy-box {
+        flex-wrap: wrap;
+    }
+    .copy-box code {
+        flex-basis: 100%;
+    }
+    .copy-box button {
+        flex: auto;
+        padding: 11px 16px;
+        border-left: 0;
+        border-top: 1px solid #c4c4d8;
+        border-radius: 0 0 3px 3px;
     }
 }
 `;
