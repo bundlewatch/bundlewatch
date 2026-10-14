@@ -90,24 +90,18 @@ describe('bundlewatch CLI', () => {
     assert.match(output, /PASS \.\/test-file-1\.jpg: 38\.05KB < 1MB \(brotli\)/);
   });
 
-  for (const [name, contents] of [
-    [
-      'config.json',
-      JSON.stringify({
-        ...offline,
-        files: [{ path: './*.jpg', maxSize: '1MB' }],
-      }),
-    ],
-    [
-      'config.cjs',
-      `module.exports = ${JSON.stringify({ ...offline, files: [{ path: './*.jpg' }] })}`,
-    ],
+  // File formats in discovery order.
+  const configFixtures = [
     [
       'config.mjs',
       `export default ${JSON.stringify({ ...offline, files: [{ path: './*.jpg' }] })}`,
     ],
     [
       'config.js',
+      `module.exports = ${JSON.stringify({ ...offline, files: [{ path: './*.jpg' }] })}`,
+    ],
+    [
+      'config.cjs',
       `module.exports = ${JSON.stringify({ ...offline, files: [{ path: './*.jpg' }] })}`,
     ],
     ...(['mts', 'ts', 'cts'] as const).map(
@@ -118,7 +112,16 @@ describe('bundlewatch CLI', () => {
           ${extension === 'cts' ? 'module.exports = config' : 'export default config'}`,
         ] as const,
     ),
-  ] as const) {
+    [
+      'config.json',
+      JSON.stringify({
+        ...offline,
+        files: [{ path: './*.jpg', maxSize: '1MB' }],
+      }),
+    ],
+  ] as const;
+
+  for (const [name, contents] of configFixtures) {
     test(`loads --config ${name}`, () => {
       const directory = project({ [name]: contents });
       const { status, output } = run(directory, ['--config', name]);
@@ -145,21 +148,15 @@ describe('bundlewatch CLI', () => {
   });
 
   test('chooses config extensions in a deterministic order', () => {
-    const extensions = ['mjs', 'js', 'cjs', 'mts', 'ts', 'cts', 'json'];
-    for (const [index, extension] of extensions.entries()) {
-      const config = JSON.stringify({ ...offline, files: [{ path: './*.jpg' }] });
-      const contents =
-        extension === 'json'
-          ? config
-          : `${['js', 'cjs', 'cts'].includes(extension) ? 'module.exports =' : 'export default'} ${config}`;
+    for (const [index, [name, contents]] of configFixtures.entries()) {
       const directory = project({
         ...Object.fromEntries(
-          extensions.slice(index + 1).map((other) => [`bundlewatch.config.${other}`, 'invalid']),
+          configFixtures.slice(index + 1).map(([other]) => [`bundlewatch.${other}`, 'invalid']),
         ),
-        [`bundlewatch.config.${extension}`]: contents,
+        [`bundlewatch.${name}`]: contents,
       });
       const { status, output } = run(directory);
-      assert.equal(status, 0, `${extension}: ${output}`);
+      assert.equal(status, 0, `${name}: ${output}`);
     }
   });
 
@@ -176,6 +173,7 @@ describe('bundlewatch CLI', () => {
 
   test('prefers a nearer config file over a parent file with a higher-priority extension', () => {
     const directory = project({
+      'package.json': JSON.stringify({ bundlewatch: { files: [{ path: './missing.js' }] } }),
       'bundlewatch.config.mjs': 'throw new Error("Do not load parent config")',
       'nested/bundlewatch.config.json': JSON.stringify({
         ...offline,
@@ -184,6 +182,7 @@ describe('bundlewatch CLI', () => {
     });
     const { status, output } = run(path.join(directory, 'nested'));
     assert.equal(status, 0, output);
+    assert.match(output, /Config file found, config in package.json will be ignored/);
   });
 
   test('stops discovery at the nearest package even when it has no configuration', () => {

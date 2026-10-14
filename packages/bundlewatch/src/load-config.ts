@@ -20,36 +20,34 @@ const CONFIG_FILENAMES = ['mjs', 'js', 'cjs', 'mts', 'ts', 'cts', 'json'].map(
   (extension) => `bundlewatch.config.${extension}`,
 );
 
-/** Search from `cwd` through the nearest package directory, inclusive. */
-const findConfigFile = (cwd: string): string | undefined => {
+/** Find both sources within the same nearest package boundary. */
+const findConfigSources = (
+  cwd: string,
+  discoverConfigFile: boolean,
+): { configFile: string | undefined; packageConfig: unknown } => {
   let directory = path.resolve(cwd);
+  let configFile: string | undefined;
   while (true) {
-    for (const name of CONFIG_FILENAMES) {
-      const file = path.join(directory, name);
-      if (existsSync(file)) return file;
+    if (discoverConfigFile && !configFile) {
+      for (const name of CONFIG_FILENAMES) {
+        const file = path.join(directory, name);
+        if (existsSync(file)) {
+          configFile = file;
+          break;
+        }
+      }
     }
-    if (existsSync(path.join(directory, 'package.json'))) return undefined;
-    const parent = path.dirname(directory);
-    if (parent === directory) return undefined;
-    directory = parent;
-  }
-};
-
-/** The `bundlewatch` key of the nearest package.json, walking up from `cwd`. */
-const findPackageConfig = (cwd: string): unknown => {
-  let directory = cwd;
-  while (true) {
     const file = path.join(directory, 'package.json');
     if (existsSync(file)) {
       try {
-        return JSON.parse(readFileSync(file, 'utf8'))?.bundlewatch;
+        return { configFile, packageConfig: JSON.parse(readFileSync(file, 'utf8'))?.bundlewatch };
       } catch (error) {
         logger.error('Exception while parsing package.json', error);
         throw new ValidationError(`Could not parse ${file}`);
       }
     }
     const parent = path.dirname(directory);
-    if (parent === directory) return undefined;
+    if (parent === directory) return { configFile, packageConfig: undefined };
     directory = parent;
   }
 };
@@ -88,7 +86,10 @@ export const loadConfig = async (
   options: CliOptions,
   cwd: string = process.cwd(),
 ): Promise<BundlewatchConfig> => {
-  const packageConfig = findPackageConfig(cwd);
+  const { configFile, packageConfig } = findConfigSources(
+    cwd,
+    options.globs.length === 0 && !options.config,
+  );
 
   if (options.globs.length > 0) {
     if (packageConfig) {
@@ -121,7 +122,6 @@ export const loadConfig = async (
     return loadConfigFile(options.config, cwd);
   }
 
-  const configFile = findConfigFile(cwd);
   if (configFile) {
     if (packageConfig) {
       logger.warn('Config file found, config in package.json will be ignored');

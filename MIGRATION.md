@@ -1,6 +1,6 @@
 # Migrating to bundlewatch 1.0
 
-Most setups need no changes. Your configuration, CLI flags, environment variables, GitHub status names and exit codes work as before. This document lists everything that behaves differently. [CONTRACT.md](CONTRACT.md) lists what stays compatible.
+Most setups need no changes, but automatically discovered config files can now take precedence over `package.json`. Review [Config files](#config-files) before upgrading. CLI flags, environment variables, GitHub status names and exit codes remain supported. This document lists everything that behaves differently. [CONTRACT.md](CONTRACT.md) lists what stays compatible.
 
 1.0 is a new major version, so `^0.x` and `~0.x` ranges don't pick it up: nothing changes until you upgrade. Most of what follows applies equally if you're coming from 0.3.x.
 

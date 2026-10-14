@@ -5,7 +5,7 @@ description: What changes when you upgrade from BundleWatch 0.x to 1.0.
 
 # Migrating to 1.0
 
-Most setups need no changes. Your configuration, CLI flags, environment variables, GitHub status names and exit codes work as before. This page lists everything that behaves differently. [CONTRACT.md](https://github.com/bundlewatch/bundlewatch/blob/main/CONTRACT.md) lists what stays compatible.
+Most setups need no changes, but automatically discovered config files can now take precedence over `package.json`. Review [Config files](#config-files) before upgrading. CLI flags, environment variables, GitHub status names and exit codes remain supported. This page lists everything that behaves differently. [CONTRACT.md](https://github.com/bundlewatch/bundlewatch/blob/main/CONTRACT.md) lists what stays compatible.
 
 1.0 is a new major version, so `^0.x` and `~0.x` ranges don't pick it up: nothing changes until you upgrade. Most of what follows applies equally if you're coming from 0.3.x.
 
@@ -37,7 +37,7 @@ bun add bundlewatch@1 --dev
 :::
 
 3. Go through [Things to check](#things-to-check) below.
-4. Build, then run BundleWatch with the project’s existing configuration (use `--config <path>` for a custom filename or location).
+4. Build, then run `npx bundlewatch`, keeping any existing globs or `--config <path>` arguments. Verify that it checks the intended files and limits.
 
 ## Upgrade with an AI agent
 
@@ -49,14 +49,15 @@ Upgrade BundleWatch to 1.0 in this repository.
 Read https://bundlewatch.io/guide/migrating-to-v1.md for what changed, and https://bundlewatch.io/llms-full.txt for the whole documentation. Then:
 
 1. Update BundleWatch to the latest 1.x version, with the package manager this project uses. It needs Node.js 22.17 or later: update the Node.js version used in CI if it's older.
-2. Check the configuration against "Things to check" in the migration guide, and follow its links. A numeric "maxSize" is now enforced: if a file now fails a limit that was never checked before, don't raise the limit, tell me.
+2. Check the configuration against "Things to check" in the migration guide, and follow its links. Look for bundlewatch.config.* files that now take precedence over the package.json bundlewatch key, and preserve the files and limits checked by each existing command. A numeric "maxSize" is now enforced: if a file now fails a limit that was never checked before, don't raise the limit, tell me.
 3. On GitHub Actions, switch to the workflow's GITHUB_TOKEN as described in the guide, and remove workarounds that 1.0 makes unnecessary, such as CI_BRANCH_BASE set only to avoid comparing with master, or CI_COMMIT_SHA set to the pull request's head commit.
 4. Remove the brotli-size dependency if nothing else uses it.
-5. Build, run BundleWatch with the project’s existing configuration (use `--config <path>` for a custom filename or location), and summarize what you changed, what now behaves differently, and what is left for me to do, such as deleting a token secret that is no longer used.
+5. Build, then run `npx bundlewatch` with any existing globs or `--config <path>` arguments, and verify that it checks the intended files and limits. Summarize what you changed, what now behaves differently, and what is left for me to do, such as deleting a token secret that is no longer used.
 ```
 
 ## Things to check
 
+- A discovered `bundlewatch.config.*` file now takes precedence over the `bundlewatch` key in `package.json`. Check which files and limits each existing command should use. If a config file is only for a separate `--config` command, rename it outside the discovery list and update that command so a bare run keeps using `package.json`. See [Config files](#config-files).
 - A numeric `maxSize`, such as `102400`, is now enforced. If a file now fails, it was over its limit before too: see [Numeric maxSize](#numeric-maxsize).
 - `files` and `ci.trackBranches` replace the defaults instead of merging with them: see [Tracked branches](#tracked-branches).
 - On GitHub Actions, pushes are compared with the default branch instead of `master`: see [Base branch on GitHub Actions](#default-branch-detection-on-github-actions).
