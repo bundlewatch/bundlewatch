@@ -10,8 +10,7 @@ hero:
     src: /logo-large.svg
     alt: BundleWatch
   name: BundleWatch
-  text: Catch bundle size increases before merge
-  tagline: BundleWatch checks built JavaScript and CSS files against size limits in CI, compares them with a base branch, and reports changes on GitHub pull requests. Free and open source.
+  tagline: Stay in control of your bundle size. Every pull request shows how it impacts your bundle, file by file, against the limits you set.
   actions:
     - theme: brand
       text: Set up BundleWatch
