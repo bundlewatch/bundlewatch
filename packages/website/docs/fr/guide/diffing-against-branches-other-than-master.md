@@ -38,22 +38,26 @@ Par défaut, Bundlewatch suit `master`, `main` et `develop`, ainsi que la branch
 - il ne s’agit pas d’un build de pull request ;
 - tous les fichiers ont été trouvés et ont pu être lus.
 
-Pour suivre d’autres branches (par exemple `staging`), ajoutez l’option `trackBranches` à la configuration Bundlewatch dans `package.json`. Cette liste remplace celle par défaut : incluez donc toutes les branches à suivre.
+Pour suivre d’autres branches (par exemple `staging`), ajoutez l’option `trackBranches` à `ci` dans `bundlewatch.config.mjs`. Cette liste remplace celle par défaut : incluez donc toutes les branches à suivre.
 
-```json
-{
-  "bundlewatch": {
-    "files": [
-      {
-        "path": "myfolder/*.js",
-        "maxSize": "100kB"
-      }
-    ],
-    "ci": {
-      "trackBranches": ["main", "develop", "staging"]
-    }
-  }
+```js [bundlewatch.config.mjs]
+export default {
+  files: [
+    {
+      path: './dist/*.js',
+      maxSize: '100kB',
+    },
+  ],
+  ci: {
+    trackBranches: ['main', 'develop', 'staging'],
+  },
 }
+```
+
+Exécutez avec cette configuration :
+
+```bash
+npx bundlewatch --config bundlewatch.config.mjs
 ```
 
 ::: warning Modification en version 1.0

@@ -7,6 +7,8 @@ description: Run BundleWatch on GitHub Actions or another CI provider, and read 
 
 Run BundleWatch in CI after your build. With a GitHub token, it posts a `bundlewatch` status on the commit and compares each file with the [base branch](./diffing-against-branches-other-than-master.md#base-branch). Your repository has to be on GitHub; the CI can be anywhere.
 
+The examples below use `bundlewatch.config.mjs` from [Getting started](./getting-started.md#configuration). If your config file has a different name or location, update the `--config` path.
+
 ## GitHub Actions {#github-actions}
 
 On GitHub Actions, BundleWatch can use the token GitHub creates for every workflow run, so there is no token to generate or store. Add a workflow such as `.github/workflows/bundlewatch.yml`:
@@ -33,7 +35,7 @@ jobs:
           node-version: 24
       - run: npm ci
       - run: npm run build
-      - run: npx bundlewatch
+      - run: npx bundlewatch --config bundlewatch.config.mjs
         env:
           BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -54,7 +56,7 @@ GitHub gives pull requests from forks a read-only token, so BundleWatch can't po
 
 1. Open [service.bundlewatch.io/setup-github](https://service.bundlewatch.io/setup-github), signed in to GitHub as a user with push access to the repository, and authorize BundleWatch. The token has only the `repo:status` scope: it can read and write commit statuses, not your code.
 2. In your CI settings, store the token as a secret environment variable named `BUNDLEWATCH_GITHUB_TOKEN`. Never commit it.
-3. Run `npx bundlewatch` after your build step.
+3. Run `npx bundlewatch --config bundlewatch.config.mjs` after your build step.
 4. If your provider isn't in the table below, or doesn't supply a value, set [these variables](#required-ci-environment-variables).
 
 Without a token, BundleWatch only checks `maxSize`.

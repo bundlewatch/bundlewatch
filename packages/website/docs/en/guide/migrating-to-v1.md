@@ -37,7 +37,7 @@ bun add bundlewatch@1 --dev
 :::
 
 3. Go through [Things to check](#things-to-check) below.
-4. Build, then run `npx bundlewatch`.
+4. Build, then run BundleWatch with the project’s existing configuration (include `--config` when using a config file).
 
 ## Upgrade with an AI agent
 
@@ -52,7 +52,7 @@ Read https://bundlewatch.io/guide/migrating-to-v1.md for what changed, and https
 2. Check the configuration against "Things to check" in the migration guide, and follow its links. A numeric "maxSize" is now enforced: if a file now fails a limit that was never checked before, don't raise the limit, tell me.
 3. On GitHub Actions, switch to the workflow's GITHUB_TOKEN as described in the guide, and remove workarounds that 1.0 makes unnecessary, such as CI_BRANCH_BASE set only to avoid comparing with master, or CI_COMMIT_SHA set to the pull request's head commit.
 4. Remove the brotli-size dependency if nothing else uses it.
-5. Build, run `npx bundlewatch`, and summarize what you changed, what now behaves differently, and what is left for me to do, such as deleting a token secret that is no longer used.
+5. Build, run BundleWatch with the project’s existing configuration (include `--config` when using a config file), and summarize what you changed, what now behaves differently, and what is left for me to do, such as deleting a token secret that is no longer used.
 ```
 
 ## Things to check

@@ -7,20 +7,24 @@ description: 如何运行你自己的 BundleWatch 服务，并让项目使用它
 
 BundleWatch 服务负责保存构建对比所用的基准、创建结果短链接并渲染结果页面。你可以运行自己的实例，而不是使用 `https://service.bundlewatch.io`。
 
-在 package.json 中让 BundleWatch 指向你的服务：
+在 `bundlewatch.config.mjs` 中让 BundleWatch 指向你的服务：
 
-```json
-{
-  "bundlewatch": {
-    "files": [
-      {
-        "path": "./dist/*.js",
-        "maxSize": "100kB"
-      }
-    ],
-    "bundlewatchServiceHost": "https://bundlewatch.example.com"
-  }
+```js [bundlewatch.config.mjs]
+export default {
+  files: [
+    {
+      path: './dist/*.js',
+      maxSize: '100kB',
+    },
+  ],
+  bundlewatchServiceHost: 'https://bundlewatch.example.com',
 }
+```
+
+使用此配置运行：
+
+```bash
+npx bundlewatch --config bundlewatch.config.mjs
 ```
 
 URL 的格式，以及如何在不使用服务的情况下运行，请参阅 [bundlewatchServiceHost](../reference/configuration.md#bundlewatchservicehost)。

@@ -9,7 +9,7 @@ description: BundleWatch's command-line options, where it reads configuration fr
 Usage: bundlewatch [options] <filePathGlobs ...>
 ```
 
-Run it with `npx bundlewatch` (or your package manager's equivalent) after [installing](../guide/getting-started.md#installation) it.
+Run it with `npx bundlewatch --config bundlewatch.config.mjs` (or your package manager's equivalent) after [installing](../guide/getting-started.md#installation) it.
 
 ## Options
 
@@ -30,16 +30,16 @@ Run it with `npx bundlewatch` (or your package manager's equivalent) after [inst
 
 ## Examples
 
-Read configuration from `package.json`:
+Read configuration from a file (recommended):
+
+```bash
+npx bundlewatch --config bundlewatch.config.mjs
+```
+
+Alternatively, read the `bundlewatch` key in `package.json`:
 
 ```bash
 npx bundlewatch
-```
-
-Read configuration from a file:
-
-```bash
-npx bundlewatch --config internals/bundlewatch.config.js
 ```
 
 Use the command line:

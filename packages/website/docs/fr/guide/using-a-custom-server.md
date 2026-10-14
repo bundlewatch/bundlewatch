@@ -23,10 +23,10 @@ Déployez ensuite le modèle de l’application en remplaçant ces paramètres :
 
 Consultez [Running your own service](https://github.com/bundlewatch/bundlewatch/blob/main/packages/service/README.md#running-your-own-service) dans le README du service pour plus de détails.
 
-Modifiez ensuite votre configuration Bundlewatch pour utiliser votre serveur :
+Modifiez ensuite `bundlewatch.config.mjs` pour utiliser votre serveur :
 
-```js
-module.exports = {
+```js [bundlewatch.config.mjs]
+export default {
   files: [
     {
       path: './dist/*.js',
@@ -35,6 +35,12 @@ module.exports = {
   ],
   bundlewatchServiceHost: 'https://my-bundlewatch-service.example.com',
 }
+```
+
+Exécutez avec cette configuration :
+
+```bash
+npx bundlewatch --config bundlewatch.config.mjs
 ```
 
 Définissez `bundlewatchServiceHost` à `null` pour fonctionner sans service. Bundlewatch vérifie alors uniquement `maxSize`, sans comparer ni enregistrer de tailles de référence, et n’affiche aucun lien vers les résultats.

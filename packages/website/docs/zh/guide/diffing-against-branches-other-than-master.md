@@ -40,22 +40,26 @@ BundleWatch 会使用以下第一个可用的值：
 
 未通过 `maxSize` 检查的构建仍然会保存体积。
 
-要跟踪其他分支（例如 `staging`），请在 `package.json` 的 BundleWatch 配置中添加 `trackBranches` 选项。该列表会替换默认列表，因此请列出所有你想跟踪的分支：
+要跟踪其他分支（例如 `staging`），请在 `bundlewatch.config.mjs` 的 `ci` 中添加 `trackBranches` 选项。该列表会替换默认列表，因此请列出所有你想跟踪的分支：
 
-```json
-{
-  "bundlewatch": {
-    "files": [
-      {
-        "path": "./dist/*.js",
-        "maxSize": "100kB"
-      }
-    ],
-    "ci": {
-      "trackBranches": ["main", "develop", "staging"]
-    }
-  }
+```js [bundlewatch.config.mjs]
+export default {
+  files: [
+    {
+      path: './dist/*.js',
+      maxSize: '100kB',
+    },
+  ],
+  ci: {
+    trackBranches: ['main', 'develop', 'staging'],
+  },
 }
+```
+
+使用此配置运行：
+
+```bash
+npx bundlewatch --config bundlewatch.config.mjs
 ```
 
 ::: warning 每个分支一个基准

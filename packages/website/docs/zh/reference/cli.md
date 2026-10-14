@@ -9,7 +9,7 @@ description: BundleWatch 的命令行选项、读取配置的位置以及退出�
 Usage: bundlewatch [options] <filePathGlobs ...>
 ```
 
-[安装](../guide/getting-started.md#installation)后，使用 `npx bundlewatch`（或你的包管理器的等效命令）运行。
+[安装](../guide/getting-started.md#installation)后，使用 `npx bundlewatch --config bundlewatch.config.mjs`（或你的包管理器的等效命令）运行。
 
 ## 选项 {#options}
 
@@ -30,16 +30,16 @@ Usage: bundlewatch [options] <filePathGlobs ...>
 
 ## 示例 {#examples}
 
-从 `package.json` 读取配置：
+从配置文件读取配置（推荐）：
+
+```bash
+npx bundlewatch --config bundlewatch.config.mjs
+```
+
+也可以读取 `package.json` 中的 `bundlewatch` 键：
 
 ```bash
 npx bundlewatch
-```
-
-从文件读取配置：
-
-```bash
-npx bundlewatch --config internals/bundlewatch.config.js
 ```
 
 使用命令行：

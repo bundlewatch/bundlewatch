@@ -9,7 +9,7 @@ description: Les options de la CLI Bundlewatch, les sources de configuration et 
 Usage: bundlewatch [options] <filePathGlobs ...>
 ```
 
-Exécutez-la avec `npx bundlewatch` (ou l’équivalent de votre gestionnaire de paquets) après l’[installation](../guide/getting-started.md#installation).
+Exécutez-la avec `npx bundlewatch --config bundlewatch.config.mjs` (ou l’équivalent de votre gestionnaire de paquets) après l’[installation](../guide/getting-started.md#installation).
 
 ## Options {#options}
 
@@ -26,16 +26,16 @@ Les options fonctionnent comme en 0.x, qui utilisait commander : une option pren
 
 ## Exemples {#examples}
 
-Lire la configuration dans `package.json` :
+Lire la configuration dans un fichier (recommandé) :
 
 ```bash
-bundlewatch
+npx bundlewatch --config bundlewatch.config.mjs
 ```
 
-Lire la configuration dans un fichier :
+Autre possibilité : lire la clé `bundlewatch` de `package.json` :
 
 ```bash
-bundlewatch --config internals/bundlewatch.config.js
+npx bundlewatch
 ```
 
 Utiliser la ligne de commande :

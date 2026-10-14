@@ -37,7 +37,7 @@ bun add bundlewatch@1 --dev
 :::
 
 3. 逐项查看下面的[需要检查的地方](#things-to-check)。
-4. 构建，然后运行 `npx bundlewatch`。
+4. 构建，然后运行 BundleWatch 并使用项目现有的配置（如果使用配置文件，请包含 `--config`）。
 
 ## 使用 AI 编程助手升级 {#upgrade-with-an-ai-agent}
 
@@ -52,7 +52,7 @@ bun add bundlewatch@1 --dev
 2. 对照迁移指南中“需要检查的地方”（Things to check）一节检查配置，并跟进其中的链接。数字形式的 "maxSize" 现在会生效：如果某个文件未通过一个以前从未检查过的限制，不要提高该限制，而是告诉我。
 3. 在 GitHub Actions 上，按照指南中的说明改用工作流的 GITHUB_TOKEN，并移除 1.0 已不再需要的变通做法，例如只是为了避免与 master 对比而设置的 CI_BRANCH_BASE，或设置为 Pull Request 最新提交的 CI_COMMIT_SHA。
 4. 如果没有其他地方使用 brotli-size 依赖，请将其移除。
-5. 构建，运行 `npx bundlewatch`，并总结你修改了什么、哪些行为现在有所不同，以及还剩下哪些需要我来做的事，例如删除不再使用的 token secret。
+5. 构建，运行 BundleWatch 并使用项目现有的配置（如果使用配置文件，请包含 `--config`），并总结你修改了什么、哪些行为现在有所不同，以及还剩下哪些需要我来做的事，例如删除不再使用的 token secret。
 ```
 
 ## 需要检查的地方 {#things-to-check}

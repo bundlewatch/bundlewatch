@@ -14,24 +14,23 @@ Requires Node.js 22.17 or later.
 npm install --save-dev bundlewatch
 ```
 
-Add your files to `package.json`:
+Create `bundlewatch.config.mjs` in your project root:
 
-```json
-{
-  "bundlewatch": {
-    "files": [{ "path": "./dist/*.js", "maxSize": "100kB" }]
-  }
+```js
+/** @type {import('bundlewatch').BundlewatchConfig} */
+export default {
+  files: [{ path: './dist/*.js', maxSize: '100kB' }],
 }
 ```
 
-Run `npx bundlewatch` after your build. It exits with code 1 when a file is over its `maxSize`.
+Run `npx bundlewatch --config bundlewatch.config.mjs` after your build. It exits with code 1 when a file is over its `maxSize`.
 
 ## Reporting on pull requests
 
 On GitHub Actions, give the workflow `statuses: write` and pass its token:
 
 ```yaml
-- run: npx bundlewatch
+- run: npx bundlewatch --config bundlewatch.config.mjs
   env:
     BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

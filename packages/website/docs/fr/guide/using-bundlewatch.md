@@ -33,6 +33,8 @@ Bundlewatch peut publier son statut directement sur vos pull requests GitHub.
     <img alt="Aperçu du statut du build" data-zoomable src="/build-status-preview.png" width="700px">
 </div>
 
+Les exemples CI ci-dessous utilisent `bundlewatch.config.mjs` du guide [Premiers pas](./getting-started.md#configuration). Si votre fichier porte un autre nom ou se trouve ailleurs, adaptez le chemin de `--config`.
+
 ## GitHub Actions (recommandé) {#github-actions}
 
 Sur GitHub Actions, Bundlewatch peut utiliser le jeton que GitHub crée pour chaque exécution du workflow : aucun jeton à générer ni à stocker. Ajoutez un workflow tel que `.github/workflows/bundlewatch.yml` :
@@ -59,7 +61,7 @@ jobs:
           node-version: 24
       - run: npm ci
       - run: npm run build
-      - run: npx bundlewatch
+      - run: npx bundlewatch --config bundlewatch.config.mjs
         env:
           BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -76,7 +78,7 @@ GitHub fournit aux pull requests provenant de forks un jeton en lecture seule. B
 
 ## Autres plateformes de CI {#other-ci-providers}
 
-Exécutez `npx bundlewatch` après l’étape de build, avec un jeton dans `BUNDLEWATCH_GITHUB_TOKEN`.
+Exécutez `npx bundlewatch --config bundlewatch.config.mjs` après l’étape de build, avec un jeton dans `BUNDLEWATCH_GITHUB_TOKEN`.
 
 ### Configurer l’authentification en CI {#setting-up-ci-authentication}
 
