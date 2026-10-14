@@ -22,7 +22,9 @@ It runs on AWS Lambda behind an API Gateway HTTP API, with two DynamoDB tables. 
 | `POST /analyze`                                                         | yes  | Analyzes on the server and posts commit statuses. `202`, `401`, `413`, `422`, `500`. No known callers                                                                           |
 | `GET /static/results-styles.css`, `GET /static/setup-github-styles.css` |      | The stylesheet of every page, at both paths the 0.x pages linked                                                                                                                |
 
-Anything else is `404 {"error":"Not found"}`. `HEAD` works wherever `GET` does.
+Anything else is a `404`. On AWS, API Gateway rejects unknown paths/methods before
+Lambda (`{"message":"Not Found"}`); local servers return `{"error":"Not found"}`.
+`HEAD` works wherever `GET` does.
 
 Error bodies are JSON: `401 {"error":"Not allowed"}`, `422 {"errors":{"details":[{ message, path, type, context }]}}` (Joi's format, as in 0.x), and `{"error": "…"}` otherwise. Request bodies are parsed as JSON whatever their content type; an empty body is `{}`, invalid JSON is a `400`, and bodies over 1 MB are a `413`.
 
@@ -269,7 +271,9 @@ Production runs as the CloudFormation stack `bundlewatch-service` in `us-east-1`
 - a log group that keeps 30 days;
 - the short-link table `bundlewatch-service-results`.
 
-The baseline table `bundlewatch-service-store-table-prod` is only referenced by name, and no stack from this repository manages it.
+The legacy stack owns the baseline table `bundlewatch-service-store-table-prod`.
+The independent [protection controller](infra/PROTECTION.md) maintains its
+throughput ceiling without taking ownership of its data or schema.
 
 The [Deploy service workflow](../../.github/workflows/deploy-service.yml) runs on every change to `main` that touches the service, `packages/core` or the workspace setup, and can also be started by hand. It:
 
@@ -326,7 +330,11 @@ You need administrator access to the AWS account. Do the GitHub steps before the
      - Optionally `WRITE_AUTHORIZATION`; leave it unset (`report`) for now. See [Enforcing the stricter write check](#enforcing-the-stricter-write-check).
    - **Secret:** `OAUTH_CLIENT_SECRET`, set in step 4.
 
-6. Create an AWS Budgets alert for the account, for example at twice the usual monthly cost. Short links are stored per request, and the API is throttled to 100 requests per second overall, so a misbehaving client shows up as cost and throttling first.
+6. Deploy the independent [spending protection stack](infra/PROTECTION.md) and confirm
+   its alert email subscription. It owns the configured monthly budget, spending warning,
+   whole-service shutoff and concurrency limits. The deployment workflow requires
+   initialized, running protection state. On a fresh installation, create the
+   application stack manually first, then initialize protection before using CI.
 
 7. Run the Deploy service workflow. It creates the stack next to the 0.x one, which keeps serving `service.bundlewatch.io`.
    - If this first deploy fails, the stack is left in `ROLLBACK_COMPLETE` and can't be updated.

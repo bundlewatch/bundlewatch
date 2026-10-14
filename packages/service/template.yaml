@@ -1,6 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: bundlewatch service (service.bundlewatch.io)
+Metadata:
+  AWSToolsMetrics:
+    AWSAgentToolkit: aws-cloudformation@3
 
 Parameters:
   StoreTableName:
@@ -50,13 +53,32 @@ Parameters:
 Resources:
   HttpApi:
     Type: AWS::Serverless::HttpApi
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: Explicit routes and throttling limit unsolicited Lambda executions.
     Properties:
       DefaultRouteSettings:
-        ThrottlingBurstLimit: 200
-        ThrottlingRateLimit: 100
+        ThrottlingBurstLimit: 50
+        ThrottlingRateLimit: 10
+      RouteSettings:
+        'POST /store':
+          ThrottlingBurstLimit: 20
+          ThrottlingRateLimit: 2
+        'POST /store/prefixed':
+          ThrottlingBurstLimit: 20
+          ThrottlingRateLimit: 2
+        'POST /results':
+          ThrottlingBurstLimit: 20
+          ThrottlingRateLimit: 2
+        'POST /analyze':
+          ThrottlingBurstLimit: 20
+          ThrottlingRateLimit: 2
 
   ServiceFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      com.aws.cloudformation.Context:
+        must: [Concurrency is exclusively controlled by the independent protection stack.]
     Properties:
       CodeUri: dist/
       Handler: lambda.handler
@@ -67,6 +89,8 @@ Resources:
       Architectures: [arm64]
       MemorySize: 512
       Timeout: 29
+      # Reserved concurrency is owned by infra/protection.yaml's controller.
+      # Do not add it here: deployments must not reset an emergency shutdown.
       LoggingConfig:
         LogGroup: !Ref ServiceLogGroup
       Environment:
@@ -83,12 +107,79 @@ Resources:
       # Created by infra/bootstrap.yaml, with exactly the access it needs.
       Role: !ImportValue bundlewatch-service-function-role-arn
       Events:
-        # No path or method: the $default route sends every request to the
-        # function, which does its own routing.
-        Api:
+        # Explicit routes reject scanner traffic before invoking Lambda.
+        Home:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
+            Path: /
+            Method: GET
+        HomeHead:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /, Method: HEAD }
+        Store:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /store, Method: POST }
+        Lookup:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /store/lookup, Method: POST }
+        Capabilities:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /capabilities, Method: POST }
+        PrefixedStore:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /store/prefixed, Method: POST }
+        PrefixedLookup:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /store/prefixed/lookup, Method: POST }
+        Results:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /results, Method: GET }
+        ResultsHead:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /results, Method: HEAD }
+        CreateResults:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /results, Method: POST }
+        ShortLink:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: '/r/{id}', Method: GET }
+        ShortLinkHead:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: '/r/{id}', Method: HEAD }
+        Setup:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /setup-github, Method: GET }
+        SetupHead:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /setup-github, Method: HEAD }
+        Analyze:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /analyze, Method: POST }
+        ResultsStyles:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /static/results-styles.css, Method: GET }
+        ResultsStylesHead:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /static/results-styles.css, Method: HEAD }
+        SetupStyles:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /static/setup-github-styles.css, Method: GET }
+        SetupStylesHead:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /static/setup-github-styles.css, Method: HEAD }
+        Logo:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /static/logo.svg, Method: GET }
+        LogoHead:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: /static/logo.svg, Method: HEAD }
+        Font:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: '/static/fonts/{file}', Method: GET }
+        FontHead:
+          Type: HttpApi
+          Properties: { ApiId: !Ref HttpApi, Path: '/static/fonts/{file}', Method: HEAD }
 
   ServiceLogGroup:
     Type: AWS::Logs::LogGroup
@@ -98,6 +189,9 @@ Resources:
 
   ResultsTable:
     Type: AWS::DynamoDB::Table
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: Throughput limits bound request-driven growth while allowing a single large result.
     # Kept when the stack is deleted, but removed when the deploy that
     # created it fails, so a retry can create it again.
     DeletionPolicy: RetainExceptOnCreate
@@ -105,6 +199,10 @@ Resources:
     Properties:
       TableName: !Ref ResultsTableName
       BillingMode: PAY_PER_REQUEST
+      OnDemandThroughput:
+        MaxReadRequestUnits: 100
+        # A single accepted baseline can consume up to 350 write units.
+        MaxWriteRequestUnits: 400
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
