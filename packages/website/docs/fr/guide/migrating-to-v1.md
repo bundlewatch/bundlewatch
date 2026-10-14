@@ -22,7 +22,7 @@ Lis https://bundlewatch.io/guide/migrating-to-v1.md pour les changements et http
 2. Vérifie la configuration à l’aide de la section "Things to check" du guide de migration. Un "maxSize" numérique est désormais appliqué : si un fichier dépasse maintenant une limite qui n’était jamais vérifiée auparavant, ne relève pas la limite ; signale-le-moi.
 3. Sur GitHub Actions, passe au GITHUB_TOKEN du workflow comme décrit dans le guide et supprime les contournements rendus inutiles par la version 1.0, comme CI_BRANCH_BASE défini uniquement pour éviter la comparaison avec master, ou CI_COMMIT_SHA défini avec le dernier commit de la branche source de la pull request.
 4. Supprime la dépendance brotli-size si rien d’autre ne l’utilise.
-5. Lance le build, exécute Bundlewatch avec la configuration existante du projet (ajoute `--config` si elle est dans un fichier de configuration) et résume les modifications, les changements de comportement et ce qu’il me reste à faire, par exemple supprimer un secret de jeton devenu inutile.
+5. Lance le build, exécute Bundlewatch avec la configuration existante du projet (utilise `--config <chemin>` pour un nom ou un emplacement personnalisé) et résume les modifications, les changements de comportement et ce qu’il me reste à faire, par exemple supprimer un secret de jeton devenu inutile.
 ```
 
 ## Prérequis {#requirements}
@@ -126,6 +126,7 @@ La compression Brotli fonctionne sans installer `brotli-size`, que vous pouvez s
 
 ### Fichiers de configuration {#config-files}
 
+- Bundlewatch recherche désormais les fichiers `bundlewatch.config.*` avant de se rabattre sur `package.json`. Il cherche depuis le répertoire courant jusqu’au répertoire du `package.json` le plus proche inclus, en vérifiant `.mjs`, `.js`, `.cjs`, `.mts`, `.ts`, `.cts` et `.json` dans cet ordre dans chaque répertoire. Le premier fichier est utilisé ; sans paquet, la recherche continue jusqu’à la racine du système de fichiers. Une configuration invalide fait échouer l’exécution sans utiliser une autre source. `--config` remplace la recherche automatique.
 - `--config` accepte les chemins absolus.
 - Les fichiers `.mjs` et les configurations n’ayant que des exports nommés sont chargés avec `import()`.
 - Les fichiers `.ts`, `.mts` et `.cts` fonctionnent sur les versions de Node.js qui exécutent TypeScript nativement (22.18 et ultérieures).

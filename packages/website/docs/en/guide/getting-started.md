@@ -52,10 +52,10 @@ export default {
 Build your project, then run:
 
 ```bash
-npx bundlewatch --config bundlewatch.config.mjs
+npx bundlewatch
 ```
 
-Pass the file with `--config` on every run; BundleWatch does not discover config files automatically.
+BundleWatch finds `bundlewatch.config.mjs` automatically. Use `--config <path>` for a custom filename or location; see [config discovery](./using-a-config-file.md#config-discovery).
 
 The first run on your machine prints something like this:
 
@@ -74,7 +74,7 @@ Everything is in check (+30.71KB, -0B)
 
 The warning is expected on your machine: in CI, you provide the token, and BundleWatch detects the other values on [supported providers](./using-bundlewatch.md#supported-ci-providers). The command exits with code 1 when a file is over its `maxSize`, or when a path matches no files.
 
-To choose limits, run `npx bundlewatch --config bundlewatch.config.mjs` before adding `maxSize`. A file without one has no limit, and shows as `PASS ./dist/app.js: 30.71KB < Infinity (gzip)`. Then set each `maxSize` a little above the current size, so the check catches real increases without failing on every small change.
+To choose limits, run `npx bundlewatch` before adding `maxSize`. A file without one has no limit, and shows as `PASS ./dist/app.js: 30.71KB < Infinity (gzip)`. Then set each `maxSize` a little above the current size, so the check catches real increases without failing on every small change.
 
 If your file names contain content hashes, such as `main.3f2a1b9c.js`, set [`normalizeFilenames`](../reference/configuration.md#normalizefilenames). Otherwise each build's files look new, and there is nothing to compare them with.
 
@@ -85,7 +85,7 @@ See [Using a config file](./using-a-config-file.md) for other ways to configure 
 Run BundleWatch in CI after your build, so that it posts a status on each pull request and compares every file with the base branch:
 
 - On GitHub Actions, copy [this workflow](./using-bundlewatch.md#github-actions) to `.github/workflows/bundlewatch.yml`. It uses the token GitHub creates for each run, so you don't need to create one.
-- On another CI provider, [create a token](./using-bundlewatch.md#other-ci-providers), store it as the secret `BUNDLEWATCH_GITHUB_TOKEN`, and run `npx bundlewatch --config bundlewatch.config.mjs` after the build.
+- On another CI provider, [create a token](./using-bundlewatch.md#other-ci-providers), store it as the secret `BUNDLEWATCH_GITHUB_TOKEN`, and run `npx bundlewatch` after the build.
 
 Pull requests have nothing to compare with until a push to a [tracked branch](./diffing-against-branches-other-than-master.md#tracked-branches), such as `main`, saves a baseline. Until then the log shows `Unable to fetch fileDetails … code=404`.
 
@@ -101,10 +101,10 @@ Read https://bundlewatch.io/llms-full.txt first: it has the whole documentation.
 1. Find the production build command and run it. List the JavaScript and CSS files it outputs, with their gzip sizes.
 2. Add bundlewatch as a dev dependency, with the package manager this project already uses.
 3. Create bundlewatch.config.mjs in the project root with a default-exported configuration object and one "files" entry per output. Use globs that match only files, not directories, and still match when file names change between builds, and a "maxSize" about 10% above each file's current gzip size, rounded up to a whole kB. If file names contain content hashes, set "normalizeFilenames" so that a file keeps the same name across builds. Check the pattern against the actual file names: it must remove only the hash, and no two files may end up with the same name.
-4. Build, run `npx bundlewatch --config bundlewatch.config.mjs`, and make sure every file passes.
+4. Build, run `npx bundlewatch`, and make sure every file passes.
 5. Run it in CI after the build:
    - On GitHub Actions, add the workflow from https://bundlewatch.io/guide/using-bundlewatch#github-actions, adapted to this project's Node.js version, package manager, build command and default branch. It needs no secret.
-   - On another CI provider, add a step that runs `npx bundlewatch --config bundlewatch.config.mjs` after the build, and ask me to create a token at https://service.bundlewatch.io/setup-github and store it as the BUNDLEWATCH_GITHUB_TOKEN secret. Never commit a token.
+   - On another CI provider, add a step that runs `npx bundlewatch` after the build, and ask me to create a token at https://service.bundlewatch.io/setup-github and store it as the BUNDLEWATCH_GITHUB_TOKEN secret. Never commit a token.
 6. Summarize what you changed, the limits you chose, and what is left for me to do, such as making `bundlewatch` a required status check.
 ```
 

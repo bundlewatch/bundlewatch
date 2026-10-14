@@ -9,7 +9,7 @@ description: BundleWatch 的命令行选项、读取配置的位置以及退出�
 Usage: bundlewatch [options] <filePathGlobs ...>
 ```
 
-[安装](../guide/getting-started.md#installation)后，使用 `npx bundlewatch --config bundlewatch.config.mjs`（或你的包管理器的等效命令）运行。
+[安装](../guide/getting-started.md#installation)后，使用 `npx bundlewatch`（或你的包管理器的等效命令）运行。
 
 ## 选项 {#options}
 
@@ -22,7 +22,7 @@ Usage: bundlewatch [options] <filePathGlobs ...>
 | `-V, --version`               | 输出版本号                                                                                                                                                                                                              |
 | `-h, --help`                  | 输出使用说明                                                                                                                                                                                                            |
 
-- `--max-size`、`--compression` 和 `--normalize` 只作用于命令行中指定的文件 glob。使用 `--config` 或 package.json 中的 `bundlewatch` 键时，它们会被忽略，且没有警告。
+- `--max-size`、`--compression` 和 `--normalize` 只作用于命令行中指定的文件 glob。使用自动找到的配置文件、`--config` 或 package.json 中的 `bundlewatch` 键时，它们会被忽略，且没有警告。
 - 选项会把下一个参数作为它的值，除非该参数以 `-` 开头。请把值紧跟在选项后面，或者写成 `--max-size=3kb`：在 `bundlewatch --max-size ./dist/*.js` 中，第一个文件会被当作体积。
 - 不带值时：有文件 glob 时，`--max-size` 表示不限制体积，`--compression` 或 `--normalize` 会让运行报错停止。没有文件 glob 时，`--config` 会让运行报错停止。
 - `--` 表示选项结束：之后的每个参数都是 glob。
@@ -30,16 +30,16 @@ Usage: bundlewatch [options] <filePathGlobs ...>
 
 ## 示例 {#examples}
 
-从配置文件读取配置（推荐）：
-
-```bash
-npx bundlewatch --config bundlewatch.config.mjs
-```
-
-也可以读取 `package.json` 中的 `bundlewatch` 键：
+自动查找配置文件（推荐）：
 
 ```bash
 npx bundlewatch
+```
+
+如果没有找到配置文件，同一个命令会读取 `package.json` 中的 `bundlewatch` 键。要使用指定文件：
+
+```bash
+npx bundlewatch --config internals/bundlewatch.config.mjs
 ```
 
 使用命令行：
@@ -56,9 +56,10 @@ BundleWatch 会使用以下第一个找到的配置：
 
 1. 命令行中的文件 glob，以及 `--max-size`、`--compression` 和 `--normalize`。
 2. 通过 `--config` 指定的文件。
-3. 最近的 `package.json` 中的 `bundlewatch` 键。它可以是一个配置对象，也可以是一个用作 `files` 的数组。
+3. 自动找到的 `bundlewatch.config.*` 文件。从当前目录开始向上搜索，包含最近的 `package.json` 所在目录；文件名和搜索边界请参见[配置查找](../guide/using-a-config-file.md#config-discovery)。
+4. 最近的 `package.json` 中的 `bundlewatch` 键。它可以是一个配置对象，也可以是一个用作 `files` 的数组。
 
-如果同时存在多个来源，BundleWatch 会输出警告并忽略其余来源。如果都找不到，它会输出 `[ERROR] Configuration missing` 并以退出码 1 退出。
+未被使用的 `--config` 选项或 `package.json` 配置会触发警告。如果指定了命令行 glob 或 `--config`，则跳过自动查找。选定的配置文件无法加载或配置无效时，运行会失败，不会回退到其他来源。如果都找不到，它会输出 `[ERROR] Configuration missing` 并以退出码 1 退出。
 
 ## 退出码 {#exit-codes}
 

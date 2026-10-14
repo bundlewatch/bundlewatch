@@ -24,7 +24,7 @@ export default {
 使用此配置运行：
 
 ```bash
-npx bundlewatch --config bundlewatch.config.mjs
+npx bundlewatch
 ```
 
 URL 的格式，以及如何在不使用服务的情况下运行，请参阅 [bundlewatchServiceHost](../reference/configuration.md#bundlewatchservicehost)。

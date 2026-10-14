@@ -5,13 +5,13 @@ description: Configurez Bundlewatch avec un fichier de configuration ou package.
 
 # Utiliser un fichier de configuration {#using-a-configuration-file}
 
-Créez `bundlewatch.config.mjs` à la racine du projet et indiquez-le avec `--config` :
+Créez `bundlewatch.config.mjs` à la racine du projet, puis exécutez :
 
 ```bash
-npx bundlewatch --config bundlewatch.config.mjs
+npx bundlewatch
 ```
 
-Un fichier de configuration dédié est la méthode recommandée. Bundlewatch ne recherche pas automatiquement ces fichiers : incluez `--config` dans les commandes locales et CI. Si vous choisissez un autre format ci-dessous, indiquez le nom du fichier correspondant.
+Un fichier de configuration dédié est la méthode recommandée. Bundlewatch recherche automatiquement les noms de fichiers ci-dessous ; consultez la [recherche de configuration](#config-discovery) pour connaître leur ordre de priorité.
 
 ::: code-group
 
@@ -74,6 +74,28 @@ Votre configuration est fusionnée avec les [valeurs par défaut](../reference/c
 
 Vous pouvez aussi fournir directement la configuration à l’[API Node.js](../reference/nodejs.md).
 
+## Recherche de configuration {#config-discovery}
+
+Sans motifs glob en ligne de commande ni `--config`, Bundlewatch cherche dans le répertoire courant, puis dans ses parents. Dans chaque répertoire, il vérifie ces noms dans cet ordre :
+
+1. `bundlewatch.config.mjs`
+2. `bundlewatch.config.js`
+3. `bundlewatch.config.cjs`
+4. `bundlewatch.config.mts`
+5. `bundlewatch.config.ts`
+6. `bundlewatch.config.cts`
+7. `bundlewatch.config.json`
+
+Le premier fichier trouvé est utilisé. La recherche inclut le répertoire du `package.json` le plus proche, puis s’arrête. Si aucun fichier de configuration n’est trouvé, Bundlewatch lit la clé `bundlewatch` de ce paquet. Il ne cherche pas au-delà, même si la clé est absente. Sans `package.json`, la recherche continue jusqu’à la racine du système de fichiers.
+
+Un fichier impossible à charger ou une configuration invalide fait échouer l’exécution ; Bundlewatch ne se rabat pas sur un autre fichier ni sur `package.json`. Les motifs glob restent relatifs au répertoire d’exécution, même si le fichier de configuration se trouve dans un parent.
+
+Pour un nom ou un emplacement personnalisé, utilisez `--config`. Cette option remplace la recherche automatique et permet de sélectionner une configuration partagée en dehors du paquet courant :
+
+```bash
+npx bundlewatch --config ../shared/bundlewatch.config.mjs
+```
+
 ## Autre possibilité : package.json {#package-json}
 
 Vous pouvez aussi conserver la configuration sous la clé `bundlewatch` de `package.json` :
@@ -91,4 +113,4 @@ Vous pouvez aussi conserver la configuration sous la clé `bundlewatch` de `pack
 }
 ```
 
-Exécutez `npx bundlewatch` pour lire cette configuration. Sans `--config`, Bundlewatch lit la clé `bundlewatch` du `package.json` le plus proche, dans le répertoire courant ou un parent. Il s’arrête au premier `package.json` trouvé, même si ce fichier n’a pas de clé `bundlewatch`. Dans un monorepo, utilisez `--config` pour sélectionner explicitement un fichier de configuration, ou conservez la clé dans le `package.json` du paquet concerné.
+Exécutez `npx bundlewatch` pour lire cette configuration lorsqu’aucun fichier de configuration n’est trouvé. Les motifs glob en ligne de commande, `--config` et les fichiers trouvés automatiquement ont priorité sur cette clé. Dans un monorepo, conservez la clé dans le `package.json` du paquet concerné, ou utilisez `--config` pour sélectionner explicitement un fichier partagé.

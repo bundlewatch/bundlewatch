@@ -5,7 +5,7 @@ description: BundleWatch 的所有选项及其默认值，以及 BundleWatch 读
 
 # 配置参考
 
-将这些选项写在[配置文件](../guide/using-a-config-file.md)中，例如 `bundlewatch.config.mjs`，然后运行 `npx bundlewatch --config bundlewatch.config.mjs`。命令行要求设置 `files`；其他选项都有默认值。也支持将配置写在 [package.json](../guide/using-a-config-file.md#package-json) 的 `bundlewatch` 键下。
+将这些选项写在[配置文件](../guide/using-a-config-file.md)中，例如 `bundlewatch.config.mjs`，然后运行 `npx bundlewatch`。命令行要求设置 `files`；其他选项都有默认值。也支持将配置写在 [package.json](../guide/using-a-config-file.md#package-json) 的 `bundlewatch` 键下。
 
 你的配置会与下面的默认值合并。`files` 和 `ci.trackBranches` 等数组会替换默认值，而不是与之合并。
 

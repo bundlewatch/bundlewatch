@@ -98,6 +98,8 @@ Brotli compression works without installing `brotli-size`. Node's built-in `zlib
 
 ### Config files
 
+- Without command-line globs or `--config`, BundleWatch now searches for `bundlewatch.config.mjs`, `.js`, `.cjs`, `.mts`, `.ts`, `.cts` and `.json`, in that order in each directory, starting in the current directory and searching upward. The first file found wins. The search includes the nearest `package.json` directory, then stops; without one, it continues to the filesystem root. If no file is found, the nearest package’s `bundlewatch` key is still used.
+- A discovered file takes precedence over `package.json` configuration, with a warning when that configuration is present. A file that cannot be loaded or has invalid configuration fails the run without trying another source. Globs remain relative to the current working directory. Use `--config <path>` to select a file explicitly, including outside the current package.
 - `--config` accepts absolute paths.
 - `.mjs` files, and configs with only named exports, are loaded with `import()`.
 - `.ts`, `.mts` and `.cts` files work on Node.js versions that run TypeScript natively (22.18 and later).

@@ -7,7 +7,7 @@ description: 在 GitHub Actions 或其他 CI 服务上运行 BundleWatch，以�
 
 在 CI 中于构建之后运行 BundleWatch。有了 GitHub token，它会在提交上发布 `bundlewatch` 状态，并将每个文件与[基准分支](./diffing-against-branches-other-than-master.md#base-branch)对比。你的仓库需要托管在 GitHub 上；CI 可以在任何地方。
 
-下面的 CI 示例使用[快速开始](./getting-started.md#configuration)中的 `bundlewatch.config.mjs`。如果配置文件的名称或位置不同，请调整 `--config` 路径。
+下面的 CI 示例使用[快速开始](./getting-started.md#configuration)中的 `bundlewatch.config.mjs`。BundleWatch 会自动找到它。使用自定义文件名或搜索范围之外的文件时，请在命令中添加 `--config <路径>`。
 
 ## GitHub Actions {#github-actions}
 
@@ -35,7 +35,7 @@ jobs:
           node-version: 24
       - run: npm ci
       - run: npm run build
-      - run: npx bundlewatch --config bundlewatch.config.mjs
+      - run: npx bundlewatch
         env:
           BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -56,7 +56,7 @@ GitHub 只为来自 fork 的 Pull Request 提供只读 token，因此 BundleWatc
 
 1. 以拥有该仓库推送权限的用户身份登录 GitHub，打开 [service.bundlewatch.io/setup-github](https://service.bundlewatch.io/setup-github)，并授权 BundleWatch。该 token 只有 `repo:status` 权限：它可以读写提交状态，但无法访问你的代码。
 2. 在 CI 设置中，将 token 保存为名为 `BUNDLEWATCH_GITHUB_TOKEN` 的私密环境变量。切勿将它提交到仓库中。
-3. 在构建步骤之后运行 `npx bundlewatch --config bundlewatch.config.mjs`。
+3. 在构建步骤之后运行 `npx bundlewatch`。
 4. 如果你的 CI 服务不在下表中，或者没有提供某个值，请设置[这些变量](#required-ci-environment-variables)。
 
 没有 token 时，BundleWatch 只检查 `maxSize`。

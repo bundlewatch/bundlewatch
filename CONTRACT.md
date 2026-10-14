@@ -76,6 +76,8 @@ The defaults below come from `src/app/config/getConfig.js`. The config is deep-m
 
 ### Config resolution order (CLI)
 
+The order below describes 0.x. In 1.0, automatic config-file discovery runs between `--config` and the `package.json` fallback; see [Config files](MIGRATION.md#config-files).
+
 1. **Positional globs** (`bundlewatch [options] <globs...>`):
    - Builds `files` from the globs, with `--max-size` and `--compression` (default `gzip`).
    - `--normalize <regex>` sets `normalizeFilenames`.
@@ -308,6 +310,7 @@ Decided. Each one is listed in [MIGRATION.md](MIGRATION.md) and, where the CLI i
 - [x] Empty files measure 0 B.
 - [x] Removed files named after Object.prototype properties are correctly reported as removed, rather than passing with no size (a pre-existing 0.x bug).
 - [x] A measured file whose key is `__proto__` is kept and checked, rather than dropped so the run passes (a pre-existing 0.x bug).
+- [x] Automatic `bundlewatch.config.*` discovery before the `package.json` fallback, searching up to and including the nearest package directory.
 - [x] `--config` loads modules with `import()` and accepts absolute paths.
 - [x] No crash without a `package.json` (CLI #434).
 - [x] `bundlewatchServiceHost: null` prints no results link.

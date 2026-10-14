@@ -57,7 +57,7 @@ export default {
 Exécutez avec cette configuration :
 
 ```bash
-npx bundlewatch --config bundlewatch.config.mjs
+npx bundlewatch
 ```
 
 ::: warning Modification en version 1.0

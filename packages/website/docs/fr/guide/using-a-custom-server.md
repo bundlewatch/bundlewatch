@@ -40,7 +40,7 @@ export default {
 Exécutez avec cette configuration :
 
 ```bash
-npx bundlewatch --config bundlewatch.config.mjs
+npx bundlewatch
 ```
 
 Définissez `bundlewatchServiceHost` à `null` pour fonctionner sans service. Bundlewatch vérifie alors uniquement `maxSize`, sans comparer ni enregistrer de tailles de référence, et n’affiche aucun lien vers les résultats.

@@ -23,14 +23,14 @@ export default {
 }
 ```
 
-Run `npx bundlewatch --config bundlewatch.config.mjs` after your build. It exits with code 1 when a file is over its `maxSize`.
+Run `npx bundlewatch` after your build. It exits with code 1 when a file is over its `maxSize`.
 
 ## Reporting on pull requests
 
 On GitHub Actions, give the workflow `statuses: write` and pass its token:
 
 ```yaml
-- run: npx bundlewatch --config bundlewatch.config.mjs
+- run: npx bundlewatch
   env:
     BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

@@ -37,7 +37,7 @@ bun add bundlewatch@1 --dev
 :::
 
 3. 逐项查看下面的[需要检查的地方](#things-to-check)。
-4. 构建，然后运行 BundleWatch 并使用项目现有的配置（如果使用配置文件，请包含 `--config`）。
+4. 构建，然后运行 BundleWatch 并使用项目现有的配置（使用自定义文件名或位置时，请通过 `--config <路径>` 指定）。
 
 ## 使用 AI 编程助手升级 {#upgrade-with-an-ai-agent}
 
@@ -52,7 +52,7 @@ bun add bundlewatch@1 --dev
 2. 对照迁移指南中“需要检查的地方”（Things to check）一节检查配置，并跟进其中的链接。数字形式的 "maxSize" 现在会生效：如果某个文件未通过一个以前从未检查过的限制，不要提高该限制，而是告诉我。
 3. 在 GitHub Actions 上，按照指南中的说明改用工作流的 GITHUB_TOKEN，并移除 1.0 已不再需要的变通做法，例如只是为了避免与 master 对比而设置的 CI_BRANCH_BASE，或设置为 Pull Request 最新提交的 CI_COMMIT_SHA。
 4. 如果没有其他地方使用 brotli-size 依赖，请将其移除。
-5. 构建，运行 BundleWatch 并使用项目现有的配置（如果使用配置文件，请包含 `--config`），并总结你修改了什么、哪些行为现在有所不同，以及还剩下哪些需要我来做的事，例如删除不再使用的 token secret。
+5. 构建，运行 BundleWatch 并使用项目现有的配置（使用自定义文件名或位置时，请通过 `--config <路径>` 指定），并总结你修改了什么、哪些行为现在有所不同，以及还剩下哪些需要我来做的事，例如删除不再使用的 token secret。
 ```
 
 ## 需要检查的地方 {#things-to-check}
@@ -126,7 +126,7 @@ Pull Request 构建会与基准对比，但不再保存基准。以前，如果 
 - <a id="running-outside-a-package"></a>在没有 package.json 的目录中运行 BundleWatch 不会再崩溃（issue [#434](https://github.com/bundlewatch/bundlewatch/issues/434)）。
 - <a id="version"></a>`-V` 和 `--version` 会输出版本号。其他参数与之前一致，包括不带值的 `--max-size` 表示不限制体积；参见 [命令行](../reference/cli.md)。
 - <a id="generic-ci-without-a-repository"></a>设置了 `CI` 但没有设置 `CI_REPO_OWNER` 和 `CI_REPO_NAME` 时，BundleWatch 会回退到 `GIT_URL`，而不是使用仓库 `undefined/undefined`。
-- <a id="config-files"></a>`--config` 支持绝对路径。它通过 `import()` 加载 `.mjs` 文件以及只有具名导出的配置，并在 Node.js 22.18 及更高版本上加载 `.ts`、`.mts` 和 `.cts` 文件。参见 [使用配置文件](./using-a-config-file.md)。
+- <a id="config-files"></a>BundleWatch 现在会先查找 `bundlewatch.config.*` 文件，再回退到 `package.json`。搜索从当前目录开始，包含最近的 `package.json` 所在目录，在每个目录中依次检查 `.mjs`、`.js`、`.cjs`、`.mts`、`.ts`、`.cts` 和 `.json`。使用第一个找到的文件；没有包时会搜索到文件系统根目录。配置无效时运行失败，不会回退。`--config` 会覆盖自动查找，并支持绝对路径。它通过 `import()` 加载 `.mjs` 文件以及只有具名导出的配置，并在 Node.js 22.18 及更高版本上加载 `.ts`、`.mts` 和 `.cts` 文件。参见 [使用配置文件](./using-a-config-file.md)。
 
 ### 代理变量 {#proxy-variables}
 

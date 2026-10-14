@@ -24,7 +24,7 @@ export default {
 Run with this configuration:
 
 ```bash
-npx bundlewatch --config bundlewatch.config.mjs
+npx bundlewatch
 ```
 
 See [bundlewatchServiceHost](../reference/configuration.md#bundlewatchservicehost) for the URL format, and to run without a service.

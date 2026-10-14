@@ -5,7 +5,7 @@ description: Every BundleWatch option, its default, and the environment variable
 
 # Configuration reference
 
-Set these options in a [config file](../guide/using-a-config-file.md), such as `bundlewatch.config.mjs`, and run `npx bundlewatch --config bundlewatch.config.mjs`. The command line requires `files`; every other option has a default. Configuration under the `bundlewatch` key in [package.json](../guide/using-a-config-file.md#package-json) is also supported.
+Set these options in a [config file](../guide/using-a-config-file.md), such as `bundlewatch.config.mjs`, and run `npx bundlewatch`. The command line requires `files`; every other option has a default. Configuration under the `bundlewatch` key in [package.json](../guide/using-a-config-file.md#package-json) is also supported.
 
 Your configuration is merged with the defaults below. Arrays, such as `files` and `ci.trackBranches`, replace the default value instead of being merged with it.
 

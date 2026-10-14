@@ -59,7 +59,7 @@ export default {
 使用此配置运行：
 
 ```bash
-npx bundlewatch --config bundlewatch.config.mjs
+npx bundlewatch
 ```
 
 ::: warning 每个分支一个基准

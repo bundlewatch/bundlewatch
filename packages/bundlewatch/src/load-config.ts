@@ -16,6 +16,24 @@ export type CliOptions = {
 };
 
 const MODULE_EXTENSIONS = new Set(['.js', '.cjs', '.mjs', '.ts', '.cts', '.mts']);
+const CONFIG_FILENAMES = ['mjs', 'js', 'cjs', 'mts', 'ts', 'cts', 'json'].map(
+  (extension) => `bundlewatch.config.${extension}`,
+);
+
+/** Search from `cwd` through the nearest package directory, inclusive. */
+const findConfigFile = (cwd: string): string | undefined => {
+  let directory = path.resolve(cwd);
+  while (true) {
+    for (const name of CONFIG_FILENAMES) {
+      const file = path.join(directory, name);
+      if (existsSync(file)) return file;
+    }
+    if (existsSync(path.join(directory, 'package.json'))) return undefined;
+    const parent = path.dirname(directory);
+    if (parent === directory) return undefined;
+    directory = parent;
+  }
+};
 
 /** The `bundlewatch` key of the nearest package.json, walking up from `cwd`. */
 const findPackageConfig = (cwd: string): unknown => {
@@ -65,7 +83,7 @@ const loadConfigFile = async (configPath: string, cwd: string): Promise<Bundlewa
   }
 };
 
-/** CLI globs win over --config, which wins over package.json. */
+/** CLI globs, then --config, then a discovered file, then package.json. */
 export const loadConfig = async (
   options: CliOptions,
   cwd: string = process.cwd(),
@@ -101,6 +119,14 @@ export const loadConfig = async (
       logger.warn('configFilePath supplied, config in package.json will be ignored');
     }
     return loadConfigFile(options.config, cwd);
+  }
+
+  const configFile = findConfigFile(cwd);
+  if (configFile) {
+    if (packageConfig) {
+      logger.warn('Config file found, config in package.json will be ignored');
+    }
+    return loadConfigFile(configFile, cwd);
   }
 
   if (Array.isArray(packageConfig)) {

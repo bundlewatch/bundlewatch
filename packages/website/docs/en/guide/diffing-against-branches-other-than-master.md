@@ -59,7 +59,7 @@ export default {
 Run with this configuration:
 
 ```bash
-npx bundlewatch --config bundlewatch.config.mjs
+npx bundlewatch
 ```
 
 ::: warning One baseline per branch

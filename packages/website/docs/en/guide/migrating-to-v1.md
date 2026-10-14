@@ -37,7 +37,7 @@ bun add bundlewatch@1 --dev
 :::
 
 3. Go through [Things to check](#things-to-check) below.
-4. Build, then run BundleWatch with the project’s existing configuration (include `--config` when using a config file).
+4. Build, then run BundleWatch with the project’s existing configuration (use `--config <path>` for a custom filename or location).
 
 ## Upgrade with an AI agent
 
@@ -52,7 +52,7 @@ Read https://bundlewatch.io/guide/migrating-to-v1.md for what changed, and https
 2. Check the configuration against "Things to check" in the migration guide, and follow its links. A numeric "maxSize" is now enforced: if a file now fails a limit that was never checked before, don't raise the limit, tell me.
 3. On GitHub Actions, switch to the workflow's GITHUB_TOKEN as described in the guide, and remove workarounds that 1.0 makes unnecessary, such as CI_BRANCH_BASE set only to avoid comparing with master, or CI_COMMIT_SHA set to the pull request's head commit.
 4. Remove the brotli-size dependency if nothing else uses it.
-5. Build, run BundleWatch with the project’s existing configuration (include `--config` when using a config file), and summarize what you changed, what now behaves differently, and what is left for me to do, such as deleting a token secret that is no longer used.
+5. Build, run BundleWatch with the project’s existing configuration (use `--config <path>` for a custom filename or location), and summarize what you changed, what now behaves differently, and what is left for me to do, such as deleting a token secret that is no longer used.
 ```
 
 ## Things to check
@@ -126,7 +126,7 @@ A numeric `maxSize` such as `102400` is now enforced. Previously it was silently
 - <a id="running-outside-a-package"></a>Running BundleWatch in a directory without a package.json no longer crashes (issue [#434](https://github.com/bundlewatch/bundlewatch/issues/434)).
 - <a id="version"></a>`-V` and `--version` print the version. Other flags work as before, including a bare `--max-size` for no limit; see [Command line](../reference/cli.md).
 - <a id="generic-ci-without-a-repository"></a>With `CI` set but no `CI_REPO_OWNER` and `CI_REPO_NAME`, BundleWatch falls back to `GIT_URL` instead of using the repository `undefined/undefined`.
-- <a id="config-files"></a>`--config` accepts absolute paths. It loads `.mjs` files, and configs with only named exports, with `import()`, and it loads `.ts`, `.mts` and `.cts` files on Node.js 22.18 and later. See [Using a config file](./using-a-config-file.md).
+- <a id="config-files"></a>BundleWatch now discovers `bundlewatch.config.*` files before falling back to `package.json`. It searches from the current directory up to and including the nearest `package.json` directory, checking `.mjs`, `.js`, `.cjs`, `.mts`, `.ts`, `.cts` and `.json` in that order in each directory. The first file wins; without a package, the search continues to the filesystem root. A broken config fails without falling back. `--config` overrides discovery and accepts absolute paths. It loads `.mjs` files, and configs with only named exports, with `import()`, and it loads `.ts`, `.mts` and `.cts` files on Node.js 22.18 and later. See [Using a config file](./using-a-config-file.md).
 
 ### Proxy variables
 

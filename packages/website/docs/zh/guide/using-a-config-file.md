@@ -5,13 +5,13 @@ description: 如何通过配置文件或 package.json 配置 BundleWatch。
 
 # 使用配置文件 {#using-a-configuration-file}
 
-在项目根目录创建 `bundlewatch.config.mjs`，并通过 `--config` 指定它：
+在项目根目录创建 `bundlewatch.config.mjs`，然后运行：
 
 ```bash
-npx bundlewatch --config bundlewatch.config.mjs
+npx bundlewatch
 ```
 
-推荐使用独立配置文件。BundleWatch 不会自动查找配置文件，因此本地和 CI 命令中都需要包含 `--config`。如果选择下面的其他格式，请传入对应的文件名。
+推荐使用独立配置文件。BundleWatch 会自动查找下面列出的文件名；搜索顺序请参见[配置查找](#config-discovery)。
 
 ::: code-group
 
@@ -74,6 +74,28 @@ module.exports = {
 
 你也可以直接将配置传给 [Node.js API](../reference/nodejs.md)。
 
+## 配置查找 {#config-discovery}
+
+没有命令行 glob 或 `--config` 时，BundleWatch 从当前目录开始向上搜索。在每个目录中，按以下顺序查找文件：
+
+1. `bundlewatch.config.mjs`
+2. `bundlewatch.config.js`
+3. `bundlewatch.config.cjs`
+4. `bundlewatch.config.mts`
+5. `bundlewatch.config.ts`
+6. `bundlewatch.config.cts`
+7. `bundlewatch.config.json`
+
+使用第一个找到的文件。搜索范围包含最近的 `package.json` 所在目录，并在该目录停止。如果没有找到配置文件，BundleWatch 会读取该包的 `bundlewatch` 键。即使该键不存在，也不会继续搜索上级包。如果没有 `package.json`，则一直搜索到文件系统根目录。
+
+如果找到的文件无法加载或配置无效，本次运行会失败，不会回退到其他文件或 `package.json`。即使配置文件位于上级目录，文件 glob 仍相对于运行 BundleWatch 的目录解析。
+
+使用自定义文件名或位置时，请通过 `--config` 指定。它会覆盖自动查找，也可以选择当前包之外的共享配置：
+
+```bash
+npx bundlewatch --config ../shared/bundlewatch.config.mjs
+```
+
 ## 其他方式：package.json {#package-json}
 
 你也可以将配置保存在 `package.json` 的 `bundlewatch` 键下：
@@ -91,4 +113,4 @@ module.exports = {
 }
 ```
 
-运行 `npx bundlewatch` 即可读取此配置。不带 `--config` 时，BundleWatch 会读取最近的 `package.json`（当前目录或其上级目录）中的 `bundlewatch` 键。它在找到第一个 `package.json` 时就会停下，即使该文件中没有 `bundlewatch` 键。在 monorepo 中，请使用 `--config` 明确选择配置文件，或将该键保存在子包自己的 `package.json` 中。
+没有找到配置文件时，运行 `npx bundlewatch` 即可读取此配置。命令行 glob、`--config` 和自动找到的配置文件都优先于该键。在 monorepo 中，请将该键保存在子包自己的 `package.json` 中，或使用 `--config` 明确选择共享配置文件。
