@@ -10,7 +10,6 @@ hero:
     src: /logo-large.svg
     alt: BundleWatch
   name: BundleWatch
-  text: Catch bundle size increases before merge
   tagline: Stay in control of your bundle size. Every pull request shows how it impacts your bundle, file by file, against the limits you set.
   actions:
     - theme: brand
