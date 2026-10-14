@@ -29,6 +29,10 @@ results:
   alt: "The changes on a pull request's results page: index.js grew by 17.08KB and is 14.58KB under its 160KB limit, vendor.js grew by 13.17KB and is 9.77KB over its 200KB limit, and charts.js shrank by 5.51KB."
   caption: "Each pull request's <code>bundlewatch</code> status links to its results page, which shows what the commit changed, file by file, next to each limit."
 
+usedBy:
+  title: Used by builders at
+  pauseHint: Hover or focus here to pause the logos
+
 # The icons are inline SVG, so that their navy parts (currentColor) follow the theme
 # in dark mode. They are drawn from the logo and the results page.
 features:

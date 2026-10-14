@@ -30,11 +30,13 @@ docs/
     llms.mjs           # writes llms.txt, llms-full.txt and a Markdown copy of each page
     check-anchors.mjs  # fails the build on links to headings that don't exist
     theme/
-      index.mjs        # default theme, plus tabs, medium-zoom, HeroLogo, HomeResults and NotFound
+      index.mjs        # default theme, plus tabs, medium-zoom and the custom components below
       custom.css       # theme overrides (plain CSS with native nesting)
       logo-layers.mjs  # the three layers of public/logo-large.svg, for HeroLogo and NotFound
       HeroLogo.vue     # the home page's logo: assembles on the first load, then lifts the layer under the pointer
       HomeResults.vue  # the change table from a results page on the home page, from its `results` frontmatter
+      HomeUsedBy.vue   # logo carousel after the home page features; localized through `usedBy` frontmatter
+      used-by.mjs      # companies and projects, with local artwork and display dimensions
       NotFound.vue     # the 404 page: the logo without its bottom layer, and the missing path
   en/                  # English pages, served at / (rewritten from en/)
   fr/                  # French translation, served at /fr/

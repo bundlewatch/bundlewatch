@@ -7,6 +7,7 @@ import { h, onMounted, watch, nextTick } from "vue";
 
 import HeroLogo from "./HeroLogo.vue";
 import HomeResults from "./HomeResults.vue";
+import HomeUsedBy from "./HomeUsedBy.vue";
 import NotFound from "./NotFound.vue";
 
 import "./custom.css";
@@ -21,6 +22,7 @@ export default {
     h(DefaultTheme.Layout, null, {
       "home-hero-image": () => h(HeroLogo),
       "home-features-before": () => h(HomeResults),
+      "home-features-after": () => h(HomeUsedBy),
       "not-found": () => h(NotFound),
     }),
   enhanceApp({ app }) {

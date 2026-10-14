@@ -147,6 +147,15 @@ html[lang="en-US"] {
   mix-blend-mode: lighten;
 }
 
+/* Use official white logo variants on dark backgrounds. */
+.dark .HomeUsedBy .on-light {
+  display: none;
+}
+
+.dark .HomeUsedBy .on-dark {
+  display: block;
+}
+
 /* The dashed outlines of the home page logo and the 404 page's logo in dark mode. They live here
    because a scoped :global(.dark) rule compiles to a bare .dark selector, which every svg path on
    the page would inherit. */
