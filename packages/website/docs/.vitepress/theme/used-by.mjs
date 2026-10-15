@@ -153,4 +153,11 @@ export default [
     width: 30,
     height: 30,
   },
+  {
+    name: "Korey",
+    logo: "korey.svg",
+    darkLogo: "korey-dark.svg",
+    width: 98,
+    height: 29,
+  },
 ];
