@@ -30,6 +30,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
+          check-latest: true
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm typecheck
@@ -51,6 +52,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
+          check-latest: true
       # Only what the package needs: the CLI, core and the build tool.
       - run: pnpm install --frozen-lockfile --filter 'bundlewatch...'
       - run: pnpm --filter bundlewatch build
@@ -89,6 +91,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
+          check-latest: true
           registry-url: https://registry.npmjs.org
       # By id, so a replaced artifact can't be picked up, and checked against
       # the digest the pack job computed.
