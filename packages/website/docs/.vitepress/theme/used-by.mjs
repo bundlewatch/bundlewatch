@@ -160,4 +160,11 @@ export default [
     width: 98,
     height: 29,
   },
+  {
+    name: "Clerk",
+    logo: "clerk.svg",
+    darkLogo: "clerk-dark.svg",
+    width: 110,
+    height: 32,
+  },
 ];
