@@ -13,6 +13,7 @@ export type HttpApiEvent = {
   body?: string | undefined;
   isBase64Encoded: boolean;
   requestContext: {
+    requestId?: string | undefined;
     domainName: string;
     http: { method: string };
   };
@@ -110,7 +111,10 @@ export const createHandler =
     const acceptEncoding = Object.entries(event.headers ?? {}).find(
       ([name]) => name.toLowerCase() === 'accept-encoding',
     )?.[1];
-    return toResult(await app(request), acceptEncoding);
+    return toResult(
+      await app(request, { requestId: event.requestContext.requestId }),
+      acceptEncoding,
+    );
   };
 
 let lambdaHandler: ((event: HttpApiEvent) => Promise<HttpApiResult>) | undefined;

@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 
 import {
   analyze,
@@ -8,7 +8,12 @@ import {
   STATUSES,
 } from '@bundlewatch/core';
 
-import { checkRepoAccess, GitHubUnavailableError, type RepoAccess } from './github-auth.ts';
+import {
+  checkRepoAccess,
+  GitHubUnavailableError,
+  type RepoAccess,
+  type GitHubDiagnostic,
+} from './github-auth.ts';
 import { exchangeOAuthCode, githubWebUrl } from './github-oauth.ts';
 import { CONTENT_SECURITY_POLICY, HttpError, htmlPage, json, readJsonBody } from './http.ts';
 import { renderHomePage } from './pages/home-page.ts';
@@ -54,6 +59,7 @@ export type AppConfig = {
 };
 
 export type Logger = {
+  info?(...args: unknown[]): void;
   error(...args: unknown[]): void;
   warn(...args: unknown[]): void;
 };
@@ -67,7 +73,10 @@ export type AppDeps = {
   generateId?: (() => string) | undefined;
 };
 
-export type App = (request: Request) => Promise<Response>;
+export type App = (
+  request: Request,
+  context?: { requestId?: string | undefined },
+) => Promise<Response>;
 
 type Handler = (request: Request, url: URL, params: string[]) => Promise<Response>;
 
@@ -171,6 +180,15 @@ const requireRoutePrefix = (url: URL, prefix: string | undefined): void => {
 export const createApp = (deps: AppDeps): App => {
   const { baselineStore, resultsStore, config } = deps;
   const logger = deps.logger ?? console;
+  const requests = new WeakMap<
+    Request,
+    {
+      requestId: string;
+      repo?: string | undefined;
+      authorized: boolean;
+      github: GitHubDiagnostic[];
+    }
+  >();
   const now = deps.now ?? Date.now;
   const writeAuthorization = config.writeAuthorization ?? 'report';
   const apiUrl = (config.githubApiUrl || 'https://api.github.com').replace(/\/+$/, '');
@@ -179,11 +197,18 @@ export const createApp = (deps: AppDeps): App => {
     htmlPage(404, renderResultsNotFoundPage({ serverCommitSha: config.commitSha }));
 
   // Runs before validation, as in 0.x: a body without these is a 401.
-  const authorize = async (body: unknown, need: 'read' | 'write' = 'write'): Promise<void> => {
+  const authorize = async (
+    request: Request,
+    body: unknown,
+    need: 'read' | 'write' = 'write',
+  ): Promise<void> => {
     const owner = textField(body, 'repoOwner');
     const repo = textField(body, 'repoName');
     const commitSha = textField(body, 'commitSha');
     const token = textField(body, 'githubAccessToken');
+    const context = requests.get(request)!;
+    // Bound untrusted identifiers; never copy the body or credentials into logs.
+    if (owner && repo) context.repo = `${owner}/${repo}`.slice(0, 256);
     if (!owner || !repo || !commitSha || !token) {
       throw new HttpError(json(401, NOT_ALLOWED));
     }
@@ -196,9 +221,13 @@ export const createApp = (deps: AppDeps): App => {
         commitSha,
         access,
         userAgent: USER_AGENT,
+        onDiagnostic: (diagnostic) => {
+          if (context.github.length < 8) context.github.push(diagnostic);
+        },
       });
     const log = {
-      repo: `${owner}/${repo}`,
+      repo: context.repo,
+      requestId: context.requestId,
       token: tokenKind(token),
     };
     let access: RepoAccess;
@@ -256,6 +285,7 @@ export const createApp = (deps: AppDeps): App => {
       );
       throw new HttpError(json(401, NOT_ALLOWED));
     }
+    context.authorized = true;
   };
 
   const shortLink = async (
@@ -276,7 +306,7 @@ export const createApp = (deps: AppDeps): App => {
 
   const saveBaseline: Handler = async (request, url) => {
     const body = await readJsonBody(request);
-    await authorize(body);
+    await authorize(request, body);
     const { commitSha, fileDetailsByPath, repoBranch, repoName, repoOwner, prefix } = validate(
       validateStoreRequest,
       body,
@@ -312,7 +342,7 @@ export const createApp = (deps: AppDeps): App => {
     const body = await readJsonBody(request);
     // Reading a baseline keeps the 0.x check, so read-only tokens still
     // get comparisons.
-    await authorize(body, 'read');
+    await authorize(request, body, 'read');
     const { repoOwner, repoName, repoBranch, prefix } = validate(validateLookupRequest, body);
     requireRoutePrefix(url, prefix);
     const baseline = await baselineStore.get(`${repoOwner}/${repoName}`, repoBranch, prefix);
@@ -342,7 +372,7 @@ export const createApp = (deps: AppDeps): App => {
 
   const createShortLink: Handler = async (request, url) => {
     const body = await readJsonBody(request);
-    await authorize(body);
+    await authorize(request, body);
     const { repoOwner, repoName, payload } = validate(validateCreateResultsRequest, body);
     // The token was checked against repoOwner/repoName; the page must
     // not claim another repository.
@@ -484,7 +514,7 @@ export const createApp = (deps: AppDeps): App => {
   // No known callers. Kept because 0.x had it (see CONTRACT.md).
   const analyzeAndReport: Handler = async (request, url) => {
     const body = await readJsonBody(request);
-    await authorize(body);
+    await authorize(request, body);
     const {
       repoOwner,
       repoName,
@@ -596,7 +626,15 @@ export const createApp = (deps: AppDeps): App => {
     return json(404, { error: 'Not found' });
   };
 
-  return async (request) => {
+  return async (request, invocation) => {
+    const started = performance.now();
+    const context = {
+      requestId: invocation?.requestId ?? randomUUID(),
+      github: [] as GitHubDiagnostic[],
+      repo: undefined as string | undefined,
+      authorized: false,
+    };
+    requests.set(request, context);
     const url = new URL(request.url);
     let response: Response;
     try {
@@ -608,6 +646,28 @@ export const createApp = (deps: AppDeps): App => {
         logger.error(`${request.method} ${url.pathname} failed`, error);
         response = json(500, { error: 'Internal server error' });
       }
+    }
+    try {
+      if (context.repo) {
+        logger.info?.(
+          JSON.stringify({
+            event: 'request-completed',
+            requestId: context.requestId,
+            repo: context.repo,
+            authorized: context.authorized,
+            method: request.method,
+            route: url.pathname,
+            status: response.status,
+            durationMs: Math.round(performance.now() - started),
+            ...(context.github.length ? { github: context.github } : {}),
+          }),
+        );
+      }
+    } catch {
+      // Logging must not turn a completed write into a failed request and retry.
+      // Do not report this through the same potentially failing logger.
+    } finally {
+      requests.delete(request);
     }
     if (request.method === 'HEAD') {
       return new Response(null, response);
