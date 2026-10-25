@@ -8,6 +8,8 @@ The service behind `https://service.bundlewatch.io`. It:
 
 It runs on AWS Lambda behind an API Gateway HTTP API, with two DynamoDB tables. [CONTRACT.md](../../CONTRACT.md) lists what must stay compatible with 0.x CLIs and self-hosted 0.x services.
 
+See [Request logs](docs/request-logs.md) for diagnostic fields, coverage, and CloudWatch Logs Insights queries.
+
 ## Routes
 
 | Route                                                                   | Auth | Responses                                                                                                                                                                       |

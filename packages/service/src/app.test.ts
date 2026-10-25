@@ -58,11 +58,13 @@ const setup = ({
   const resultsStore = new MemoryResultsStore();
   const errors: unknown[][] = [];
   const warnings: string[] = [];
+  const outcomes: string[] = [];
   let now = NOW;
   const app = createApp({
     baselineStore,
     resultsStore,
     logger: {
+      info: (message) => outcomes.push(String(message)),
       error: (...args) => errors.push(args),
       warn: (message) => warnings.push(String(message)),
     },
@@ -98,6 +100,7 @@ const setup = ({
     resultsStore,
     errors,
     warnings,
+    outcomes,
     setNow: (value: number) => {
       now = value;
     },
@@ -1014,6 +1017,82 @@ describe('GET /setup-github', () => {
   });
 });
 
+describe('request diagnostics', () => {
+  test('a failing outcome logger preserves successful writes and rejected responses', async () => {
+    const { call, baselineStore } = setup({
+      logger: {
+        info: () => {
+          throw new Error('log sink failed');
+        },
+        warn: () => {},
+        error: () => {},
+      },
+    });
+    const saved = await call('POST', '/store', storeBody);
+    assert.equal(saved.status, 200);
+    assert.equal(((await saved.json()) as { commitSha: string }).commitSha, storeBody.commitSha);
+    assert.equal(
+      (await baselineStore.get('o/r', storeBody.repoBranch))?.commitSha,
+      storeBody.commitSha,
+    );
+    const rejected = await call('POST', '/store', { repoOwner: 'o', repoName: 'r' });
+    assert.equal(rejected.status, 401);
+    assert.deepEqual(await rejected.json(), { error: 'Not allowed' });
+  });
+
+  test('logs successful requests once, omits secrets and quiet routes', async () => {
+    const { call, outcomes } = setup();
+    assert.equal((await call('POST', '/store?secret=do-not-log', storeBody)).status, 200);
+    await call('GET', '/');
+    assert.equal(outcomes.length, 1);
+    const entry = JSON.parse(outcomes[0]!);
+    assert.equal(entry.event, 'request-completed');
+    assert.equal(entry.repo, 'o/r');
+    assert.equal(entry.authorized, true);
+    assert.equal(entry.route, '/store');
+    assert.equal(entry.status, 200);
+    assert.ok(entry.requestId);
+    assert.ok(entry.durationMs >= 0);
+    assert.doesNotMatch(outcomes.join(), /do-not-log|githubAccessToken|fileDetailsByPath|"tok"/);
+  });
+
+  test('correlates GitHub failures and isolates concurrent requests', async () => {
+    github.reset({ ...ALLOWED, 'GET /repos/denied/r/statuses/abc': { status: 401 } });
+    const { app, outcomes, warnings } = setup();
+    const invoke = (repoOwner: string, requestId: string) =>
+      app(
+        new Request('https://service.test/store/lookup', {
+          method: 'POST',
+          body: JSON.stringify({ ...CREDENTIALS, repoOwner, repoBranch: 'main' }),
+        }),
+        { requestId },
+      );
+    await Promise.all([invoke('denied', 'denied-id'), invoke('o', 'allowed-id')]);
+    assert.equal(outcomes.length, 2);
+    const entries = outcomes.map((line) => JSON.parse(line));
+    const denied = entries.find((entry) => entry.requestId === 'denied-id');
+    assert.equal(denied.repo, 'denied/r');
+    assert.equal(denied.status, 401);
+    assert.equal(denied.authorized, false);
+    assert.deepEqual(denied.github, [{ operation: 'statuses', access: 'read', status: 401 }]);
+    assert.equal(JSON.parse(warnings[0]!).requestId, 'denied-id');
+    const allowed = entries.find((entry) => entry.requestId === 'allowed-id');
+    assert.equal(allowed.repo, 'o/r');
+    assert.equal(allowed.authorized, true);
+    assert.equal(allowed.status, 404);
+    assert.equal(allowed.github, undefined);
+  });
+
+  test('records dependency outages separately from authorization denials', async () => {
+    github.reset({ 'GET /repos/o/r': { status: 503 } });
+    const { call, outcomes } = setup();
+    assert.equal((await call('POST', '/store', storeBody)).status, 503);
+    assert.deepEqual(JSON.parse(outcomes[0]!).github, [
+      { operation: 'repository', access: 'write', status: 503 },
+    ]);
+  });
+});
+
 describe('write authorization modes', () => {
   test('report mode (the default) keeps the 0.x decision and logs disagreements', async () => {
     github.reset(DENIED);
@@ -1023,7 +1102,11 @@ describe('write authorization modes', () => {
     const response = await call('POST', '/store', storeBody);
     assert.equal(response.status, 200);
     assert.deepEqual(
-      warnings.map((warning) => JSON.parse(warning)),
+      warnings.map((warning) => {
+        const { requestId, ...fields } = JSON.parse(warning);
+        assert.ok(requestId);
+        return fields;
+      }),
       [
         {
           event: 'write-authorization-differs',
@@ -1051,7 +1134,11 @@ describe('write authorization modes', () => {
       assert.equal(response.status, 200);
       assert.ok(await baselineStore.get('o/r', storeBody.repoBranch));
       assert.deepEqual(
-        warnings.map((line) => JSON.parse(line)),
+        warnings.map((line) => {
+          const { requestId, ...fields } = JSON.parse(line);
+          assert.ok(requestId);
+          return fields;
+        }),
         [
           {
             event: 'write-authorization-check-failed',

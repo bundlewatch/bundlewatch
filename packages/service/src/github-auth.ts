@@ -12,6 +12,14 @@
 //    Tokens from the bundlewatch OAuth app only have the `repo:status`
 //    scope, which can't read private repos, and must keep working.
 
+export type GitHubDiagnostic = {
+  operation: 'repository' | 'statuses' | 'installation-repositories';
+  access: 'read' | 'write';
+  status?: number;
+  failure?: 'timeout' | 'network';
+  causeCode?: string;
+};
+
 export type RepoAccessRequest = {
   apiUrl: string;
   token: string;
@@ -23,6 +31,7 @@ export type RepoAccessRequest = {
   userAgent?: string | undefined;
   /** Total time for all GitHub requests of one check. */
   budgetMs?: number | undefined;
+  onDiagnostic?: ((diagnostic: GitHubDiagnostic) => void) | undefined;
 };
 
 export type RepoAccess = {
@@ -69,6 +78,7 @@ export const checkRepoAccess = async ({
   access = 'write',
   userAgent = 'bundlewatch-service',
   budgetMs = DEFAULT_BUDGET_MS,
+  onDiagnostic,
 }: RepoAccessRequest): Promise<RepoAccess> => {
   // Encoding keeps each value in one path segment, but URL parsing still
   // resolves `.` and `..` segments.
@@ -83,13 +93,18 @@ export const checkRepoAccess = async ({
 
   // Leave the last third (two seconds by default) for the statuses fallback.
   const installationDeadline = deadline - Math.ceil(budgetMs / 3);
-  const get = async (url: string, requestDeadline = deadline): Promise<Response> => {
+  const get = async (
+    url: string,
+    operation: GitHubDiagnostic['operation'],
+    requestDeadline = deadline,
+  ): Promise<Response> => {
     const remaining = requestDeadline - Date.now();
     if (remaining <= 0) {
+      onDiagnostic?.({ operation, access, failure: 'timeout' });
       throw new GitHubUnavailableError('GitHub access check timed out');
     }
     try {
-      return await fetch(url, {
+      const response = await fetch(url, {
         headers: {
           accept: 'application/vnd.github+json',
           authorization: `Bearer ${token}`,
@@ -98,13 +113,25 @@ export const checkRepoAccess = async ({
         },
         signal: AbortSignal.timeout(remaining),
       });
+      if (!response.ok) onDiagnostic?.({ operation, access, status: response.status });
+      return response;
     } catch (error) {
-      throw new GitHubUnavailableError(`GitHub request failed: ${(error as Error).message}`);
+      const failure =
+        error instanceof Error && ['TimeoutError', 'AbortError'].includes(error.name)
+          ? 'timeout'
+          : 'network';
+      const cause = error instanceof Error ? error.cause : undefined;
+      const code = cause && typeof cause === 'object' && 'code' in cause ? cause.code : undefined;
+      // Only known transport codes: arbitrary exception messages may contain URLs or secrets.
+      const causeCode =
+        typeof code === 'string' && /^(?:E[A-Z_]+|UND_ERR_[A-Z_]+)$/.test(code) ? code : undefined;
+      onDiagnostic?.({ operation, access, failure, ...(causeCode ? { causeCode } : {}) });
+      throw new GitHubUnavailableError(`GitHub request failed: ${failure}`);
     }
   };
 
   const readStatuses = async (): Promise<RepoAccess> => {
-    const statuses = await get(`${repoUrl}/statuses/${encodeURIComponent(commitSha)}`);
+    const statuses = await get(`${repoUrl}/statuses/${encodeURIComponent(commitSha)}`, 'statuses');
     await statuses.body?.cancel();
     if (isUnavailable(statuses.status)) {
       throw new GitHubUnavailableError(`GitHub answered ${statuses.status}`);
@@ -129,7 +156,7 @@ export const checkRepoAccess = async ({
       }
       let response: Response;
       try {
-        response = await get(url, installationDeadline);
+        response = await get(url, 'installation-repositories', installationDeadline);
       } catch {
         return 'unknown';
       }
@@ -159,7 +186,7 @@ export const checkRepoAccess = async ({
     return readStatuses();
   }
 
-  const repoResponse = await get(repoUrl);
+  const repoResponse = await get(repoUrl, 'repository');
   if (repoResponse.ok) {
     type RepoBody = { permissions?: Record<string, unknown> } | null;
     const body = (await repoResponse.json().catch(() => null)) as RepoBody;

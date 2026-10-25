@@ -21,6 +21,24 @@ const event = (overrides: Partial<HttpApiEvent> = {}): HttpApiEvent => ({
   },
 });
 
+test('passes the trusted API Gateway request ID to the app', async () => {
+  const handle = createHandler(async (_request, context) => {
+    assert.equal(context?.requestId, 'gateway-id');
+    return new Response('ok');
+  });
+  await handle({
+    rawPath: '/',
+    rawQueryString: '',
+    isBase64Encoded: false,
+    headers: { 'x-request-id': 'client-controlled' },
+    requestContext: {
+      domainName: 'service.test',
+      requestId: 'gateway-id',
+      http: { method: 'GET' },
+    },
+  });
+});
+
 describe('toRequest', () => {
   test('maps the method, URL, query string and headers', () => {
     const request = toRequest(

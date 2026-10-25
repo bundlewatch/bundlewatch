@@ -288,7 +288,30 @@ describe('failures talking to GitHub', () => {
 
   test('throws GitHubUnavailableError when the budget runs out', async () => {
     github.reset({ [REPO]: { delayMs: 1000, body: {} } });
-    await assert.rejects(check({ budgetMs: 50 }), GitHubUnavailableError);
+    const diagnostics: unknown[] = [];
+    await assert.rejects(
+      check({ budgetMs: 50, onDiagnostic: (entry) => diagnostics.push(entry) }),
+      GitHubUnavailableError,
+    );
+    assert.deepEqual(diagnostics, [
+      { operation: 'repository', access: 'write', failure: 'timeout' },
+    ]);
+  });
+
+  test('records transport codes without logging exception messages or secrets', async (t) => {
+    t.mock.method(globalThis, 'fetch', async () => {
+      throw new TypeError('secret-token and private URL', {
+        cause: { code: 'ECONNRESET', message: 'secret-token' },
+      });
+    });
+    const diagnostics: unknown[] = [];
+    await assert.rejects(check({ onDiagnostic: (entry) => diagnostics.push(entry) }), {
+      name: 'GitHubUnavailableError',
+      message: 'GitHub request failed: network',
+    });
+    assert.deepEqual(diagnostics, [
+      { operation: 'repository', access: 'write', failure: 'network', causeCode: 'ECONNRESET' },
+    ]);
   });
 
   for (const status of [429, 500, 502, 503]) {
