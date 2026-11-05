@@ -53,6 +53,8 @@ npx bundlewatch --max-size 100kB "./src/*.js" "./lib/*.js"
 
 ## 提高超出的限制 {#update-max-sizes}
 
+**需要 BundleWatch 1.2.0 或更高版本。** 更早的版本没有这个命令：它们会输出 `[ERROR] There is no matching file for update-max-sizes` 或 `[ERROR] unknown option '--write'`，并以退出码 1 退出。
+
 当体积增长是有意为之时，`update-max-sizes` 会提高每个被超出的 `maxSize`，让检查重新通过。**它接受更大的预算，并不会减小包的体积。** 请像审查其他改动一样审查新的限制。
 
 ```bash

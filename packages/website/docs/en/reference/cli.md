@@ -53,6 +53,8 @@ Quote globs so that BundleWatch expands them, not your shell: `**` then works in
 
 ## Raising exceeded limits {#update-max-sizes}
 
+**Requires BundleWatch 1.2.0 or later.** Earlier versions don't have the command: they print `[ERROR] There is no matching file for update-max-sizes`, or `[ERROR] unknown option '--write'`, and exit with code 1.
+
 When a size increase is intentional, `update-max-sizes` raises each exceeded `maxSize` so the check passes again. **It accepts larger budgets; it does not make bundles smaller.** Review the new limits like any other change.
 
 ```bash

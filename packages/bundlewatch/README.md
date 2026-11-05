@@ -60,7 +60,7 @@ npx bundlewatch update-max-sizes          # preview
 npx bundlewatch update-max-sizes --write  # save
 ```
 
-This accepts larger budgets; it doesn't make bundles smaller. It edits JSON config files and `package.json`. See [raising exceeded limits](https://bundlewatch.io/reference/cli#update-max-sizes).
+Requires BundleWatch 1.2.0 or later. This accepts larger budgets; it doesn't make bundles smaller. It edits JSON config files and `package.json`. See [raising exceeded limits](https://bundlewatch.io/reference/cli#update-max-sizes).
 
 ## Reporting on pull requests
 

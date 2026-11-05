@@ -114,7 +114,7 @@ Running bundlewatch in a directory without a `package.json` no longer crashes (i
 
 ### `update-max-sizes`
 
-As the first argument, `update-max-sizes` now runs the [command that raises exceeded limits](https://bundlewatch.io/reference/cli#update-max-sizes) instead of checking a file with that name. To check such a file, write `./update-max-sizes` or `-- update-max-sizes`.
+In 1.2.0 and later, `update-max-sizes` as the first argument runs the [command that raises exceeded limits](https://bundlewatch.io/reference/cli#update-max-sizes) instead of checking a file with that name. To check such a file, write `./update-max-sizes` or `-- update-max-sizes`.
 
 ### Generic CI without a repository
 

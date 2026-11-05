@@ -35,7 +35,7 @@ description: BundleWatch 的所有选项及其默认值，以及 BundleWatch 读
 
 相对基准的增长永远不会让检查失败：只有 `maxSize` 会。如果两项匹配到同一个路径，例如 `./dist/*.js` 和 `./dist/app.js`，会使用最后一项的 `maxSize` 和 `compression`：请把兜底的 glob 放在前面。
 
-当体积增长是有意为之时，[`bundlewatch update-max-sizes`](./cli.md#update-max-sizes) 会把超出的限制提高到能容纳当前构建的大小。
+当体积增长是有意为之时，[`bundlewatch update-max-sizes`](./cli.md#update-max-sizes)（1.2.0 及更高版本）会把超出的限制提高到能容纳当前构建的大小。
 
 ## `defaultCompression` {#defaultcompression}
 

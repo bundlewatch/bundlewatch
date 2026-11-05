@@ -81,7 +81,7 @@ Each entry in `files` checks the files that match its `path`:
 
 Growth compared with the baseline never fails the check: only `maxSize` does. If two entries match the same path, such as `./dist/*.js` and `./dist/app.js`, the `maxSize` and `compression` of the last one apply: put catch-all globs first.
 
-When an increase is intentional, [`bundlewatch update-max-sizes`](./cli.md#update-max-sizes) raises the exceeded limits to fit the current build.
+When an increase is intentional, [`bundlewatch update-max-sizes`](./cli.md#update-max-sizes) (1.2.0 and later) raises the exceeded limits to fit the current build.
 
 ## `defaultCompression`
 
