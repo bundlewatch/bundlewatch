@@ -1,12 +1,13 @@
 ---
 title: 命令行
-description: BundleWatch 的命令行选项、读取配置的位置以及退出码。
+description: BundleWatch 的命令行选项、读取配置的位置、退出码以及 update-max-sizes 命令。
 ---
 
 # 命令行
 
 ```
 Usage: bundlewatch [options] <filePathGlobs ...>
+       bundlewatch update-max-sizes [--write] [--headroom <size>] [--config <path>]
 ```
 
 [安装](../guide/getting-started.md#installation)后，使用 `npx bundlewatch`（或你的包管理器的等效命令）运行。
@@ -50,6 +51,45 @@ npx bundlewatch --max-size 100kB "./src/*.js" "./lib/*.js"
 
 给 glob 加上引号，让 BundleWatch 而不是你的 shell 去展开它们：这样 `**` 在任何 shell 中都能用。
 
+## 提高超出的限制 {#update-max-sizes}
+
+当体积增长是有意为之时，`update-max-sizes` 会提高每个被超出的 `maxSize`，让检查重新通过。**它接受更大的预算，并不会减小包的体积。** 请像审查其他改动一样审查新的限制。
+
+```bash
+# 预览改动
+npx bundlewatch update-max-sizes
+
+# 保存改动
+npx bundlewatch update-max-sizes --write
+
+# 保存改动，并额外留出 1 KB 空间
+npx bundlewatch update-max-sizes --write --headroom 1KB
+```
+
+请在构建之后运行它：它会测量已经构建好的文件，使用与检查相同的配置、压缩方式和 `normalizeFilenames`。对于每个被提高的限制，它会输出匹配模式、当前和新的 `maxSize`，以及最大的文件及其体积：
+
+```
+UPDATE ./dist/*.js: 100kB -> 249kB, largest file ./dist/app.js is 248.79KB (gzip)
+```
+
+- 只有存在超过 `maxSize` 的文件的条目才会改变。限制永远不会降低，没有 `maxSize` 的条目也保持不限制体积。
+- 新的限制是该条目所作用的最大文件的体积加上 `--headroom`，再向上取整到下一个 KB（1024 字节）。当两个条目匹配同一个文件时，检查使用后一个条目，因此对该文件只会提高后一个条目的限制。
+- 新值保持旧值的写法：`'100kB'` 变为 `'249kB'`，以字节数表示的数字仍是数字。
+- 不带 `--write` 时，配置不会被修改。
+- `--write` 会编辑 JSON 配置文件（自动找到的或通过 `--config` 指定的），或 `package.json` 中的 `bundlewatch` 键。只有 `maxSize` 值会改变：格式和其他所有值都保持原样。
+- 无法编辑 JavaScript 和 TypeScript 配置文件。该命令会输出新值，供你复制到文件中；带 `--write` 时，它随后以退出码 1 退出。
+- 如果某个路径没有匹配到任何文件，或某个文件无法读取，则不会写入任何内容，命令以退出码 1 退出。
+- 它从不连接 BundleWatch 服务或 GitHub：不保存基线，不输出结果链接，也不发布状态。
+
+| 选项                | 说明                                                                                                                 |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `--write`           | 保存新值。                                                                                                           |
+| `--headroom <size>` | 取整前给最大文件增加的空间，例如 `1KB` 或 `512B`。默认为 `0`。使用 `maxSize` 的单位；其他写法（例如 `1k`）会被拒绝。 |
+| `--config <path>`   | 要读取的文件，代替[自动查找](#where-configuration-comes-from)。                                                      |
+| `-h, --help`        | 输出使用说明                                                                                                         |
+
+只有第一个参数会被当作命令：要检查名为 `update-max-sizes` 的文件，请写成 `./update-max-sizes`。
+
 ## 配置来源 {#where-configuration-comes-from}
 
 BundleWatch 会使用以下第一个找到的配置：
@@ -69,6 +109,8 @@ BundleWatch 会使用以下第一个找到的配置：
 | `1`    | 有文件未通过检查（`bundlewatch FAIL`）、配置无效或缺失、选项未知，或发生意外错误。 |
 
 当文件超过其 `maxSize`、某个路径没有匹配到任何文件，或匹配到的路径无法读取（例如目录）时，该文件检查失败。来自 BundleWatch 服务的错误以及 GitHub 返回的错误响应只会记录到日志，不会改变退出码。如果启用了状态（token、仓库和提交都已知），而 GitHub 无法连接或在 5 秒内没有响应，运行会以退出码 1 失败。
+
+`update-max-sizes` 的退出码请参见[提高超出的限制](#update-max-sizes)。
 
 [故障排查](../guide/troubleshooting.md)解释了每条消息。
 

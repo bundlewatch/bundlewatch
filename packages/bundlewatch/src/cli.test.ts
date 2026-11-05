@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { once } from 'node:events';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+
+import { startFakeServer } from './test-helpers.ts';
 
 const source = path.dirname(fileURLToPath(import.meta.url));
 const cli = path.join(source, 'cli.ts');
@@ -32,6 +35,26 @@ const run = (cwd: string, args: string[] = []): { status: number | null; output:
 };
 
 const offline = { bundlewatchServiceHost: null };
+
+const read = (directory: string, name: string): string =>
+  readFileSync(path.join(directory, name), 'utf8');
+
+/** Like `run`, without blocking the event loop, so an in-process fake server can answer. */
+const runAsync = async (
+  cwd: string,
+  args: string[],
+  env: Record<string, string>,
+): Promise<{ status: number | null; output: string }> => {
+  const child = spawn(process.execPath, [cli, ...args], {
+    cwd,
+    env: { PATH: process.env.PATH ?? '', NO_COLOR: '1', ...env },
+  });
+  let output = '';
+  child.stdout.on('data', (chunk) => (output += chunk));
+  child.stderr.on('data', (chunk) => (output += chunk));
+  const [status] = await once(child, 'close');
+  return { status, output };
+};
 
 describe('bundlewatch CLI', () => {
   test('prints help', () => {
@@ -271,5 +294,170 @@ describe('bundlewatch CLI', () => {
     const { status, output } = run(project(), ['--nope']);
     assert.equal(status, 1);
     assert.match(output, /unknown option '--nope'/);
+  });
+});
+
+describe('bundlewatch update-max-sizes', () => {
+  // test-file-1.jpg is 38962 bytes (38.05KB), test-file-2.jpg 254765 (248.79KB).
+  const packageJson = `{
+  "name": "fixture",
+  "scripts": { "build": "true" },
+  "bundlewatch": {
+    "files": [
+      { "path": "./*.jpg", "maxSize": "100kB", "compression": "none" },
+      { "path": "./test-file-1.jpg", "maxSize": 1024, "compression": "none" }
+    ],
+    "bundlewatchServiceHost": null
+  }
+}
+`;
+
+  test('previews the changes without writing them', () => {
+    const directory = project({ 'package.json': packageJson });
+    const { status, output } = run(directory, ['update-max-sizes']);
+    assert.equal(status, 0, output);
+    assert.match(
+      output,
+      /^UPDATE \.\/\*\.jpg: 100kB -> 249kB, largest file \.\/test-file-2\.jpg is 248\.79KB \(no compression\)$/m,
+    );
+    assert.match(
+      output,
+      /^UPDATE \.\/test-file-1\.jpg: 1024 -> 39936, largest file \.\/test-file-1\.jpg is 38\.05KB \(no compression\)$/m,
+    );
+    assert.match(output, /Add --write to save 2 maxSize values to package\.json\./);
+    assert.equal(read(directory, 'package.json'), packageJson);
+  });
+
+  test('--write changes only exceeded maxSize values, then the check passes', () => {
+    const config = packageJson.replace('"maxSize": 1024', '"maxSize": "1MB"');
+    const directory = project({ 'package.json': config });
+    const { status, output } = run(directory, ['update-max-sizes', '--write', '--headroom', '1KB']);
+    assert.equal(status, 0, output);
+    assert.match(output, /Updated 1 maxSize value in package\.json\./);
+    assert.equal(read(directory, 'package.json'), config.replace('"100kB"', '"250kB"'));
+
+    const check = run(directory);
+    assert.equal(check.status, 0, check.output);
+    assert.match(check.output, /PASS \.\/test-file-2\.jpg: 248\.79KB < 250KB/);
+
+    const again = run(directory, ['update-max-sizes', '--write']);
+    assert.equal(again.status, 0, again.output);
+    assert.match(again.output, /No file is over its maxSize, so package\.json was not changed\./);
+  });
+
+  test('updates a JSON config file, discovered or given with --config', () => {
+    const config = `${JSON.stringify(
+      { ...offline, files: [{ path: './*.jpg', maxSize: '100 KB', compression: 'none' }] },
+      null,
+      4,
+    )}\n`;
+    const expected = config.replace('"100 KB"', '"249 KB"');
+    for (const [name, args] of [
+      ['bundlewatch.config.json', []],
+      ['configs/custom.json', ['--config', 'configs/custom.json']],
+    ] as const) {
+      const directory = project({ [name]: config });
+      const { status, output } = run(directory, ['update-max-sizes', ...args, '--write']);
+      assert.equal(status, 0, output);
+      assert.match(output, new RegExp(`Updated 1 maxSize value in ${name}\\.`));
+      assert.equal(read(directory, name), expected, name);
+    }
+  });
+
+  test('updates an array of files in package.json', () => {
+    const config = JSON.stringify({
+      bundlewatch: [{ path: './test-file-2.jpg', maxSize: '2KB', compression: 'none' }],
+    });
+    const directory = project({ 'package.json': config });
+    const { status, output } = run(directory, ['update-max-sizes', '--write']);
+    assert.equal(status, 0, output);
+    assert.equal(read(directory, 'package.json'), config.replace('"2KB"', '"249KB"'));
+  });
+
+  test('explains how to apply changes to a JavaScript config, which it cannot edit', () => {
+    const config = `export default ${JSON.stringify({ ...offline, files: [{ path: './*.jpg', maxSize: '1kB' }] })};`;
+    const directory = project({ 'bundlewatch.config.mjs': config });
+    const message =
+      /bundlewatch\.config\.mjs is not JSON, so update-max-sizes can't edit it: copy the new value above into it by hand/;
+
+    const preview = run(directory, ['update-max-sizes']);
+    assert.equal(preview.status, 0, preview.output);
+    assert.match(preview.output, /^UPDATE \.\/\*\.jpg: 1kB -> \d+kB/m);
+    assert.match(preview.output, message);
+
+    const write = run(directory, ['update-max-sizes', '--write']);
+    assert.equal(write.status, 1);
+    assert.match(write.output, /\[ERROR\] /);
+    assert.match(write.output, message);
+    assert.equal(read(directory, 'bundlewatch.config.mjs'), config);
+  });
+
+  test('changes nothing when a file cannot be measured', () => {
+    const config = JSON.stringify({
+      ...offline,
+      files: [
+        { path: './*.jpg', maxSize: '1kB' },
+        { path: './missing/*.js', maxSize: '1kB' },
+      ],
+    });
+    const directory = project({ 'bundlewatch.config.json': config });
+    const { status, output } = run(directory, ['update-max-sizes', '--write']);
+    assert.equal(status, 1);
+    assert.match(output, /There is no matching file for \.\/missing\/\*\.js/);
+    assert.match(
+      output,
+      /Some files could not be measured, so bundlewatch\.config\.json was not changed/,
+    );
+    assert.equal(read(directory, 'bundlewatch.config.json'), config);
+  });
+
+  test('never contacts the service or GitHub, even in CI', async () => {
+    const server = await startFakeServer({});
+    try {
+      const directory = project({
+        'package.json': JSON.stringify({
+          bundlewatch: {
+            bundlewatchServiceHost: server.url,
+            files: [{ path: './*.jpg', maxSize: '1kB' }],
+          },
+        }),
+      });
+      const { status, output } = await runAsync(directory, ['update-max-sizes', '--write'], {
+        CI: 'true',
+        CI_REPO_OWNER: 'owner',
+        CI_REPO_NAME: 'repo',
+        CI_COMMIT_SHA: 'abc123',
+        CI_BRANCH: 'main',
+        BUNDLEWATCH_GITHUB_TOKEN: 'token',
+        GITHUB_API_URL: server.url,
+      });
+      assert.equal(status, 0, output);
+      assert.deepEqual(server.requests, []);
+      assert.doesNotMatch(output, /\[WARNING\]/);
+    } finally {
+      await server.close();
+    }
+  });
+
+  test('rejects file globs and the headroom of an unknown unit', () => {
+    const directory = project({ 'package.json': packageJson });
+    for (const args of [['./*.jpg'], ['--headroom', '1k']]) {
+      const { status, output } = run(directory, ['update-max-sizes', ...args]);
+      assert.equal(status, 1);
+      assert.match(output, /Run bundlewatch update-max-sizes --help for usage/);
+    }
+    assert.equal(read(directory, 'package.json'), packageJson);
+  });
+
+  test('is only a command as the first argument', () => {
+    const directory = project({ 'update-max-sizes': '0123456789' });
+    for (const [args, filePath] of [
+      [['--', 'update-max-sizes'], 'update-max-sizes'],
+      [['./update-max-sizes'], './update-max-sizes'],
+    ] as const) {
+      const { status, output } = run(directory, [...args]);
+      assert.equal(status, 0, output);
+      assert.ok(output.includes(`PASS ${filePath}: 30B < Infinity (gzip)`), output);
+    }
   });
 });

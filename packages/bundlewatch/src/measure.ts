@@ -48,24 +48,37 @@ const normalizeFilename = (filePath: string, normalize: RegExp | null): string =
 const parseMaxSize = (maxSize: FileConfig['maxSize']): number =>
   (maxSize === undefined ? null : parseBytes(maxSize)) || Number.POSITIVE_INFINITY;
 
-export const measureFiles = ({
-  files,
-  defaultCompression,
-  normalizeFilenames,
-}: {
+type MeasureOptions = {
   files: FileConfig[];
   defaultCompression: string;
   normalizeFilenames: RegExp | null;
-}): FileDetailsByPath => {
-  // A Map, so a file named `__proto__` is stored rather than lost.
-  const fileDetails = new Map<string, FileDetailsByPath[string]>();
+};
 
-  for (const file of files) {
+/** One file matched by a `files` entry, or the error of a pattern or file. */
+export type Measurement = {
+  /** Index of the `files` entry that matched the file. */
+  entry: number;
+  /** Path as the glob returned it, or the pattern when it matched nothing. */
+  filePath: string;
+  /** Name in results and baselines: the normalized path, or `filePath` on error. */
+  key: string;
+  details: FileDetailsByPath[string];
+};
+
+/** Every measurement in order. A later one with the same key replaces an earlier one. */
+export const measureEach = ({
+  files,
+  defaultCompression,
+  normalizeFilenames,
+}: MeasureOptions): Measurement[] => {
+  const measurements: Measurement[] = [];
+
+  for (const [entry, file] of files.entries()) {
     const paths = globFiles(file.path);
     if (paths.length === 0) {
       const error = `There is no matching file for ${file.path}`;
       logger.error(error);
-      fileDetails.set(file.path, { error });
+      measurements.push({ entry, filePath: file.path, key: file.path, details: { error } });
       continue;
     }
 
@@ -77,16 +90,27 @@ export const measureFiles = ({
       } catch (error) {
         const message = `Could not read file ${filePath}`;
         logger.error(message, error);
-        fileDetails.set(filePath, { error: message });
+        measurements.push({ entry, filePath, key: filePath, details: { error: message } });
         continue;
       }
-      fileDetails.set(normalizeFilename(filePath, normalizeFilenames), {
-        maxSize: parseMaxSize(file.maxSize),
-        size: compressedSize(data, compression),
-        compression,
+      measurements.push({
+        entry,
+        filePath,
+        key: normalizeFilename(filePath, normalizeFilenames),
+        details: {
+          maxSize: parseMaxSize(file.maxSize),
+          size: compressedSize(data, compression),
+          compression,
+        },
       });
     }
   }
 
-  return Object.fromEntries(fileDetails);
+  return measurements;
 };
+
+export const measureFiles = (options: MeasureOptions): FileDetailsByPath =>
+  // A Map, so a file named `__proto__` is stored rather than lost.
+  Object.fromEntries(
+    new Map(measureEach(options).map(({ key, details }) => [key, details] as const)),
+  );

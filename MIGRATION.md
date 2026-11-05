@@ -112,6 +112,10 @@ Running bundlewatch in a directory without a `package.json` no longer crashes (i
 
 `-V` and `--version` print the version. Other flags work as before, including giving `--max-size` without a value to mean no limit.
 
+### `update-max-sizes`
+
+As the first argument, `update-max-sizes` now runs the [command that raises exceeded limits](https://bundlewatch.io/reference/cli#update-max-sizes) instead of checking a file with that name. To check such a file, write `./update-max-sizes` or `-- update-max-sizes`.
+
 ### Generic CI without a repository
 
 With `CI` set but no `CI_REPO_OWNER` and `CI_REPO_NAME`, 0.x used the repository `undefined/undefined`. 1.0 falls back to `GIT_URL`, so statuses and baselines may start working on such setups.

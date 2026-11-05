@@ -145,8 +145,14 @@ const warnAboutCi = (config: ResolvedConfig): void => {
   }
 };
 
-/** Applies defaults (including detected CI values) and validates. */
-export const resolveConfig = (customConfig: BundlewatchConfig = {}): ResolvedConfig => {
+/**
+ * Applies defaults (including detected CI values) and validates. `ciWarnings:
+ * false` is for commands that never report to GitHub or the service.
+ */
+export const resolveConfig = (
+  customConfig: BundlewatchConfig = {},
+  { ciWarnings = true }: { ciWarnings?: boolean } = {},
+): ResolvedConfig => {
   const config = mergeConfig(defaultConfig(), customConfig) as Record<string, unknown> & {
     ci: Record<string, unknown>;
   };
@@ -176,6 +182,6 @@ export const resolveConfig = (customConfig: BundlewatchConfig = {}): ResolvedCon
     normalizeFilenames: toRegExp(config.normalizeFilenames),
     ci: { ...config.ci, isPullRequest: Boolean(config.ci.isPullRequest) },
   } as ResolvedConfig;
-  warnAboutCi(resolved);
+  if (ciWarnings) warnAboutCi(resolved);
   return resolved;
 };

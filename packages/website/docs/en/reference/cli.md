@@ -1,12 +1,13 @@
 ---
 title: Command line
-description: BundleWatch's command-line options, where it reads configuration from, and its exit codes.
+description: BundleWatch's command-line options, where it reads configuration from, its exit codes, and the update-max-sizes command.
 ---
 
 # Command line
 
 ```
 Usage: bundlewatch [options] <filePathGlobs ...>
+       bundlewatch update-max-sizes [--write] [--headroom <size>] [--config <path>]
 ```
 
 Run it with `npx bundlewatch` (or your package manager's equivalent) after [installing](../guide/getting-started.md#installation) it.
@@ -50,6 +51,45 @@ npx bundlewatch --max-size 100kB "./src/*.js" "./lib/*.js"
 
 Quote globs so that BundleWatch expands them, not your shell: `**` then works in every shell.
 
+## Raising exceeded limits {#update-max-sizes}
+
+When a size increase is intentional, `update-max-sizes` raises each exceeded `maxSize` so the check passes again. **It accepts larger budgets; it does not make bundles smaller.** Review the new limits like any other change.
+
+```bash
+# Preview the changes
+npx bundlewatch update-max-sizes
+
+# Save them
+npx bundlewatch update-max-sizes --write
+
+# Save them with 1 KB of extra room
+npx bundlewatch update-max-sizes --write --headroom 1KB
+```
+
+Run it after your build: it measures the files already built, with the configuration, compression and `normalizeFilenames` of the check. For each limit it raises, it prints the pattern, the current and new `maxSize`, and the largest file with its size:
+
+```
+UPDATE ./dist/*.js: 100kB -> 249kB, largest file ./dist/app.js is 248.79KB (gzip)
+```
+
+- Only entries with a file over their `maxSize` change. Limits are never lowered, and entries without a `maxSize` stay without one.
+- The new limit is the size of the largest file the entry applies to, plus `--headroom`, rounded up to the next KB (1024 bytes). When two entries match the same file, the check applies the last one, so only that one is raised for it.
+- The new value keeps the form of the old one: `'100kB'` becomes `'249kB'`, and a number of bytes stays a number.
+- Without `--write`, the configuration isn't changed.
+- `--write` edits a JSON config file, discovered or given with `--config`, or the `bundlewatch` key in `package.json`. Only the `maxSize` values change: formatting and every other value stay as they are.
+- JavaScript and TypeScript config files can't be edited. The command prints the new values for you to copy into the file; with `--write`, it then exits with code 1.
+- If a path matches no files, or a file can't be read, nothing is written and the command exits with code 1.
+- It never contacts the BundleWatch service or GitHub: it saves no baseline, prints no results link and posts no status.
+
+| Option              | Description                                                                                                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--write`           | Save the new values.                                                                                                                                                |
+| `--headroom <size>` | Room to add to the largest file before rounding, such as `1KB` or `512B`. `0` by default. Uses the units of `maxSize`; other spellings, such as `1k`, are rejected. |
+| `--config <path>`   | File to read instead of [discovering one](#where-configuration-comes-from).                                                                                         |
+| `-h, --help`        | Output usage information                                                                                                                                            |
+
+Only the first argument is read as the command: to check a file named `update-max-sizes`, write `./update-max-sizes`.
+
 ## Where configuration comes from
 
 BundleWatch uses the first of these it finds:
@@ -69,6 +109,8 @@ An unused `--config` option or `package.json` configuration triggers a warning. 
 | `1`  | A file fails its check (`bundlewatch FAIL`), the configuration is invalid or missing, an option is unknown, or an unexpected error occurs. |
 
 A file fails when it is over its `maxSize`, when a path matches no files, or when a matched path can't be read, such as a directory. Errors from the BundleWatch service, and error responses from GitHub, are logged without changing the exit code. If statuses are enabled (a token, the repository and the commit are known) and GitHub can't be reached or doesn't answer within 5 seconds, the run fails with code 1.
+
+For `update-max-sizes`, see [Raising exceeded limits](#update-max-sizes).
 
 [Troubleshooting](../guide/troubleshooting.md) explains each message.
 

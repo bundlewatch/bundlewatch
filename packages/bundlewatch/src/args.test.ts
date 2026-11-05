@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
-import { ArgumentError, parseCliArgs } from './args.ts';
+import { ArgumentError, parseCliArgs, parseUpdateMaxSizesArgs } from './args.ts';
 
 // Expected values are what commander@5 produced for 0.x's option
 // declarations (`--config [configFilePath]` and so on).
@@ -76,6 +76,43 @@ describe('parseCliArgs', () => {
   test('rejects unknown options', () => {
     for (const arg of ['--nope', '-x', '--max-size-typo=1']) {
       assert.throws(() => parseCliArgs([arg]), ArgumentError, arg);
+    }
+  });
+});
+
+describe('parseUpdateMaxSizesArgs', () => {
+  test('reads --write, --headroom and --config in any order', () => {
+    assert.deepEqual(
+      parseUpdateMaxSizesArgs(['--headroom', '1KB', '--write', '--config=custom.json']),
+      { write: true, help: false, headroom: '1KB', config: 'custom.json' },
+    );
+    assert.deepEqual(parseUpdateMaxSizesArgs([]), { write: false, help: false });
+  });
+
+  test('never reads the argument after --write as its value', () => {
+    assert.throws(() => parseUpdateMaxSizesArgs(['--write', 'custom.json']), /takes no file globs/);
+    assert.throws(() => parseUpdateMaxSizesArgs(['--write=false']), /--write takes no value/);
+  });
+
+  test('requires values for --headroom and --config', () => {
+    for (const args of [['--headroom'], ['--headroom', '--write'], ['--config='], ['--config']]) {
+      assert.throws(() => parseUpdateMaxSizesArgs(args), /needs a value/, args.join(' '));
+    }
+  });
+
+  test('ignores a -- passed on by a package manager', () => {
+    assert.equal(parseUpdateMaxSizesArgs(['--', '--write']).write, true);
+  });
+
+  test('rejects globs, unknown options and the options of the check', () => {
+    for (const arg of ['./dist/*.js', '--nope', '--max-size', '--compression=gzip', '-x']) {
+      assert.throws(
+        () => parseUpdateMaxSizesArgs([arg]),
+        (error: unknown) =>
+          error instanceof ArgumentError &&
+          error.helpCommand === 'bundlewatch update-max-sizes --help',
+        arg,
+      );
     }
   });
 });

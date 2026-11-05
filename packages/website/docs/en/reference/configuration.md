@@ -81,6 +81,8 @@ Each entry in `files` checks the files that match its `path`:
 
 Growth compared with the baseline never fails the check: only `maxSize` does. If two entries match the same path, such as `./dist/*.js` and `./dist/app.js`, the `maxSize` and `compression` of the last one apply: put catch-all globs first.
 
+When an increase is intentional, [`bundlewatch update-max-sizes`](./cli.md#update-max-sizes) raises the exceeded limits to fit the current build.
+
 ## `defaultCompression`
 
 The compression used to measure files that don't set their own `compression`: `gzip` (default), `brotli` or `none`. gzip runs at level 9, and brotli at quality 11. Any other value stops the run with `[FATAL] config.compression must be a valid type`.

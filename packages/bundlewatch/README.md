@@ -53,6 +53,15 @@ npx bundlewatch
 
 It prints the results and exits with code 1 when a file is over its `maxSize`. Files are measured with gzip by default; Brotli and uncompressed sizes are also supported.
 
+When an increase is intentional, raise the exceeded limits to fit the current build:
+
+```sh
+npx bundlewatch update-max-sizes          # preview
+npx bundlewatch update-max-sizes --write  # save
+```
+
+This accepts larger budgets; it doesn't make bundles smaller. It edits JSON config files and `package.json`. See [raising exceeded limits](https://bundlewatch.io/reference/cli#update-max-sizes).
+
 ## Reporting on pull requests
 
 BundleWatch can report its status on GitHub pull requests and link to a breakdown of the changes:
