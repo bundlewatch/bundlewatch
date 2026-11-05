@@ -33,6 +33,12 @@ export type BundlewatchConfig = {
   defaultCompression?: Compression | undefined;
   /** Removes matching capture groups from file names, e.g. content hashes. */
   normalizeFilenames?: string | RegExp | null | undefined;
+  /**
+   * `false` skips the baseline lookup; files are still measured and checked
+   * against `maxSize`. Statuses, results links and saving baselines are
+   * unchanged. Defaults to `true`.
+   */
+  compare?: boolean | undefined;
   /** `null` disables comparisons and short links. */
   bundlewatchServiceHost?: string | null | undefined;
   ci?: CiConfig | undefined;
@@ -43,6 +49,7 @@ export type ResolvedConfig = {
   files: FileConfig[];
   defaultCompression: Compression;
   normalizeFilenames: RegExp | null;
+  compare: boolean;
   bundlewatchServiceHost: string | null;
   ci: CiConfig & { trackBranches: string[]; isPullRequest: boolean };
 };
@@ -88,6 +95,7 @@ const defaultConfig = (): BundlewatchConfig & { ci: CiConfig } => {
     files: [],
     defaultCompression: 'gzip',
     normalizeFilenames: null,
+    compare: true,
     bundlewatchServiceHost: 'https://service.bundlewatch.io',
     ci: {
       githubAccessToken: ci.githubAccessToken,
@@ -128,12 +136,14 @@ const warnAboutCi = (config: ResolvedConfig): void => {
     return;
   }
   if (!config.bundlewatchServiceHost) {
-    logger.warn(`bundlewatchServiceHost was not supplied, bundlewatch comparisons unavailable:
+    if (config.compare) {
+      logger.warn(`bundlewatchServiceHost was not supplied, bundlewatch comparisons unavailable:
     ${LEARN_MORE}
             `);
+    }
     return;
   }
-  if (!ci.repoBranchBase) {
+  if (config.compare && !ci.repoBranchBase) {
     logger.warn(`The ci.repoBranchBase was not supplied, bundlewatch comparisons unavailable:
     ${LEARN_MORE}
                 `);
@@ -172,6 +182,9 @@ export const resolveConfig = (
   }
   if (!COMPRESSION_TYPES.has(config.defaultCompression as string)) {
     throw new ValidationError('config.compression must be a valid type');
+  }
+  if (typeof config.compare !== 'boolean') {
+    throw new ValidationError('config.compare must be true or false');
   }
   if (!Array.isArray(config.ci.trackBranches)) {
     throw new ValidationError('config.ci.trackBranches must be an Array');

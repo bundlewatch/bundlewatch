@@ -7,6 +7,7 @@ import { describe, test } from 'node:test';
 import { mergeConfig, resolveConfig } from './config.ts';
 import { ValidationError } from './errors.ts';
 import { loadConfig } from './load-config.ts';
+import { logger } from './logger.ts';
 import { withEnv } from './test-helpers.ts';
 
 describe('mergeConfig', () => {
@@ -58,6 +59,7 @@ describe('resolveConfig', () => {
     assert.equal(config.defaultCompression, 'gzip');
     assert.equal(config.bundlewatchServiceHost, 'https://service.bundlewatch.io');
     assert.equal(config.normalizeFilenames, null);
+    assert.equal(config.compare, true);
     assert.equal(config.ci.repoBranchBase, 'master');
     assert.deepEqual(config.ci.trackBranches, ['master', 'main', 'develop']);
     assert.equal(config.ci.isPullRequest, false);
@@ -115,6 +117,37 @@ describe('resolveConfig', () => {
     assert.deepEqual(config.ci.trackBranches, ['configured']);
   });
 
+  test('keeps compare: false', async () => {
+    const config = await withEnv({}, () => resolveConfig({ files: [], compare: false }));
+    assert.equal(config.compare, false);
+  });
+
+  test('does not warn that comparisons are unavailable when they are disabled', async (t) => {
+    const warnings: string[] = [];
+    t.mock.method(logger, 'warn', (message: string) => warnings.push(message));
+    const ci = {
+      githubAccessToken: 'token',
+      repoOwner: 'owner',
+      repoName: 'name',
+      commitSha: 'sha',
+      repoCurrentBranch: 'main',
+      repoBranchBase: '',
+    };
+    await withEnv({}, () => {
+      for (const compare of [true, false]) {
+        resolveConfig({ files: [], compare, ci });
+        resolveConfig({ files: [], compare, ci, bundlewatchServiceHost: null });
+      }
+    });
+    assert.deepEqual(
+      warnings.map((warning) => warning.split(':')[0]),
+      [
+        'The ci.repoBranchBase was not supplied, bundlewatch comparisons unavailable',
+        'bundlewatchServiceHost was not supplied, bundlewatch comparisons unavailable',
+      ],
+    );
+  });
+
   test('turns a normalizeFilenames string into a RegExp', async () => {
     const config = await withEnv({}, () =>
       resolveConfig({
@@ -132,6 +165,9 @@ describe('resolveConfig', () => {
       { files: [], defaultCompression: 'zip' },
       { files: [], normalizeFilenames: '(' },
       { files: [], ci: { trackBranches: 'main' } },
+      { files: [], compare: 'false' },
+      { files: [], compare: 0 },
+      { files: [], compare: null },
     ];
     await withEnv({}, () => {
       for (const config of invalid) {

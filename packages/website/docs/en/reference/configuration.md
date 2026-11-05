@@ -15,6 +15,7 @@ Your configuration is merged with the defaults below. Arrays, such as `files` an
 | `prefix`                 | Unset                              | Application namespace for GitHub statuses, baselines and results, see [prefix](#prefix)                      |
 | `defaultCompression`     | `'gzip'`                           | Compression for files that don't set their own, see [defaultCompression](#defaultcompression)                |
 | `normalizeFilenames`     | `null`                             | Removes hashes from file names, see [normalizeFilenames](#normalizefilenames)                                |
+| `compare`                | `true`                             | Compares each file with the base branch's baseline; `false` skips it, see [compare](#compare)                |
 | `bundlewatchServiceHost` | `'https://service.bundlewatch.io'` | The service that stores baselines; `null` disables it, see [bundlewatchServiceHost](#bundlewatchservicehost) |
 | `ci`                     | Detected from your CI environment  | Token, repository, commit and branches, see [ci](#ci)                                                        |
 
@@ -114,13 +115,39 @@ BundleWatch splits the path with the pattern. That gives the text before the mat
 With a pattern that matches the whole path, that removes the captured text. A pattern that matches only part of the path also removes everything outside the match: `/-[a-f0-9]+/` turns `./dist/main-abc123.js` into `-abc123`.
 :::
 
+## `compare`
+
+**Requires BundleWatch 1.2.0 or later.** Earlier versions ignore `compare: false` and still request the baseline. They reject `--no-compare` with `unknown option '--no-compare'` and exit with code 1.
+
+Set `compare: false` to check size limits without comparing with a baseline, for example in a repository that doesn't save baselines for its base branch:
+
+```js
+export default {
+  compare: false,
+  files: [{ path: './dist/index.js', maxSize: '95kB' }],
+}
+```
+
+With comparisons disabled, BundleWatch:
+
+- Doesn't request the base branch's baseline, so the log has no `Unable to fetch fileDetails … code=404` error. It logs `[INFO] Baseline comparison disabled; checking size limits only` instead.
+- Still measures every file. A file over its `maxSize` fails the run with exit code 1, as with comparisons.
+- Reports no difference from the base branch. A passing run's summary is `Everything is in check`, without the `(+…, -…)` totals that a run with a missing baseline shows.
+- Still posts GitHub statuses, prints the results link, and saves a baseline on [tracked branches](../guide/diffing-against-branches-other-than-master.md#tracked-branches). The results page doesn't know that comparisons were disabled: it says that no sizes are saved for the base branch yet.
+
+`compare` must be `true` or `false`. Any other value, such as the string `'false'`, stops the run with `[FATAL] config.compare must be true or false`.
+
+On the command line, [`--no-compare`](./cli.md#options) sets `compare: false` with every configuration source, and wins over `compare: true` in your configuration. Without `--no-compare`, the `compare` value from your configuration applies. There is no option to turn comparisons back on from the command line.
+
+To also stop saving baselines and creating results links, set [`bundlewatchServiceHost`](#bundlewatchservicehost) to `null` instead.
+
 ## `bundlewatchServiceHost`
 
 The service that stores baselines, creates short results links and renders results pages. Defaults to `'https://service.bundlewatch.io'`.
 
 Set it to your own service's URL to use a [custom server](../guide/using-a-custom-server.md). Give the full URL, starting with `https://`, without a trailing slash: BundleWatch appends paths such as `/store` to it. It can include Basic auth credentials, such as `https://user:password@bundlewatch.example.com`: BundleWatch sends them in an `Authorization` header, and leaves them out of results links and log lines.
 
-Set it to `null` to disable the service: BundleWatch then only checks `maxSize`, without comparing with or saving a baseline. It prints no results link, the GitHub status has no details link, and the [Node.js API](./nodejs.md#result) returns `url: undefined`.
+Set it to `null` to disable the service: BundleWatch then only checks `maxSize`, without comparing with or saving a baseline. It prints no results link, the GitHub status has no details link, and the [Node.js API](./nodejs.md#result) returns `url: undefined`. To skip only the comparison, set [`compare: false`](#compare).
 
 ## `ci`
 

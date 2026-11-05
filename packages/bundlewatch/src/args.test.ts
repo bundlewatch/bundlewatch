@@ -66,6 +66,20 @@ describe('parseCliArgs', () => {
     });
   });
 
+  test('reads --no-compare as a flag that never takes a value', () => {
+    assert.deepEqual(parseCliArgs(['--no-compare', './a.js', '--max-size', '1kB']), {
+      values: { compare: false, 'max-size': '1kB' },
+      positionals: ['./a.js'],
+    });
+    assert.deepEqual(parseCliArgs(['--max-size', '--no-compare']), {
+      values: { 'max-size': true, compare: false },
+      positionals: [],
+    });
+    for (const arg of ['--no-compare=', '--no-compare=false']) {
+      assert.throws(() => parseCliArgs([arg]), /option '--no-compare' does not take a value/, arg);
+    }
+  });
+
   test('treats everything after -- as positionals', () => {
     assert.deepEqual(parseCliArgs(['--', '--max-size', '-x']), {
       values: {},
@@ -74,7 +88,7 @@ describe('parseCliArgs', () => {
   });
 
   test('rejects unknown options', () => {
-    for (const arg of ['--nope', '-x', '--max-size-typo=1']) {
+    for (const arg of ['--nope', '-x', '--max-size-typo=1', '--compare', '--no-compares']) {
       assert.throws(() => parseCliArgs([arg]), ArgumentError, arg);
     }
   });

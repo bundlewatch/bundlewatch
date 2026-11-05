@@ -1,6 +1,7 @@
 // Command-line parsing with the rules of commander@5, which 0.x used. Every
 // option there was declared as `--name [value]`: the value is optional, and
 // without one the option is `true`. `util.parseArgs` has no optional values.
+// `--no-compare`, which 0.x did not have, is a flag: it never takes a value.
 
 export const VALUE_OPTIONS = ['config', 'max-size', 'compression', 'normalize'] as const;
 
@@ -10,6 +11,7 @@ export type ParsedArgs = {
   values: Partial<Record<ValueOption, string | true>> & {
     help?: true;
     version?: true;
+    compare?: false;
   };
   positionals: string[];
 };
@@ -52,6 +54,13 @@ export const parseCliArgs = (argv: string[]): ParsedArgs => {
     }
 
     const [flag = '', inline] = arg.split(/=(.*)/s);
+    if (flag === '--no-compare') {
+      if (inline !== undefined) {
+        throw new ArgumentError(`option '--no-compare' does not take a value`);
+      }
+      values.compare = false;
+      continue;
+    }
     const name = flag.replace(/^--/, '');
     if (!flag.startsWith('--') || !isValueOption(name)) {
       throw new ArgumentError(`unknown option '${flag}'`);

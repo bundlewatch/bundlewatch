@@ -157,7 +157,7 @@ Users see these strings in GitHub statuses, CI logs and the results page.
   - `PASS|WARN|FAIL|ERROR <path>: <message>`
   - `bundlewatch PASS|WARN|FAIL`, followed by the summary
   - Log prefixes: `[INFO]`, `[WARNING]`, `[ERROR]`, `[FATAL]`, `[DEBUG]`
-- CLI flags: `--config`, `--max-size`, `--compression`, `--normalize`, `--help`. Keep the commander behaviour where `--flag [value]` takes an optional value.
+- CLI flags: `--config`, `--max-size`, `--compression`, `--normalize`, `--help`. Keep the commander behaviour where `--flag [value]` takes an optional value. `--no-compare`, added in 1.x, takes no value.
 
 ### GitHub commit statuses (hard contract)
 
