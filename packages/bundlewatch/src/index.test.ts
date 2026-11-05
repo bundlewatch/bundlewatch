@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { decodeResultsData } from '@bundlewatch/core';
 
 import bundlewatch, { STATUSES } from './index.ts';
+import { logger } from './logger.ts';
 import { type RecordedRequest, startFakeServer, withEnv } from './test-helpers.ts';
 
 // Ports of the 0.x Node API tests, plus the flows added in 1.0.
@@ -324,6 +325,91 @@ describe('bundlewatch Node API', () => {
           summary: 'Everything is in check (+38.08KB, -0B)',
         },
       });
+    } finally {
+      await server.close();
+    }
+  });
+
+  test('compare: false skips the lookup but still saves, links and reports', async (t) => {
+    const infos: string[] = [];
+    t.mock.method(logger, 'info', (message: string) => infos.push(message));
+    const server = await startFakeServer({
+      'POST /store/lookup': () => ({ status: 200, body: { fileDetailsByPath: BASELINE } }),
+      'POST /store': () => ({ status: 200, body: {} }),
+      'POST /results': () => ({
+        status: 201,
+        body: { id: 'x', url: 'https://short.test/r/x' },
+      }),
+      'POST /repos/*': () => ({ status: 201, body: {} }),
+    });
+    try {
+      const result = await withEnv({ GITHUB_API_URL: server.url }, () =>
+        bundlewatch({
+          compare: false,
+          files: [{ path: './test-file-1.jpg', maxSize: '1MB' }],
+          bundlewatchServiceHost: server.url,
+          ci: { ...CI, repoCurrentBranch: 'main' },
+        }),
+      );
+
+      assert.deepEqual(
+        server.requests.map((request) => request.path),
+        ['/repos/owner/name/statuses/sha', '/store', '/results', '/repos/owner/name/statuses/sha'],
+      );
+      assert.deepEqual(infos, [
+        'Baseline comparison disabled; checking size limits only',
+        'Saving results',
+      ]);
+      assert.equal(result.status, 'pass');
+      // No difference against a missing baseline, unlike `(+38.08KB, -0B)`.
+      assert.equal(result.summary, 'Everything is in check ');
+      assert.deepEqual(
+        result.fullResults.map((file) => [file.message, file.baseBranchSize]),
+        [['38.08KB < 1MB (gzip)', 0]],
+      );
+      assert.equal(result.url, 'https://short.test/r/x');
+      assert.deepEqual(statuses(server.requests).at(-1), {
+        state: 'success',
+        target_url: 'https://short.test/r/x',
+        description: 'Everything is in check ',
+        context: 'bundlewatch',
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
+  test('compare: false still fails files over their maxSize', async () => {
+    const server = await startFakeServer({
+      'POST /results': () => ({ status: 404 }),
+      'POST /repos/*': () => ({ status: 201, body: {} }),
+    });
+    try {
+      const result = await withEnv({ GITHUB_API_URL: server.url }, () =>
+        bundlewatch({
+          compare: false,
+          files: [{ path: './*.jpg', maxSize: '100kB' }],
+          bundlewatchServiceHost: server.url,
+          ci: CI,
+        }),
+      );
+      assert.equal(result.status, 'fail');
+      assert.equal(result.summary, 'maxSize check failed');
+      assert.equal(
+        server.requests.some((request) => request.path.startsWith('/store')),
+        false,
+      );
+      assert.deepEqual(
+        (statuses(server.requests) as Record<string, unknown>[]).map(({ state, context }) => [
+          state,
+          context,
+        ]),
+        [
+          ['pending', 'bundlewatch'],
+          ['failure', 'bundlewatch'],
+          ['failure', 'bundlewatch ./test-file-2.jpg'],
+        ],
+      );
     } finally {
       await server.close();
     }

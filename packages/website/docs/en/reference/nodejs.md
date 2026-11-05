@@ -20,7 +20,7 @@ if (results.status === STATUSES.FAIL) {
 }
 ```
 
-Like the CLI, the API posts GitHub statuses and compares with and saves baselines when the `ci` details are available. It also logs the same `[INFO]`, `[WARNING]` and `[ERROR]` lines to the console, but doesn't print the results or set the exit code: that's up to you.
+Like the CLI, the API posts GitHub statuses and compares with and saves baselines when the `ci` details are available. Set [`compare: false`](./configuration.md#compare) to skip the comparison. It also logs the same `[INFO]`, `[WARNING]` and `[ERROR]` lines to the console, but doesn't print the results or set the exit code: that's up to you.
 
 Unlike the CLI, it accepts an empty `files`. Nothing is measured and the result is `'pass'`, but a tracked-branch build with a token still saves, which replaces the baseline with an empty one.
 

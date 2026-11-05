@@ -20,7 +20,7 @@ if (results.status === STATUSES.FAIL) {
 }
 ```
 
-与 CLI 一样，当 `ci` 信息可用时，API 会发布 GitHub 状态，并与基准对比、保存基准。它也会在控制台输出同样的 `[INFO]`、`[WARNING]` 和 `[ERROR]` 日志行，但不会输出结果，也不会设置退出码：这些由你自己处理。
+与 CLI 一样，当 `ci` 信息可用时，API 会发布 GitHub 状态，并与基准对比、保存基准。设置 [`compare: false`](./configuration.md#compare) 可以跳过对比。它也会在控制台输出同样的 `[INFO]`、`[WARNING]` 和 `[ERROR]` 日志行，但不会输出结果，也不会设置退出码：这些由你自己处理。
 
 与 CLI 不同，它接受空的 `files`。此时不会测量任何文件，结果为 `'pass'`，但带 token 的跟踪分支构建仍会保存，从而用一个空基准替换原有基准。
 

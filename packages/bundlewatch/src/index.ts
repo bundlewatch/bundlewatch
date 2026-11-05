@@ -1,4 +1,10 @@
-import { type AnalyzeResult, analyze, GitHubStatusReporter, STATUSES } from '@bundlewatch/core';
+import {
+  type AnalyzeResult,
+  analyze,
+  type FileDetailsByPath,
+  GitHubStatusReporter,
+  STATUSES,
+} from '@bundlewatch/core';
 
 import { type BundlewatchConfig, type ResolvedConfig, resolveConfig } from './config.ts';
 import { logger } from './logger.ts';
@@ -20,18 +26,27 @@ const run = async (config: ResolvedConfig): Promise<BundlewatchResult> => {
   const currentBranchFileDetails = measureFiles(config);
 
   const service = new ServiceClient(config);
-  const baseBranchFileDetails = await service.getBaseline();
+  let baseBranchFileDetails: FileDetailsByPath = {};
+  if (config.compare) {
+    baseBranchFileDetails = await service.getBaseline();
+  } else {
+    logger.info('Baseline comparison disabled; checking size limits only');
+  }
   await service.saveBaseline(currentBranchFileDetails);
 
   const results = analyze({
     currentBranchFileDetails,
     baseBranchFileDetails,
-    baseBranchName: config.ci.repoBranchBase,
+    // Without a base branch name, the summary leaves out the difference.
+    baseBranchName: config.compare ? config.ci.repoBranchBase : undefined,
   });
   return { ...results, url: await service.getResultsUrl(results) };
 };
 
-/** Measures the configured files, compares them with the baseline and reports to GitHub. */
+/**
+ * Measures the configured files, compares them with the baseline unless
+ * `compare` is `false`, and reports to GitHub.
+ */
 const bundlewatch = async (customConfig?: BundlewatchConfig): Promise<BundlewatchResult> => {
   const config = resolveConfig(customConfig);
   const github = new GitHubStatusReporter({

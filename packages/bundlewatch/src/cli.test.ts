@@ -61,6 +61,7 @@ describe('bundlewatch CLI', () => {
     const { status, output } = run(project(), ['--help']);
     assert.equal(status, 0);
     assert.match(output, /Usage: bundlewatch \[options\] <filePathGlobs \.\.\.>/);
+    assert.match(output, /--no-compare {2,}check size limits without comparing with a baseline/);
   });
 
   test('fails without configuration, even outside a package', () => {
@@ -288,6 +289,61 @@ describe('bundlewatch CLI', () => {
     const { status, output } = run(directory, ['--config', 'config.json']);
     assert.equal(status, 1);
     assert.match(output, /\[FATAL\] Could not parse JSON config file: config\.json/);
+  });
+
+  const COMPARISON_DISABLED = /\[INFO\] Baseline comparison disabled; checking size limits only/;
+
+  test('--no-compare overrides every configuration source and keeps maxSize failures', () => {
+    const config = {
+      ...offline,
+      compare: true,
+      files: [{ path: './*.jpg', maxSize: '100kB', compression: 'none' }],
+    };
+    const directory = project({
+      'package.json': JSON.stringify({ bundlewatch: config }),
+      'custom.json': JSON.stringify(config),
+    });
+    for (const args of [
+      ['--no-compare', '--max-size', '100kB', '--compression', 'none', './*.jpg'],
+      ['--config', 'custom.json', '--no-compare'],
+      ['--no-compare'],
+    ]) {
+      const { status, output } = run(directory, args);
+      assert.equal(status, 1, output);
+      assert.match(output, COMPARISON_DISABLED, args.join(' '));
+      assert.match(output, /FAIL \.\/test-file-2\.jpg: 248\.79KB > 100KB \(no compression\)/);
+      assert.match(output, /bundlewatch FAIL\nmaxSize check failed/);
+    }
+  });
+
+  test('reads compare: false from a config file, and compares by default', () => {
+    const files = [{ path: './*.jpg' }];
+    const disabled = run(
+      project({
+        'bundlewatch.config.json': JSON.stringify({ ...offline, compare: false, files }),
+      }),
+    );
+    assert.equal(disabled.status, 0, disabled.output);
+    assert.match(disabled.output, COMPARISON_DISABLED);
+    assert.match(disabled.output, /bundlewatch PASS\nEverything is in check \n/);
+
+    const enabled = run(
+      project({ 'bundlewatch.config.json': JSON.stringify({ ...offline, files }) }),
+    );
+    assert.equal(enabled.status, 0, enabled.output);
+    assert.doesNotMatch(enabled.output, COMPARISON_DISABLED);
+  });
+
+  test('rejects a value for --no-compare and an invalid compare option', () => {
+    const directory = project({
+      'bundlewatch.config.json': JSON.stringify({ compare: 'false', files: [{ path: './*.jpg' }] }),
+    });
+    const flag = run(directory, ['--no-compare=true']);
+    assert.equal(flag.status, 1);
+    assert.match(flag.output, /option '--no-compare' does not take a value/);
+    const config = run(directory);
+    assert.equal(config.status, 1);
+    assert.match(config.output, /\[FATAL\] config\.compare must be true or false/);
   });
 
   test('rejects unknown options', () => {

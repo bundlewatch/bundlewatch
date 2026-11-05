@@ -111,6 +111,8 @@ Get a token from [service.bundlewatch.io/setup-github](https://service.bundlewat
 
 BundleWatch detects the repository, commit and branch on supported CI providers. If a value is missing, set `CI_REPO_OWNER`, `CI_REPO_NAME`, `CI_COMMIT_SHA` or `CI_BRANCH`. When your provider cannot detect the base branch, set `CI_BRANCH_BASE` to the branch to compare with; otherwise comparisons use `master`. See [supported CI providers and environment variables](https://bundlewatch.io/guide/using-bundlewatch#supported-ci-providers).
 
+To check size limits without comparing with the base branch, set `compare: false` or run `npx bundlewatch --no-compare` (BundleWatch 1.2.0 or later). See [`compare`](https://bundlewatch.io/reference/configuration#compare).
+
 ### Viewing the results breakdown
 
 Click the status's **Details** link, or open the results link printed in the build log, to see each file's size, limit and change from the base branch:

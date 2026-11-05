@@ -18,6 +18,7 @@ Options:
   --max-size [maxSize]         maximum size threshold (e.g. 3kb)
   --compression [compression]  specify which compression algorithm to use
   --normalize [regex]          normalize filenames via regex, any match will be removed
+  --no-compare                 check size limits without comparing with a baseline
   -V, --version                output the version number
   -h, --help                   output usage information
 
@@ -34,6 +35,9 @@ Commands:
 
    Use command line
      $ bundlewatch --max-size 100KB ./src/*.js /lib/*.js
+
+   Check size limits without comparing with a baseline
+     $ bundlewatch --no-compare
 
    Raise exceeded maxSize values in the configuration file
      $ bundlewatch ${UPDATE_MAX_SIZES} --write
@@ -72,13 +76,15 @@ const main = async (argv: string[]): Promise<number> => {
     return 0;
   }
 
-  const config = await loadConfig({
+  const loaded = await loadConfig({
     globs: positionals,
     config: values.config,
     maxSize: values['max-size'],
     compression: values.compression,
     normalize: values.normalize,
   });
+  // Unlike the other options, --no-compare applies to every configuration source.
+  const config = values.compare === false ? { ...loaded, compare: false } : loaded;
 
   if (!config.files || config.files.length === 0) {
     logger.error(`Configuration missing:

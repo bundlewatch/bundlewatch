@@ -20,10 +20,12 @@ Run it with `npx bundlewatch` (or your package manager's equivalent) after [inst
 | `--max-size [maxSize]`        | Limit for each file given on the command line, such as `3kb`. See [`maxSize`](./configuration.md#files) for the units. Without a value, there is no limit.                                                                                                                         |
 | `--compression [compression]` | Compression for the files given on the command line: `gzip` (default), `brotli` or `none`.                                                                                                                                                                                         |
 | `--normalize [regex]`         | Sets [`normalizeFilenames`](./configuration.md#normalizefilenames) for the files given on the command line.                                                                                                                                                                        |
+| `--no-compare`                | Checks size limits without requesting or comparing with the base branch's baseline. Sets [`compare: false`](./configuration.md#compare) with every configuration source. Requires BundleWatch 1.2.0 or later.                                                                      |
 | `-V, --version`               | Output the version number                                                                                                                                                                                                                                                          |
 | `-h, --help`                  | Output usage information                                                                                                                                                                                                                                                           |
 
 - `--max-size`, `--compression` and `--normalize` only apply to file globs given on the command line. With a discovered config file, `--config`, or the `bundlewatch` key in package.json, they're ignored without a warning.
+- `--no-compare` applies with file globs and with every configuration source, and wins over `compare: true` in your configuration. It never takes a value: `--no-compare=false` is an error. Without it, `compare` in your configuration applies; it defaults to `true`.
 - An option takes the next argument as its value, unless that argument starts with `-`. Put the value right after the option, or write `--max-size=3kb`: in `bundlewatch --max-size ./dist/*.js`, the first file becomes the size.
 - Without a value: with file globs, `--max-size` means no limit, and `--compression` or `--normalize` stops the run with an error. Without file globs, `--config` stops the run with an error.
 - `--` ends the options: every argument after it is a glob.
@@ -47,6 +49,12 @@ Use the command line:
 
 ```bash
 npx bundlewatch --max-size 100kB "./src/*.js" "./lib/*.js"
+```
+
+Check size limits without comparing with a baseline:
+
+```bash
+npx bundlewatch --no-compare
 ```
 
 Quote globs so that BundleWatch expands them, not your shell: `**` then works in every shell.
