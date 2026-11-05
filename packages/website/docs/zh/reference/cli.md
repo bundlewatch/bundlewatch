@@ -20,10 +20,12 @@ Usage: bundlewatch [options] <filePathGlobs ...>
 | `--max-size [maxSize]`        | 命令行中指定的每个文件的限制，例如 `3kb`。单位参见 [`maxSize`](./configuration.md#files)。不带值时不限制体积。                                                                                                          |
 | `--compression [compression]` | 命令行中指定的文件所用的压缩方式：`gzip`（默认）、`brotli` 或 `none`。                                                                                                                                                  |
 | `--normalize [regex]`         | 为命令行中指定的文件设置 [`normalizeFilenames`](./configuration.md#normalizefilenames)。                                                                                                                                |
+| `--no-compare`                | 只检查体积限制，不请求基准分支的基准，也不与之对比。对所有配置来源都会设置 [`compare: false`](./configuration.md#compare)。需要 BundleWatch 1.2.0 或更高版本。                                                          |
 | `-V, --version`               | 输出版本号                                                                                                                                                                                                              |
 | `-h, --help`                  | 输出使用说明                                                                                                                                                                                                            |
 
 - `--max-size`、`--compression` 和 `--normalize` 只作用于命令行中指定的文件 glob。使用自动找到的配置文件、`--config` 或 package.json 中的 `bundlewatch` 键时，它们会被忽略，且没有警告。
+- `--no-compare` 对文件 glob 和所有配置来源都生效，并且优先于配置中的 `compare: true`。它从不接受值：`--no-compare=false` 会报错。不带它时，使用配置中的 `compare`；默认为 `true`。
 - 选项会把下一个参数作为它的值，除非该参数以 `-` 开头。请把值紧跟在选项后面，或者写成 `--max-size=3kb`：在 `bundlewatch --max-size ./dist/*.js` 中，第一个文件会被当作体积。
 - 不带值时：有文件 glob 时，`--max-size` 表示不限制体积，`--compression` 或 `--normalize` 会让运行报错停止。没有文件 glob 时，`--config` 会让运行报错停止。
 - `--` 表示选项结束：之后的每个参数都是 glob。
@@ -47,6 +49,12 @@ npx bundlewatch --config internals/bundlewatch.config.mjs
 
 ```bash
 npx bundlewatch --max-size 100kB "./src/*.js" "./lib/*.js"
+```
+
+只检查体积限制，不与基准对比：
+
+```bash
+npx bundlewatch --no-compare
 ```
 
 给 glob 加上引号，让 BundleWatch 而不是你的 shell 去展开它们：这样 `**` 在任何 shell 中都能用。
@@ -81,7 +89,7 @@ UPDATE ./dist/*.js: 100kB -> 249kB, largest file ./dist/app.js is 248.79KB (gzip
 - `--write` 会编辑 JSON 配置文件（自动找到的或通过 `--config` 指定的），或 `package.json` 中的 `bundlewatch` 键。只有 `maxSize` 值会改变：格式和其他所有值都保持原样。
 - 无法编辑 JavaScript 和 TypeScript 配置文件。需要提高限制时，该命令会输出新值，供你复制到文件中；如果带了 `--write`，它会以退出码 1 退出。
 - 如果某个路径没有匹配到任何文件，或某个文件无法读取，则不会写入任何内容，命令以退出码 1 退出。
-- 它从不连接 BundleWatch 服务或 GitHub：不保存基线，不输出结果链接，也不发布状态。
+- 它从不连接 BundleWatch 服务或 GitHub：不保存基准，不输出结果链接，也不发布状态。
 
 | 选项                | 说明                                                                                                                 |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------- |

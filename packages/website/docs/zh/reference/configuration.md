@@ -14,6 +14,7 @@ description: BundleWatch 的所有选项及其默认值，以及 BundleWatch 读
 | `files`                  | 无                                 | 要检查的文件及其限制，参见 [files](#files)                                              |
 | `defaultCompression`     | `'gzip'`                           | 未单独设置压缩方式的文件所用的压缩方式，参见 [defaultCompression](#defaultcompression)  |
 | `normalizeFilenames`     | `null`                             | 移除文件名中的 hash，参见 [normalizeFilenames](#normalizefilenames)                     |
+| `compare`                | `true`                             | 将每个文件与基准分支的基准对比；`false` 表示跳过，参见 [compare](#compare)              |
 | `bundlewatchServiceHost` | `'https://service.bundlewatch.io'` | 保存基准的服务；`null` 表示禁用，参见 [bundlewatchServiceHost](#bundlewatchservicehost) |
 | `ci`                     | 从 CI 环境中自动检测               | token、仓库、提交和分支，参见 [ci](#ci)                                                 |
 
@@ -68,13 +69,39 @@ BundleWatch 用该模式拆分路径，得到匹配之前的文本、匹配之�
 对于匹配整个路径的模式，结果就是移除捕获到的文本。只匹配路径一部分的模式还会移除匹配范围之外的所有内容：`/-[a-f0-9]+/` 会把 `./dist/main-abc123.js` 变成 `-abc123`。
 :::
 
+## `compare` {#compare}
+
+**需要 BundleWatch 1.2.0 或更高版本。** 更早的版本会忽略 `compare: false`，仍然请求基准。它们会以 `unknown option '--no-compare'` 拒绝 `--no-compare`，并以退出码 1 退出。
+
+设置 `compare: false` 可以只检查体积限制，不与基准对比，例如仓库不为其基准分支保存基准时：
+
+```js
+export default {
+  compare: false,
+  files: [{ path: './dist/index.js', maxSize: '95kB' }],
+}
+```
+
+禁用对比后，BundleWatch：
+
+- 不会请求基准分支的基准，因此日志中不会出现 `Unable to fetch fileDetails … code=404` 错误，而是输出 `[INFO] Baseline comparison disabled; checking size limits only`。
+- 仍然会测量每个文件。与启用对比时一样，超过其 `maxSize` 的文件会让运行以退出码 1 失败。
+- 不会报告与基准分支的差异。通过的运行的摘要为 `Everything is in check`，不带缺少基准时会显示的 `(+…, -…)` 合计。
+- 仍然会发布 GitHub 状态、输出结果链接，并在[跟踪分支](../guide/diffing-against-branches-other-than-master.md#tracked-branches)上保存基准。结果页面不知道对比已被禁用：它会显示基准分支还没有保存过体积。
+
+`compare` 必须是 `true` 或 `false`。其他任何值（例如字符串 `'false'`）都会让运行以 `[FATAL] config.compare must be true or false` 停止。
+
+在命令行中，[`--no-compare`](./cli.md#options) 会对所有配置来源设置 `compare: false`，并且优先于配置中的 `compare: true`。不带 `--no-compare` 时，使用配置中的 `compare` 值。命令行没有重新开启对比的选项。
+
+如果还要停止保存基准和创建结果链接，请改为将 [`bundlewatchServiceHost`](#bundlewatchservicehost) 设为 `null`。
+
 ## `bundlewatchServiceHost` {#bundlewatchservicehost}
 
 用于保存基准、创建结果短链接和渲染结果页面的服务。默认为 `'https://service.bundlewatch.io'`。
 
 要使用[自定义服务器](../guide/using-a-custom-server.md)，请将它设为你自己服务的 URL。请填写以 `https://` 开头的完整 URL，末尾不带斜杠：BundleWatch 会在后面拼接 `/store` 等路径。它可以包含 Basic Auth 凭据，例如 `https://user:password@bundlewatch.example.com`：BundleWatch 会通过 `Authorization` 请求头发送它们，并且不会把它们写进结果链接和日志。
 
-设为 `null` 可以禁用服务：此时 BundleWatch 只检查 `maxSize`，不会与基准对比，也不会保存基准。它不会输出结果链接，GitHub 状态没有 details 链接，[Node.js API](./nodejs.md#result) 返回 `url: undefined`。
+设为 `null` 可以禁用服务：此时 BundleWatch 只检查 `maxSize`，不会与基准对比，也不会保存基准。它不会输出结果链接，GitHub 状态没有 details 链接，[Node.js API](./nodejs.md#result) 返回 `url: undefined`。如果只想跳过对比，请设置 [`compare: false`](#compare)。
 
 ## `ci` {#ci}
 
