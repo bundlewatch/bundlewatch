@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { after, before, describe, test } from 'node:test';
 
@@ -589,6 +589,22 @@ describe('documented differences (MIGRATION.md)', () => {
     assert.ok(legacy.stdout.includes('bundlewatch PASS'));
     assert.equal(next.status, 1);
     assert.ok(next.stdout.includes('FAIL __proto__: 10B > 1B (no compression)'));
+  });
+
+  test('update-max-sizes as the first argument is a command, not a glob', async () => {
+    const config = JSON.stringify({
+      bundlewatch: { files: [{ path: './images/*.jpg', maxSize: '1kB' }] },
+    });
+    const cwd = createProject({ 'package.json': config, 'update-max-sizes': '0123456789' });
+    const { legacy, next } = await both(cwd, ['update-max-sizes']);
+    assert.ok(legacy.stdout.includes('PASS update-max-sizes: 30B < Infinity (gzip)'));
+    assert.equal(next.status, 0);
+    assert.ok(next.stdout.some((line) => line.startsWith('UPDATE ./images/*.jpg: 1kB -> ')));
+    assert.equal(readFileSync(path.join(cwd, 'package.json'), 'utf8'), config);
+
+    // Both CLIs check the file when its name is not the first argument.
+    assert.equal((await assertSameBehavior(cwd, ['./update-max-sizes'])).status, 0);
+    assert.equal((await assertSameBehavior(cwd, ['--', 'update-max-sizes'])).status, 0);
   });
 });
 

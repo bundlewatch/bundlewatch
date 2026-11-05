@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { after, before, describe, test } from 'node:test';
 
-import { compressedSize, globFiles, measureFiles } from './measure.ts';
+import { compressedSize, globFiles, measureEach, measureFiles } from './measure.ts';
 
 const require = createRequire(import.meta.url);
 const gzipSize6: { sync: (data: Buffer) => number } = require('gzip-size');
@@ -162,6 +162,30 @@ describe('measureFiles', () => {
         Number.POSITIVE_INFINITY,
       );
     }
+  });
+
+  test('measureEach keeps every match with its entry; measureFiles keeps the last per key', () => {
+    const options = {
+      files: [
+        { path: './dist/?.js', maxSize: '1kB' },
+        { path: './dist/a.js', maxSize: '2kB' },
+        { path: './nothing.js' },
+      ],
+      defaultCompression: 'none',
+      normalizeFilenames: null,
+    };
+    assert.deepEqual(
+      measureEach(options).map(({ entry, filePath, key }) => [entry, filePath, key]),
+      [
+        [0, './dist/2.js', './dist/2.js'],
+        [0, './dist/a.js', './dist/a.js'],
+        [0, './dist/ä.js', './dist/ä.js'],
+        [0, './dist/B.js', './dist/B.js'],
+        [1, './dist/a.js', './dist/a.js'],
+        [2, './nothing.js', './nothing.js'],
+      ],
+    );
+    assert.equal((measureFiles(options)['./dist/a.js'] as { maxSize: number }).maxSize, 2048);
   });
 
   // 0.x assigned into a plain object, so these entries vanished and the

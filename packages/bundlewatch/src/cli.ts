@@ -2,14 +2,16 @@
 
 import { type FileResult, STATUSES } from '@bundlewatch/core';
 
-import { ArgumentError, parseCliArgs } from './args.ts';
+import { ArgumentError, parseCliArgs, UPDATE_MAX_SIZES } from './args.ts';
 import { ValidationError } from './errors.ts';
 import bundlewatch from './index.ts';
 import { loadConfig } from './load-config.ts';
 import { logger, paint } from './logger.ts';
+import { updateMaxSizes } from './update-max-sizes.ts';
 import { VERSION } from './version.ts';
 
 const HELP = `Usage: bundlewatch [options] <filePathGlobs ...>
+       bundlewatch ${UPDATE_MAX_SIZES} [--write] [--headroom <size>] [--config <path>]
 
 Options:
   --config [configFilePath]    file to read instead of automatic configuration discovery
@@ -18,6 +20,9 @@ Options:
   --normalize [regex]          normalize filenames via regex, any match will be removed
   -V, --version                output the version number
   -h, --help                   output usage information
+
+Commands:
+  ${UPDATE_MAX_SIZES}             raise exceeded maxSize values to fit the files already built
 
   Examples:
 
@@ -29,6 +34,9 @@ Options:
 
    Use command line
      $ bundlewatch --max-size 100KB ./src/*.js /lib/*.js
+
+   Raise exceeded maxSize values in the configuration file
+     $ bundlewatch ${UPDATE_MAX_SIZES} --write
 `;
 
 const printResults = (fullResults: FileResult[]): void => {
@@ -49,6 +57,10 @@ const printResults = (fullResults: FileResult[]): void => {
 };
 
 const main = async (argv: string[]): Promise<number> => {
+  // Only as the first argument: `./update-max-sizes` or `-- update-max-sizes`
+  // still checks a file with that name.
+  if (argv[0] === UPDATE_MAX_SIZES) return updateMaxSizes(argv.slice(1));
+
   const { values, positionals } = parseCliArgs(argv);
 
   if (values.help) {
@@ -107,7 +119,7 @@ try {
   if (error instanceof ValidationError) {
     logger.fatal(error.message);
   } else if (error instanceof ArgumentError) {
-    logger.error(`${error.message}\n    Run bundlewatch --help for usage`);
+    logger.error(`${error.message}\n    Run ${error.helpCommand} for usage`);
   } else {
     logger.fatal('Uncaught exception', error);
   }
