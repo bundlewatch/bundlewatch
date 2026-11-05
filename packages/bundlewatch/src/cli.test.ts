@@ -374,6 +374,31 @@ describe('bundlewatch update-max-sizes', () => {
     assert.equal(read(directory, 'package.json'), config.replace('"2KB"', '"249KB"'));
   });
 
+  test('fits a config file that its own pattern measures, after the edit', () => {
+    // 1024 bytes: writing 1kB instead of 1B makes it 1025, over 1kB.
+    const config = {
+      ...offline,
+      files: [{ path: './*.json', maxSize: '1B', compression: 'none' }],
+      padding: '',
+    };
+    const contents = JSON.stringify({
+      ...config,
+      padding: 'x'.repeat(1024 - JSON.stringify(config).length),
+    });
+    assert.equal(contents.length, 1024);
+    const directory = project({ 'bundlewatch.config.json': contents });
+
+    const { status, output } = run(directory, ['update-max-sizes', '--write']);
+    assert.equal(status, 0, output);
+    assert.match(
+      output,
+      /UPDATE \.\/\*\.json: 1B -> 2kB, largest file \.\/bundlewatch\.config\.json is 1KB/,
+    );
+    assert.equal(read(directory, 'bundlewatch.config.json'), contents.replace('"1B"', '"2kB"'));
+    const check = run(directory);
+    assert.equal(check.status, 0, check.output);
+  });
+
   test('explains how to apply changes to a JavaScript config, which it cannot edit', () => {
     const config = `export default ${JSON.stringify({ ...offline, files: [{ path: './*.jpg', maxSize: '1kB' }] })};`;
     const directory = project({ 'bundlewatch.config.mjs': config });

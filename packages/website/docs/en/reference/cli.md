@@ -74,10 +74,10 @@ UPDATE ./dist/*.js: 100kB -> 249kB, largest file ./dist/app.js is 248.79KB (gzip
 
 - Only entries with a file over their `maxSize` change. Limits are never lowered, and entries without a `maxSize` stay without one.
 - The new limit is the size of the largest file the entry applies to, plus `--headroom`, rounded up to the next KB (1024 bytes). When two entries match the same file, the check applies the last one, so only that one is raised for it.
-- The new value keeps the form of the old one: `'100kB'` becomes `'249kB'`, and a number of bytes stays a number.
+- A number of bytes stays a number. A string becomes a whole number of KB, written as before if it was already in KB: `'100kB'` becomes `'249kB'` and `'100 KB'` becomes `'249 KB'`, but `'1MB'` becomes `'1075kB'`.
 - Without `--write`, the configuration isn't changed.
 - `--write` edits a JSON config file, discovered or given with `--config`, or the `bundlewatch` key in `package.json`. Only the `maxSize` values change: formatting and every other value stay as they are.
-- JavaScript and TypeScript config files can't be edited. The command prints the new values for you to copy into the file; with `--write`, it then exits with code 1.
+- JavaScript and TypeScript config files can't be edited. When limits need raising, the command prints the new values for you to copy into the file, and with `--write` it exits with code 1.
 - If a path matches no files, or a file can't be read, nothing is written and the command exits with code 1.
 - It never contacts the BundleWatch service or GitHub: it saves no baseline, prints no results link and posts no status.
 

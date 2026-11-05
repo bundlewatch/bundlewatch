@@ -1,5 +1,6 @@
 import { readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 
 import { type FileDetails, formatBytes, isFileError, parseBytes } from '@bundlewatch/core';
 
@@ -8,7 +9,7 @@ import { type FileConfig, resolveConfig } from './config.ts';
 import { replaceJsonValues } from './json-edit.ts';
 import { type ConfigSource, loadConfigWithSource } from './load-config.ts';
 import { logger, paint } from './logger.ts';
-import { type Measurement, measureEach } from './measure.ts';
+import { compressedSize, type Measurement, measureEach } from './measure.ts';
 
 export const UPDATE_MAX_SIZES_HELP: string = `Usage: bundlewatch ${UPDATE_MAX_SIZES} [options]
 
@@ -52,16 +53,18 @@ export type MaxSizeUpdate = {
 // which reads `1k` as 1 byte.
 const HEADROOM = /^\d+(?:\.\d+)? *(?:b|kb|mb|gb|tb|pb)?$/i;
 
+const headroomError = (message: string): ArgumentError =>
+  new ArgumentError(message, `bundlewatch ${UPDATE_MAX_SIZES} --help`);
+
 /** `--headroom` in bytes. */
 export const parseHeadroom = (value: string | undefined): number => {
   if (value === undefined) return 0;
   if (!HEADROOM.test(value)) {
-    throw new ArgumentError(
-      `--headroom must be a size such as 1KB or 512B, not '${value}'`,
-      `bundlewatch ${UPDATE_MAX_SIZES} --help`,
-    );
+    throw headroomError(`--headroom must be a size such as 1KB or 512B, not '${value}'`);
   }
-  return parseBytes(value) as number;
+  const bytes = parseBytes(value) as number;
+  if (!Number.isSafeInteger(bytes)) throw headroomError(`--headroom ${value} is too large`);
+  return bytes;
 };
 
 // The spelling of a KB maxSize, such as `15kB` or `15 KB`, which the
@@ -78,19 +81,21 @@ const formatMaxSize = (bytes: number, current: string | number): string | number
 /**
  * The entries whose `maxSize` a file exceeds, with new limits. When entries
  * match the same file, the check applies the last one, so only that one is
- * raised. Every measurement error is returned separately and blocks writes.
+ * raised. Files are told apart by path, not by normalized name: names can
+ * collide, but each file must fit. Measurement errors are returned separately
+ * and block writes.
  */
 export const planMaxSizeUpdates = (
   files: FileConfig[],
   measurements: Measurement[],
   headroom: number,
 ): { updates: MaxSizeUpdate[]; errors: Measurement[] } => {
-  const latest = new Map(measurements.map((measurement) => [measurement.key, measurement]));
+  const owner = new Map(measurements.map(({ filePath, entry }) => [filePath, entry]));
   const errors = measurements.filter(({ details }) => isFileError(details));
 
   const largest = new Map<number, MaxSizeUpdate['largest']>();
-  for (const { entry, key, filePath, details } of measurements) {
-    if (isFileError(details) || latest.get(key)?.entry !== entry) continue;
+  for (const { entry, filePath, details } of measurements) {
+    if (isFileError(details) || owner.get(filePath) !== entry) continue;
     const current = largest.get(entry);
     if (!current || details.size > current.size) largest.set(entry, { filePath, ...details });
   }
@@ -101,13 +106,12 @@ export const planMaxSizeUpdates = (
     if (file.maxSize === null || file.size <= file.maxSize) continue;
     const { path: pattern, maxSize } = files[entry] as FileConfig & { maxSize: string | number };
     const bytes = Math.ceil((file.size + headroom) / KB) * KB;
-    updates.push({
-      entry,
-      path: pattern,
-      maxSize,
-      newMaxSize: formatMaxSize(bytes, maxSize),
-      largest: file,
-    });
+    const newMaxSize = formatMaxSize(bytes, maxSize);
+    // The check must read back exactly this limit.
+    if (!Number.isSafeInteger(bytes) || parseBytes(newMaxSize) !== bytes) {
+      throw headroomError(`--headroom is too large: ${pattern} would need a maxSize of ${bytes}`);
+    }
+    updates.push({ entry, path: pattern, maxSize, newMaxSize, largest: file });
   }
   return { updates, errors };
 };
@@ -135,6 +139,53 @@ const updatedText = (
     })),
   );
 
+type Plan = ReturnType<typeof planMaxSizeUpdates>;
+
+const newValues = ({ updates }: Plan): unknown[] =>
+  updates.map(({ entry, newMaxSize }) => [entry, newMaxSize]);
+
+/**
+ * The plan and new text of a JSON config. A pattern can match the config file
+ * itself, whose size then changes with the new values: plan again with the
+ * new text until the values settle.
+ */
+const planJsonUpdate = (
+  source: Extract<ConfigSource, { kind: 'json' }>,
+  files: FileConfig[],
+  measurements: Measurement[],
+  headroom: number,
+): { plan: Plan; text: string } => {
+  const configFile = realpathSync(source.file);
+  const ofConfigFile = (measurement: Measurement): boolean =>
+    !isFileError(measurement.details) && realpathSync(measurement.filePath) === configFile;
+  const measuresConfigFile = measurements.some(ofConfigFile);
+
+  let plan = planMaxSizeUpdates(files, measurements, headroom);
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const text = updatedText(source, plan.updates);
+    if (!measuresConfigFile) return { plan, text };
+    const data = Buffer.from(text);
+    const next = planMaxSizeUpdates(
+      files,
+      measurements.map((measurement) =>
+        ofConfigFile(measurement) && !isFileError(measurement.details)
+          ? {
+              ...measurement,
+              details: {
+                ...measurement.details,
+                size: compressedSize(data, measurement.details.compression),
+              },
+            }
+          : measurement,
+      ),
+      headroom,
+    );
+    if (isDeepStrictEqual(newValues(next), newValues(plan))) return { plan: next, text };
+    plan = next;
+  }
+  throw new Error('The new maxSize values keep changing the size of the config file');
+};
+
 /** `bundlewatch update-max-sizes`. Returns the exit code. */
 export const updateMaxSizes = async (argv: string[]): Promise<number> => {
   // Globs are relative to the current directory, like in the check.
@@ -160,7 +211,19 @@ export const updateMaxSizes = async (argv: string[]): Promise<number> => {
   const name = displayPath(source.file, cwd);
 
   const resolved = resolveConfig(config, { ciWarnings: false });
-  const { updates, errors } = planMaxSizeUpdates(resolved.files, measureEach(resolved), headroom);
+  const measurements = measureEach(resolved);
+  let plan = planMaxSizeUpdates(resolved.files, measurements, headroom);
+  let text: string | undefined;
+  if (source.kind === 'json' && plan.errors.length === 0 && plan.updates.length > 0) {
+    try {
+      ({ plan, text } = planJsonUpdate(source, resolved.files, measurements, headroom));
+    } catch (error) {
+      if (error instanceof ArgumentError) throw error;
+      logger.error(`Could not update ${name}, so it was not changed`, error);
+      return 1;
+    }
+  }
+  const { updates, errors } = plan;
 
   logger.log('');
   for (const { path: pattern, maxSize, newMaxSize, largest } of updates) {
@@ -192,14 +255,7 @@ export const updateMaxSizes = async (argv: string[]): Promise<number> => {
     return 0;
   }
 
-  let text: string;
-  try {
-    text = updatedText(source, updates);
-  } catch (error) {
-    logger.error(`Could not update ${name}, so it was not changed`, error);
-    return 1;
-  }
-  writeFileSync(source.file, text);
+  writeFileSync(source.file, text as string);
   logger.log(`Updated ${plural(updates.length)} in ${name}.`);
   return 0;
 };

@@ -14,10 +14,11 @@ const measured = (
   size: number,
   maxSize: number,
   compression = 'gzip',
+  key = filePath,
 ): Measurement => ({
   entry,
   filePath,
-  key: filePath,
+  key,
   details: { size, maxSize, compression } satisfies FileDetails,
 });
 
@@ -95,6 +96,31 @@ describe('planMaxSizeUpdates', () => {
     });
   });
 
+  test('tells files apart by path when normalized names collide', () => {
+    const files = [
+      { path: './app.*.js', maxSize: '1kB' },
+      { path: './app.bbb.js', maxSize: '2kB' },
+    ];
+    const measurements = [
+      measured(0, './app.aaa.js', 5000, 1024, 'gzip', './app.js'),
+      measured(0, './app.bbb.js', 1500, 1024, 'gzip', './app.js'),
+      measured(1, './app.bbb.js', 1500, 2048, 'gzip', './app.js'),
+    ];
+    assert.deepEqual(newMaxSizes(files, measurements), { './app.*.js': '5kB' });
+  });
+
+  test('refuses a limit too large to read back exactly', () => {
+    assert.throws(
+      () =>
+        planMaxSizeUpdates(
+          [{ path: 'a.js', maxSize: '1kB' }],
+          [measured(0, 'a.js', 2000, 1024)],
+          Number.MAX_SAFE_INTEGER,
+        ),
+      (error: unknown) => error instanceof ArgumentError && /too large/.test(error.message),
+    );
+  });
+
   test('writes the new limit in the style of the current one', () => {
     const cases: [FileConfig['maxSize'], string | number][] = [
       ['1kB', '3kB'],
@@ -144,6 +170,12 @@ describe('parseHeadroom', () => {
     assert.equal(parseHeadroom('1KB'), 1024);
     assert.equal(parseHeadroom('1.5kb'), 1536);
     assert.equal(parseHeadroom('2 MB'), 2 * 1024 * 1024);
+  });
+
+  test('rejects sizes too large to add exactly', () => {
+    for (const value of [`1${'0'.repeat(24)}KB`, `${'9'.repeat(309)}KB`]) {
+      assert.throws(() => parseHeadroom(value), /too large/, value);
+    }
   });
 
   test('rejects anything else, including spellings maxSize reads as bytes', () => {
