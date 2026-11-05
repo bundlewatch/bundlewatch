@@ -167,11 +167,71 @@ export default [
     width: 110,
     height: 32,
   },
+  // Keep these projects in descending GitHub-star order.
+  {
+    name: "React Hook Form",
+    // https://github.com/react-hook-form/documentation/blob/master/public/images/logo/react-hook-form-logo-only.svg
+    logo: "react-hook-form.svg",
+    width: 36,
+    height: 36,
+  },
+  {
+    name: "Tabler",
+    // https://github.com/tabler/tabler/tree/dev/shared/static (logo.svg, logo-white.svg)
+    logo: "tabler.svg",
+    darkLogo: "tabler-dark.svg",
+    width: 102,
+    height: 30,
+  },
   {
     name: "Recharts",
     logo: "recharts.svg",
     width: 143,
     height: 30,
+    lightBackground: true,
+  },
+  {
+    name: "Vue Select",
+    // No project logo in sagalbot/vue-select. The icon URLs at vue-select.org
+    // return 404; keep this entry text-only until official artwork is available.
+  },
+  {
+    name: "xstyled",
+    // https://github.com/styled-components/xstyled/tree/main/website/images (logo-nav-light.svg, logo-nav-dark.svg)
+    logo: "xstyled.svg",
+    darkLogo: "xstyled-dark.svg",
+    width: 102,
+    height: 30,
+  },
+  {
+    name: "USACO Guide",
+    // https://github.com/cpinitiative/usaco-guide/blob/master/public/assets/logo.svg
+    logo: "usaco-guide.svg",
+    width: 32,
+    height: 32,
+  },
+  {
+    name: "Quilt",
+    // https://github.com/quiltdata/quilt/blob/master/catalog/app/components/Logo/quilt-icon.png
+    logo: "quilt.png",
+    width: 36,
+    height: 36,
+    darkBackground: true,
+  },
+  {
+    name: "reseter.css",
+    // https://github.com/ikrishg/reseter.css/blob/main/.github/assets/logo.svg
+    logo: "reseter.svg",
+    width: 36,
+    height: 36,
+  },
+  {
+    name: "CoreUI",
+    // https://github.com/coreui/coreui/blob/main/docs/public/assets/brand/coreui-logo.svg
+    // The local SVG viewBox trims the source's empty margins.
+    logo: "coreui.svg",
+    width: 100,
+    height: 41,
     lightBackground: true,
   },
 ];

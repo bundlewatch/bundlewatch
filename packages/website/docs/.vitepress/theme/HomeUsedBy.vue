@@ -24,12 +24,13 @@ const rows = [projects.slice(0, midpoint), projects.slice(midpoint)];
               role="list"
             >
               <li v-for="project in row" :key="project.name">
-                <div class="logo">
+                <div v-if="project.logo" class="logo">
                   <img
                     :src="withBase(`/used-by/${project.logo}`)"
                     :class="{
                       'on-light': project.darkLogo,
                       'light-background': project.lightBackground,
+                      'dark-background': project.darkBackground,
                     }"
                     :width="project.width"
                     :height="project.height"
@@ -142,12 +143,21 @@ img {
   filter: grayscale(1);
 }
 
-/* A light surface keeps dark artwork legible without changing its geometry. */
-.light-background {
+/* A fixed surface keeps artwork legible without changing its geometry. */
+.light-background,
+.dark-background {
   padding: 3px;
   border-radius: 4px;
+}
+
+.light-background {
   background: #fff;
   color-scheme: light;
+}
+
+.dark-background {
+  background: #1b1b1f;
+  color-scheme: dark;
 }
 
 .on-dark {
