@@ -1,0 +1,7 @@
+<!-- Source: https://github.com/recharts/recharts/blob/main/www/public/logo.svg; cropped to the artwork. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="143" height="30" viewBox="0 15 143 30">
+  <path stroke-width="1.5" stroke="#1074b6" fill="none" d="M5,30L14.5,25M5,30L14.5,35M114.25,37.5L123.75,22.5M128.5,25L138,30M128.5,35L138,30" />
+  <text x="18" y="30" text-anchor="start" fill="#1074b6" font-family="'Roboto Mono', Consolas, 'Liberation Mono', 'Courier New', Courier, monospace" font-weight="300" font-size="18">
+    <tspan x="18" dy="0.355em">Recharts</tspan>
+  </text>
+</svg>

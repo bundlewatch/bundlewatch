@@ -167,4 +167,11 @@ export default [
     width: 110,
     height: 32,
   },
+  {
+    name: "Recharts",
+    logo: "recharts.svg",
+    width: 143,
+    height: 30,
+    lightBackground: true,
+  },
 ];
